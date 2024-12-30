@@ -14,6 +14,9 @@ export class User extends Document {
 
   @Prop({ default: 'employee' }) // admin, manager, or employee
   role: string;
+
+  @Prop({ type: [String], default: [] })
+  additionalScopes: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
