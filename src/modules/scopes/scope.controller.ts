@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post } from "@nestjs/common";
 import { ScopesService } from "./scopes.service";
 import { Scope } from "./schemas/scope.schema";
 
@@ -13,5 +13,10 @@ export class ScopesController {
         } catch (error) {
             throw error;
         }
+    }
+
+    @Get()
+    async findAll(): Promise<Scope[]> {
+        return this.scopeService.findAll();
     }
 }

@@ -21,4 +21,8 @@ export class ScopesService {
         }
       }
 
+    async findAll(): Promise<Scope[]> {
+      return this.scopeModel.find().exec();
+    }
+
 }

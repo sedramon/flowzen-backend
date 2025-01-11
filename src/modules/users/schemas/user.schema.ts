@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+import { Role } from 'src/modules/roles/schemas/role.schema';
 
 @Schema()
 export class User extends Document {
@@ -12,11 +13,11 @@ export class User extends Document {
   @Prop({ select: false, required: true }) // Exclude password from queries by default
   password: string;
 
-  @Prop({ default: 'employee' }) // admin, manager, or employee
-  role: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Role', required: true }) // admin, manager, or employee
+  role: Role;
 
-  @Prop({ type: [String], default: [] })
-  additionalScopes: string[];
+  _id: Types.ObjectId;
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
