@@ -23,7 +23,7 @@ export class UsersController {
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.usersService.findAll();
   }
 
@@ -43,7 +43,8 @@ export class UsersController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.usersService.delete(id);
+  async delete(@Param('id') id: string) {
+    const deletedUser = await this.usersService.delete(id);
+    return deletedUser;
   }
 }
