@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { Role } from 'src/modules/roles/schemas/role.schema';
 
-@Schema()
+@Schema({timestamps: true})
 export class User extends Document {
   @Prop({default: 'User'})
   name: string;
@@ -17,6 +17,9 @@ export class User extends Document {
   role: Role;
 
   _id: Types.ObjectId;
+
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
 
 }
 

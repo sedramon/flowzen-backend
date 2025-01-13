@@ -16,7 +16,6 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { role, ...userDetails } = createUserDto;
 
       const roleDocument = await this.roleModel.findOne({ name: role }).exec();
