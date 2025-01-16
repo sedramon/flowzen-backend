@@ -10,7 +10,13 @@ export class Tenant extends Document {
     companyType: string;
 
     @Prop({required: true})
-    address: string
+    street: string
+
+    @Prop({required: true})
+    city: string
+
+    @Prop({required: true})
+    country: string
 
     @Prop({})
     contactEmail: string
@@ -25,7 +31,13 @@ export class Tenant extends Document {
     PIB: string
 
     @Prop({required: true, default: false})
-    hasLicense: boolean
+    hasActiveLicense: boolean
+
+    @Prop({required: true, default: new Date()})
+    licenseStartDate: Date
+
+    @Prop({required: true, default: new Date()})
+    licenseExpiryDate: Date
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

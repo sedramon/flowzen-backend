@@ -1,8 +1,10 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Tenant } from "./schemas/tenant.schema";
 import { Model } from "mongoose";
 import { CreateTenantDto } from "./dto/CreateTenant.dto";
+import { UpdateTenantLicenseDto } from "./dto/UpdateTenantLicense.dto";
+import { NotFoundError } from "rxjs";
 
 @Injectable()
 export class TenantsService {
@@ -25,5 +27,25 @@ export class TenantsService {
 
     async findAll(): Promise<Tenant[]> {
         return this.tenantModel.find().exec();
+    }
+
+    async updateTenantLicense(id: string, updateTenantLicenseDto: UpdateTenantLicenseDto): Promise<Tenant>{
+        const tenant = await this.tenantModel.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    hasActiveLicense: updateTenantLicenseDto.hasActiveLicense,
+                    licenseStartDate: updateTenantLicenseDto.licenseStartDate,
+                    licenseExpiryDate: updateTenantLicenseDto.licenseExpiryDate
+                }
+            },
+            { new: true }          
+        );
+
+        if (!tenant) {
+            throw new NotFoundException(`Tenant with ID ${id} not found`);
+        }
+
+        return tenant;
     }
 }

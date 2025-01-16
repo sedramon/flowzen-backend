@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
 import { TenantsService } from "./tenants.service";
 import { CreateTenantDto } from "./dto/CreateTenant.dto";
 import { Tenant } from "./schemas/tenant.schema";
+import { UpdateTenantLicenseDto } from "./dto/UpdateTenantLicense.dto";
 
 @Controller('tenants')
 export class TenantsController {
@@ -15,5 +16,13 @@ export class TenantsController {
     @Get()
     async findAll(): Promise<Tenant[]> {
         return await this.tenantsService.findAll();
+    }
+
+    @Patch(':id/license')
+    async updateLicense(
+        @Param('id') id: string,
+        @Body() updateTenantLicenseDto: UpdateTenantLicenseDto
+    ) : Promise<Tenant> {
+        return await this.tenantsService.updateTenantLicense(id, updateTenantLicenseDto);
     }
 }

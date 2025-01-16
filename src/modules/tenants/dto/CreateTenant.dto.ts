@@ -11,7 +11,15 @@ export class CreateTenantDto {
 
     @IsString()
     @IsNotEmpty()
-    address: string;
+    street: string;
+
+    @IsString()
+    @IsNotEmpty()
+    city: string;
+
+    @IsString()
+    @IsNotEmpty()
+    country: string;
 
     @IsString()
     contactEmail: string;
