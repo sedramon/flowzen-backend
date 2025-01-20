@@ -1,26 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../roles/schemas/role.schema';
+import { Tenant } from '../tenants/schemas/tenant.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Role.name) private roleModel: Model<Role>
+    @InjectModel(Role.name) private roleModel: Model<Role>,
+    @InjectModel(Tenant.name) private tenantModel: Model<Tenant>
   ) { }
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const { role, ...userDetails } = createUserDto;
+      const { role, tenant, ...userDetails } = createUserDto;
 
       const roleDocument = await this.roleModel.findOne({ name: role }).exec();
       if (!roleDocument) {
         throw new ConflictException('Role not found');
+      }
+
+      const tenantDocument = await this.tenantModel.findById(tenant).exec();
+      if(!tenantDocument) {
+        throw new NotFoundException(`Tenant with ID ${tenant} not found`);
       }
 
       // Hash the password
@@ -28,7 +35,8 @@ export class UsersService {
       const newUser = new this.userModel({
         ...userDetails,
         password: hashedPassword,
-        role: roleDocument._id // Map the role to its ObjectId
+        role: roleDocument._id, // Map the role to its ObjectId
+        tenant: tenantDocument._id
       });
 
       const savedUser = await newUser.save();
@@ -36,6 +44,7 @@ export class UsersService {
       const populatedUser = await this.userModel
         .findById(savedUser._id)
         .populate('role') // Populate the role field with the full Role document
+        .populate('tenant')
         .exec();
 
       // Exclude the password from the response

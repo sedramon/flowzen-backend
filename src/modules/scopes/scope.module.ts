@@ -7,6 +7,7 @@ import { ScopesService } from "./scopes.service";
 @Module({
     imports: [MongooseModule.forFeature([{name: Scope.name, schema: ScopeSchema}])],
     controllers: [ScopesController],
-    providers: [ScopesService]
+    providers: [ScopesService],
+    exports: [MongooseModule]
 })
 export class ScopeModule{}

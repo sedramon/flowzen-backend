@@ -16,4 +16,8 @@ export class CreateUserDto{
     @IsNotEmpty()
     @IsString()
     role: string;
+
+    @IsNotEmpty()
+    @IsString()
+    tenant: string
 }

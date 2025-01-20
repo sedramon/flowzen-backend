@@ -8,4 +8,8 @@ export class CreateRoleDto {
     @IsArray()
     @ArrayNotEmpty()
     availableScopes: string[];
+
+    @IsString()
+    @IsNotEmpty()
+    tenant: string
 }
