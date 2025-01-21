@@ -30,13 +30,13 @@ const RoleSchema = SchemaFactory.createForClass(Role);
 // Automatically populate the tenant field for all queries
 RoleSchema.pre(/^find/, function (next) {
   const query = this as Query<any, Document>;
-  query.populate('tenant').populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
+  query.populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
   next();
 });
 
 RoleSchema.pre(/^findOne/, function (next) {
   const query = this as Query<any, Document>;
-  query.populate('tenant').populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
+  query.populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
   next();
 });
 

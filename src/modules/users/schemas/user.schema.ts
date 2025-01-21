@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema, Types } from 'mongoose';
+import { Document, Schema as MongooseSchema, Query, Types } from 'mongoose';
 import { Role } from 'src/modules/roles/schemas/role.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 
@@ -27,4 +27,19 @@ export class User extends Document {
 
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+const UserSchema = SchemaFactory.createForClass(User);
+
+// Automatically populate the tenant field for all queries
+UserSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('tenant'); // Ensure 'this' is cast as a Mongoose Query
+  next();
+});
+
+UserSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('tenant'); // Ensure 'this' is cast as a Mongoose Query
+  next();
+});
+
+export { UserSchema }

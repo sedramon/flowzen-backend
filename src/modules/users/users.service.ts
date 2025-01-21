@@ -20,13 +20,13 @@ export class UsersService {
     try {
       const { role, tenant, ...userDetails } = createUserDto;
 
-      const roleDocument = await this.roleModel.findOne({ name: role }).exec();
+      const roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
       if (!roleDocument) {
         throw new ConflictException('Role not found');
       }
 
       const tenantDocument = await this.tenantModel.findById(tenant).exec();
-      if(!tenantDocument) {
+      if (!tenantDocument) {
         throw new NotFoundException(`Tenant with ID ${tenant} not found`);
       }
 
@@ -49,6 +49,12 @@ export class UsersService {
 
       // Exclude the password from the response
       const { password, ...userWithoutPassword } = populatedUser.toObject();
+
+      // Modify the populated role to only include the tenant's ID
+      if (userWithoutPassword.role && userWithoutPassword.role.tenant) {
+        userWithoutPassword.role.tenant = (userWithoutPassword.role.tenant as any)._id || userWithoutPassword.role.tenant.toString();
+      }
+
       return userWithoutPassword;
 
     } catch (error) {
@@ -69,11 +75,11 @@ export class UsersService {
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
-  
+
   async findOne(id: string | Types.ObjectId): Promise<User | null> {
     return this.userModel.findById(id).populate('role').exec();
   }
-  
+
 
   async update(id: string, user: Partial<User>): Promise<User> {
     return this.userModel.findByIdAndUpdate(id, user, { new: true }).exec();
