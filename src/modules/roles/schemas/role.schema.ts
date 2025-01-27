@@ -12,14 +12,14 @@ export class Role extends Document {
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Scope' }], // Reference to Scope model
         required: true,
     })
-    availableScopes: MongooseSchema.Types.ObjectId[]; // Use ObjectId array for references
+    availableScopes: Scope[]; // Use Scope type for populated data
 
     @Prop({
         type: MongooseSchema.Types.ObjectId, // Reference to Tenant model
         ref: 'Tenant',
         required: true,
     })
-    tenant: MongooseSchema.Types.ObjectId; // Use ObjectId for tenant reference
+    tenant: Tenant; // Use Tenant type for populated data
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
@@ -27,19 +27,18 @@ export class Role extends Document {
 
 const RoleSchema = SchemaFactory.createForClass(Role);
 
-// Automatically populate the tenant field for all queries
+// Automatically populate the availableScopes field for all queries
 RoleSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
-  next();
+    const query = this as Query<any, Document>;
+    query.populate('availableScopes'); // Automatically populate the availableScopes field
+    next();
 });
 
 RoleSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('availableScopes'); // Ensure 'this' is cast as a Mongoose Query
-  next();
+    const query = this as Query<any, Document>;
+    query.populate('availableScopes'); // Automatically populate the availableScopes field
+    next();
 });
 
-
-
 export { RoleSchema };
+
