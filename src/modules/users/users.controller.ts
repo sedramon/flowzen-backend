@@ -27,6 +27,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('tenant/:tenantId')
+  async findAllByTenant(@Param('tenantId') tenantId: string) {
+    return this.usersService.findAllByTenant(tenantId);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const isValid = mongoose.Types.ObjectId.isValid(id);

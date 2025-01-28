@@ -72,6 +72,16 @@ export class UsersService {
     return this.userModel.find().populate('role').exec();
   }
 
+  async findAllByTenant(tenantId: string): Promise<User[]> {
+    const tenantExists = await this.tenantModel.exists({_id: tenantId});
+
+    if (!tenantExists) {
+      throw new NotFoundException(`Tenant with ID ${tenantId} not found`);
+    }
+
+    return this.userModel.find({tenant: tenantId}).populate('role').exec();
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
