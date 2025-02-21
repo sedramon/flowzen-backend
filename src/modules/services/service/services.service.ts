@@ -22,4 +22,8 @@ export class ServicesService {
   async findAll(): Promise<Service[]> {
     return this.serviceModel.find().exec();
   }
+
+  async delete(id: string): Promise<void> {
+    await this.serviceModel.findByIdAndDelete(id).exec();
+  }
 }
