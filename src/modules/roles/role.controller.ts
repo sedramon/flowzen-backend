@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { RoleService } from "./role.service";
 import { CreateRoleDto } from "./schemas/dto/CreateRole.dto";
 import { Role } from "./schemas/role.schema";
@@ -32,4 +32,10 @@ export class RolesController {
     async findAll(): Promise<Role[]> {
         return this.roleService.findAll();
     }
+
+     @Delete(':id')
+      async delete(@Param('id') id: string) {
+        const deletedRole = await this.roleService.delete(id);
+        return deletedRole;
+      }
 }

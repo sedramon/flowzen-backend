@@ -101,4 +101,8 @@ export class RoleService {
     async findAll(): Promise<Role[]> {
         return this.roleModel.find().exec();
     }
+
+    async delete(id: string): Promise<Role> {
+        return this.roleModel.findByIdAndDelete(id).exec();
+      }
 }
