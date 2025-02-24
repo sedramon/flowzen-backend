@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete } from '@nestjs/common';
 import { CreateServiceDto } from '../dto/create-service.dto';
 import { Service } from '../schemas/service.schema';
 import { ServicesService } from '../service/services.service';
@@ -20,5 +20,11 @@ export class ServicesController {
   @Get()
   async findAll(): Promise<Service[]> {
     return this.servicesService.findAll();
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string): Promise<{ message: string }> {
+    await this.servicesService.delete(id);
+    return { message: 'Service deleted successfully' };
   }
 }
