@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, UseGuards, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import mongoose from 'mongoose';
 import { JwtAuthGuard } from '../auth/auth.guard';
+import { UpdateUserDtoNameAndRole } from './dto/UpdateUser.dto';
 
 @Controller('users')
 export class UsersController {
@@ -41,10 +42,9 @@ export class UsersController {
     return foundUser;
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: Partial<User>) {
-    const updatedUser = await this.usersService.update(id, updateUserDto);
-    return updatedUser;
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDtoNameAndRole) : Promise<User> {
+   return await this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')

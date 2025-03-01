@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/CreateUser.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../roles/schemas/role.schema';
 import { Tenant } from '../tenants/schemas/tenant.schema';
+import { UpdateUserDtoNameAndRole } from './dto/UpdateUser.dto';
 
 @Injectable()
 export class UsersService {
@@ -67,19 +68,50 @@ export class UsersService {
     }
   }
 
+  async update(id: string, user: UpdateUserDtoNameAndRole) {
+    try {
+      const { role, tenant, name } = user;
+
+      const tenantDocument = await this.tenantModel.findById(tenant).exec();
+      if (!tenantDocument) {
+        throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+      }
+
+      const roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
+      if (!roleDocument) {
+        throw new NotFoundException(`Role with name ${role} not found for tenant with ID ${tenant}`);
+      }
+
+      const userUpdate = await this.userModel.findByIdAndUpdate(
+        id,
+        { $set: { name, role: roleDocument._id} },
+        { new: true }
+      );
+      
+      if (!user) {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+      return userUpdate;
+      
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
 
   async findAll(): Promise<User[]> {
     return this.userModel.find().populate('role').exec();
   }
 
   async findAllByTenant(tenantId: string): Promise<User[]> {
-    const tenantExists = await this.tenantModel.exists({_id: tenantId});
+    const tenantExists = await this.tenantModel.exists({ _id: tenantId });
 
     if (!tenantExists) {
       throw new NotFoundException(`Tenant with ID ${tenantId} not found`);
     }
 
-    return this.userModel.find({tenant: tenantId}).populate('role').exec();
+    return this.userModel.find({ tenant: tenantId }).populate('role').exec();
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -91,9 +123,6 @@ export class UsersService {
   }
 
 
-  async update(id: string, user: Partial<User>): Promise<User> {
-    return this.userModel.findByIdAndUpdate(id, user, { new: true }).exec();
-  }
 
   async delete(id: string): Promise<User> {
     return this.userModel.findByIdAndDelete(id).exec();
