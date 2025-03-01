@@ -5,6 +5,10 @@ export class UpdateRoleDto {
     @IsNotEmpty()
     name: string;
 
+    @IsNotEmpty()
+    @IsString()
+    tenant: string
+
     @IsArray()
     @ArrayNotEmpty()
     availableScopes: string[];

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import * as bcrypt from 'bcrypt';
@@ -20,17 +20,23 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     try {
       const { role, tenant, ...userDetails } = createUserDto;
-
+  
+      // Validate the tenant ID
+      if (!isValidObjectId(tenant)) {
+        throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+      }
+  
+      // Check if the role exists for the given tenant
       const roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
       if (!roleDocument) {
         throw new ConflictException('Role not found');
       }
-
+  
       const tenantDocument = await this.tenantModel.findById(tenant).exec();
       if (!tenantDocument) {
         throw new NotFoundException(`Tenant with ID ${tenant} not found`);
       }
-
+  
       // Hash the password
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const newUser = new this.userModel({
@@ -39,31 +45,32 @@ export class UsersService {
         role: roleDocument._id, // Map the role to its ObjectId
         tenant: tenantDocument._id
       });
-
+  
       const savedUser = await newUser.save();
-      // Populate the role field and exclude the password
+  
+      // Populate the role and tenant fields, then exclude the password from the response
       const populatedUser = await this.userModel
         .findById(savedUser._id)
-        .populate('role') // Populate the role field with the full Role document
+        .populate('role')
         .populate('tenant')
         .exec();
-
-      // Exclude the password from the response
+  
       const { password, ...userWithoutPassword } = populatedUser.toObject();
-
+  
       // Modify the populated role to only include the tenant's ID
       if (userWithoutPassword.role && userWithoutPassword.role.tenant) {
-        userWithoutPassword.role.tenant = (userWithoutPassword.role.tenant as any)._id || userWithoutPassword.role.tenant.toString();
+        userWithoutPassword.role.tenant =
+          (userWithoutPassword.role.tenant as any)._id || userWithoutPassword.role.tenant.toString();
       }
-
+  
       return userWithoutPassword;
-
+  
     } catch (error) {
-      // Properly compare the error code
+      // Handle duplicate email error
       if (error.code === 11000) {
         throw new ConflictException('User with this email already exists');
       }
-      // Rethrow other errors for global handling
+      // Rethrow any other errors for global handling
       throw error;
     }
   }
@@ -71,28 +78,42 @@ export class UsersService {
   async update(id: string, user: UpdateUserDtoNameAndRole) {
     try {
       const { role, tenant, name } = user;
-
+  
+      // Validate ObjectIds for tenant and user
+      if (!isValidObjectId(tenant)) {
+        throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+      }
+      if (!isValidObjectId(id)) {
+        throw new BadRequestException(`Invalid user ID: ${id}`);
+      }
+  
       const tenantDocument = await this.tenantModel.findById(tenant).exec();
       if (!tenantDocument) {
         throw new NotFoundException(`Tenant with ID ${tenant} not found`);
       }
-
+  
       const roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
       if (!roleDocument) {
         throw new NotFoundException(`Role with name ${role} not found for tenant with ID ${tenant}`);
       }
-
+  
       const userUpdate = await this.userModel.findByIdAndUpdate(
         id,
-        { $set: { name, role: roleDocument._id} },
+        { $set: { name, role: roleDocument._id } },
         { new: true }
       );
       
-      if (!user) {
+      if (!userUpdate) {
         throw new NotFoundException(`User with ID ${id} not found`);
       }
-      return userUpdate;
-      
+  
+      const populatedUser = await this.userModel
+        .findById(userUpdate._id)
+        .populate('role')
+        .exec();
+  
+      return populatedUser;
+  
     } catch (error) {
       throw error;
     }
