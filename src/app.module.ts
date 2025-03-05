@@ -9,10 +9,11 @@ import { RolesModule } from './modules/roles/role.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ServicesModule } from './modules/services/services.module';
+import { EmployeeModule } from './modules/employees/employees.module';
 
 @Module({
   imports: [
-    DatabaseModule, UsersModule, AuthModule, ScopeModule, RolesModule, TenantsModule, AppointmentsModule, ServicesModule
+    DatabaseModule, UsersModule, AuthModule, ScopeModule, RolesModule, TenantsModule, AppointmentsModule, ServicesModule, EmployeeModule
   ],
   controllers: [AppController],
   providers: [AppService],
