@@ -1,20 +1,35 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Employee } from "./schema/employee.schema";
-import { Model } from "mongoose";
+import { isValidObjectId, Model } from "mongoose";
 import { CreateEmployeeDto } from "./dto/CreateEmployee.dto";
+import { Tenant } from "../tenants/schemas/tenant.schema";
 
 
 @Injectable()
 export class EmployeeService {
 
-    constructor(@InjectModel(Employee.name) private employeeModel: Model<Employee>){}
+    constructor(@InjectModel(Employee.name) private employeeModel: Model<Employee>, @InjectModel(Tenant.name) private tenantModel: Model<Tenant>) { }
 
     async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
-        try{
+        try {
+            const { tenant, ...employeeDetails } = createEmployeeDto;
+
+            if (!isValidObjectId(tenant)) {
+                throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+            }
+
+            // Check if tenant exists
+            const tenantDocument = await this.tenantModel.findById(tenant).exec();
+            if (!tenantDocument) {
+                throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+            }
+
+
             const employee = await this.employeeModel.create(createEmployeeDto);
+            
             return employee;
-        } catch(error) {
+        } catch (error) {
             throw error;
         }
     }

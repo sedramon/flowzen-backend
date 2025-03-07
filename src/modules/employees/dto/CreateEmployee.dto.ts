@@ -34,4 +34,8 @@ export class CreateEmployeeDto {
         @IsNotEmpty()
         @IsBoolean()
         includeInAppoitments: boolean;
+
+        @IsString()
+        @IsNotEmpty()
+        tenant: string
 }
