@@ -9,7 +9,8 @@ async function bootstrap() {
   // Ako hocemo globalne validacije
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: ['http://localhost:4200',
+    'https://your-vercel-app.vercel.app'],
     credentials: true
 });
   await app.listen(process.env.PORT ?? 3000);
