@@ -10,10 +10,11 @@ import { TenantsModule } from './modules/tenants/tenants.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ServicesModule } from './modules/services/services.module';
 import { EmployeeModule } from './modules/employees/employees.module';
+import { ClientsModule } from './modules/clients/clients.module';
 
 @Module({
   imports: [
-    DatabaseModule, UsersModule, AuthModule, ScopeModule, RolesModule, TenantsModule, AppointmentsModule, ServicesModule, EmployeeModule
+    DatabaseModule, UsersModule, AuthModule, ScopeModule, RolesModule, TenantsModule, AppointmentsModule, ServicesModule, EmployeeModule, ClientsModule
   ],
   controllers: [AppController],
   providers: [AppService],
