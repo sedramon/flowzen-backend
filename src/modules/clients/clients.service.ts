@@ -30,4 +30,8 @@ export class ClientsService {
             throw new Error(error);
         }
     }
+
+    async findAll(): Promise<Client[]> {
+        return this.clientModel.find().exec();
+    }
 }
