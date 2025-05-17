@@ -34,4 +34,8 @@ export class ClientsService {
     async findAll(): Promise<Client[]> {
         return this.clientModel.find().exec();
     }
+
+    async findOne(id: string): Promise<Client> {
+        return this.clientModel.findById(id).exec();
+    }
 }

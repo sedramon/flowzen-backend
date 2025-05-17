@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 import { ClientsService } from "./clients.service";
 import { CreateClientDto } from "./dto/CreateClient.dto";
 import { Client } from "./schemas/client.schema";
@@ -15,6 +15,11 @@ export class ClientsController {
     @Get()
     async findAll(): Promise<Client[]> {
         return await this.clientsService.findAll();
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string): Promise<Client> {
+        return await this.clientsService.findOne(id);
     }
 
 }
