@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsNotEmpty, IsString, IsArray } from "class-validator";
 
 export class CreateEmployeeDto {
         @IsNotEmpty()
@@ -37,5 +37,14 @@ export class CreateEmployeeDto {
 
         @IsString()
         @IsNotEmpty()
-        tenant: string
+        tenant: string;
+
+        // @IsNotEmpty()
+        // @IsString()
+        avatarUrl: string;
+
+        @IsArray()
+        @IsString({ each: true })
+        @IsNotEmpty({ each: true })
+        workingDays: string[]; // npr. ['2025-05-16', '2025-05-18']
 }
