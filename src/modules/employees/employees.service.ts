@@ -54,7 +54,10 @@ export class EmployeeService {
         }
     }
 
-    async findAll(): Promise<Employee[]> {
+    async findAll(tenantId: string): Promise<Employee[]> {
+        if (!isValidObjectId(tenantId)) {
+            throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
+        }
         return this.employeeModel.find().exec();
     }
 

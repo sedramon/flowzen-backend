@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, UseInterceptors, UploadedFile, Query } from "@nestjs/common";
 import { EmployeeService } from "./employees.service";
 import { CreateEmployeeDto } from "./dto/CreateEmployee.dto";
 import { Employee } from "./schema/employee.schema";
@@ -22,8 +22,8 @@ export class EmployeesController {
     }
 
     @Get()
-    async findAll(): Promise<Employee[]> {
-        return await this.employeeService.findAll();
+    async findAll(@Query('tenant') tenantId?: string): Promise<Employee[]> {
+        return await this.employeeService.findAll(tenantId);
     }
 
     @Get(':id')

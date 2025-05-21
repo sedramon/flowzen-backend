@@ -31,11 +31,35 @@ export class ClientsService {
         }
     }
 
-    async findAll(): Promise<Client[]> {
-        return this.clientModel.find().exec();
+    async findAll(tenantId: string): Promise<Client[]> {
+        if(!isValidObjectId(tenantId)){
+            throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
+        }
+
+        return this.clientModel.find({ tenant: tenantId }).exec();
     }
 
     async findOne(id: string): Promise<Client> {
         return this.clientModel.findById(id).exec();
+    }
+
+    async delete(id: string): Promise<void> {
+        await this.clientModel.findByIdAndDelete(id).exec();
+    }
+
+    async update(id: string, createClientDto: CreateClientDto): Promise<Client> {
+        try{
+            const { tenant, ...clientDetails } = createClientDto;
+            if (!isValidObjectId(tenant)) {
+                throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+            }
+            const tenantDocument = await this.tenantModel.findById(tenant).exec();
+            if (!tenantDocument) {
+                throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+            }
+            return await this.clientModel.findByIdAndUpdate(id, createClientDto, { new: true }).exec();
+        }catch(error){
+            throw new Error(error);
+        }
     }
 }

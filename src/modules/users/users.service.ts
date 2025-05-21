@@ -126,6 +126,11 @@ export class UsersService {
   }
 
   async findAllByTenant(tenantId: string): Promise<User[]> {
+    // Validate the tenant ID
+    if (!isValidObjectId(tenantId)) {
+      throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
+    }
+
     const tenantExists = await this.tenantModel.exists({ _id: tenantId });
 
     if (!tenantExists) {
