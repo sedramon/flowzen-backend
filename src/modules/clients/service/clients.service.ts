@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Client } from "./schemas/client.schema";
 import { isValidObjectId, Model } from "mongoose";
-import { Tenant } from "../tenants/schemas/tenant.schema";
-import { CreateClientDto } from "./dto/CreateClient.dto";
+import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
+import { CreateClientDto } from "../dto/CreateClient.dto";
+import { Client } from "../schemas/client.schema";
+
 
 @Injectable()
 export class ClientsService {

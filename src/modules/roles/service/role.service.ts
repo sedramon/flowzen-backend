@@ -1,11 +1,12 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Role } from "./schemas/role.schema";
+
 import { isValidObjectId, Model, Schema as MongooseSchema, Types } from "mongoose";
-import { CreateRoleDto } from "./schemas/dto/CreateRole.dto";
-import { Scope } from "../scopes/schemas/scope.schema";
-import { Tenant } from "../tenants/schemas/tenant.schema";
-import { UpdateRoleDto } from "./schemas/dto/UpdateRole.dto";
+import { UpdateRoleDto } from "../dto/UpdateRole.dto";
+import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
+import { Scope } from "src/modules/scopes/schemas/scope.schema";
+import { CreateRoleDto } from "../dto/CreateRole.dto";
+import { Role } from "../schemas/role.schema";
 
 @Injectable()
 export class RoleService {

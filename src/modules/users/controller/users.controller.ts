@@ -1,10 +1,10 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, UseGuards, Patch } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { User } from './schemas/user.schema';
-import { CreateUserDto } from './dto/CreateUser.dto';
+import { User } from '../schemas/user.schema';
+import { CreateUserDto } from '../dto/CreateUser.dto';
 import mongoose from 'mongoose';
-import { JwtAuthGuard } from '../auth/auth.guard';
-import { UpdateUserDtoNameAndRole } from './dto/UpdateUser.dto';
+import { JwtAuthGuard } from '../../auth/auth.guard';
+import { UpdateUserDtoNameAndRole } from '../dto/UpdateUser.dto';
+import { UsersService } from '../service/users.service';
 
 @Controller('users')
 export class UsersController {

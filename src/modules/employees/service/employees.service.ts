@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Employee } from "./schema/employee.schema";
+import { Employee } from "../schema/employee.schema";
 import { isValidObjectId, Model } from "mongoose";
-import { CreateEmployeeDto } from "./dto/CreateEmployee.dto";
-import { Tenant } from "../tenants/schemas/tenant.schema";
+import { CreateEmployeeDto } from "../dto/CreateEmployee.dto";
+import { Tenant } from "../../tenants/schemas/tenant.schema";
 
 
 @Injectable()

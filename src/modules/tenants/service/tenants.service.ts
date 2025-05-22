@@ -1,10 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Tenant } from "./schemas/tenant.schema";
 import { Model } from "mongoose";
-import { CreateTenantDto } from "./dto/CreateTenant.dto";
-import { UpdateTenantLicenseDto } from "./dto/UpdateTenantLicense.dto";
-import { NotFoundError } from "rxjs";
+import { CreateTenantDto } from "../dto/CreateTenant.dto";
+import { UpdateTenantLicenseDto } from "../dto/UpdateTenantLicense.dto";
+import { Tenant } from "../schemas/tenant.schema";
 
 @Injectable()
 export class TenantsService {

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+
 import * as bcrypt from 'bcrypt';
 import { User } from '../users/schemas/user.schema';
+import { UsersService } from '../users/service/users.service';
 
 @Injectable()
 export class AuthService {

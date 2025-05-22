@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Scope } from "./schemas/scope.schema";
+import { Scope } from "../schemas/scope.schema";
 
 @Injectable()
 export class ScopesService {

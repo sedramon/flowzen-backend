@@ -1,8 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
-import { TenantsService } from "./tenants.service";
-import { CreateTenantDto } from "./dto/CreateTenant.dto";
-import { Tenant } from "./schemas/tenant.schema";
-import { UpdateTenantLicenseDto } from "./dto/UpdateTenantLicense.dto";
+import { CreateTenantDto } from "../dto/CreateTenant.dto";
+import { UpdateTenantLicenseDto } from "../dto/UpdateTenantLicense.dto";
+import { Tenant } from "../schemas/tenant.schema";
+import { TenantsService } from "../service/tenants.service";
+
 
 @Controller('tenants')
 export class TenantsController {

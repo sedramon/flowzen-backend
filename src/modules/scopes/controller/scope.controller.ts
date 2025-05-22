@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
-import { ScopesService } from "./scopes.service";
-import { Scope } from "./schemas/scope.schema";
+import { Scope } from "../schemas/scope.schema";
+import { ScopesService } from "../service/scopes.service";
+
 
 @Controller('scopes')
 export class ScopesController {

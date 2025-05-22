@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Post, Put, UseInterceptors, UploadedFile, Query } from "@nestjs/common";
-import { EmployeeService } from "./employees.service";
-import { CreateEmployeeDto } from "./dto/CreateEmployee.dto";
-import { Employee } from "./schema/employee.schema";
+
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+import { CreateEmployeeDto } from "../dto/CreateEmployee.dto";
+import { Employee } from "../schema/employee.schema";
+import { EmployeeService } from "../service/employees.service";
 
 @Controller('employees')
 export class EmployeesController {
