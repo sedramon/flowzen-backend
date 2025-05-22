@@ -13,17 +13,16 @@ export class AppointmentsService {
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
     return this.appointmentModel.create({
       ...createAppointmentDto,
-      serviceId: new Types.ObjectId(createAppointmentDto.serviceId),
-      userId: new Types.ObjectId(createAppointmentDto.userId),
+      employeeId: new Types.ObjectId(createAppointmentDto.employeeId)
     });
   }
 
   async findOne(id: string): Promise<Appointment> {
-    return this.appointmentModel.findById(id).populate('service').populate('user').exec();
+    return this.appointmentModel.findById(id).populate('employeeId').exec();
   }
   
   async findAll(): Promise<Appointment[]> {
-    return this.appointmentModel.find().populate('service').populate('user').exec();
+    return this.appointmentModel.find().populate('employeeId').exec();
   }
   
 }

@@ -1,14 +1,15 @@
-import { IsDate, IsMongoId } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsDateString, IsMongoId, IsString } from 'class-validator';
 
 export class CreateAppointmentDto {
-  @IsMongoId() 
-  serviceId: string;
-
   @IsMongoId()
-  userId: string;
+  employeeId: string;
 
-  @Type(() => Date)
-  @IsDate()
-  date: Date;
+  @IsString()
+  serviceName: string;
+
+  @IsDateString()
+  date: string;
+
+  startHour: number;
+  endHour: number;
 }
