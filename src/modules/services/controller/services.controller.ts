@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Get, Param, Delete } from '@nestjs/common';
-import { CreateServiceDto } from '../dto/create-service.dto';
+import { Controller, Post, Body, Get, Param, Delete, Query } from '@nestjs/common';
+import { CreateServiceDto } from '../dto/CreateService.dto';
 import { Service } from '../schemas/service.schema';
 import { ServicesService } from '../service/services.service';
 
@@ -18,8 +18,8 @@ export class ServicesController {
   }
 
   @Get()
-  async findAll(): Promise<Service[]> {
-    return this.servicesService.findAll();
+  async findAll(@Query('tenant') tenantId?: string): Promise<Service[]> {
+    return this.servicesService.findAll(tenantId);
   }
 
   @Delete(':id')

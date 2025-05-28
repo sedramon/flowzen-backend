@@ -36,7 +36,7 @@ export class Employee extends Document {
     tenant: Tenant;
 
     @Prop()
-    avatarUrl: string;
+    avatarUrl?: string;
 
     @Prop({ type: [String]})
     workingDays: string[];
