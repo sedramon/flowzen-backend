@@ -18,11 +18,11 @@ export class AppointmentsService {
   }
 
   async findOne(id: string): Promise<Appointment> {
-    return this.appointmentModel.findById(id).populate('employeeId').exec();
+    return this.appointmentModel.findById(id).populate('employee').exec();
   }
   
   async findAll(): Promise<Appointment[]> {
-    return this.appointmentModel.find().populate('employeeId').exec();
+    return this.appointmentModel.find().populate('employee').exec();
   }
   
 }
