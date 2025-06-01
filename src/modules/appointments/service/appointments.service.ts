@@ -25,4 +25,15 @@ export class AppointmentsService {
     return this.appointmentModel.find().populate('employee').exec();
   }
   
+  async update(id: string, updateAppointmentDto: Partial<CreateAppointmentDto>): Promise<Appointment> {
+    return this.appointmentModel.findByIdAndUpdate(
+      id,
+      updateAppointmentDto,
+      { new: true }
+    ).populate('employee').exec();
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.appointmentModel.findByIdAndDelete(id).exec();
+  }
 }
