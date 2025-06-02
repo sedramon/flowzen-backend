@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Query, Put } from '@nestjs/common';
 import { CreateServiceDto } from '../dto/CreateService.dto';
 import { Service } from '../schemas/service.schema';
 import { ServicesService } from '../service/services.service';
+import { UpdateServiceDto } from '../dto/UpdateService.dto';
 
 @Controller('services')
 export class ServicesController {
@@ -26,5 +27,10 @@ export class ServicesController {
   async delete(@Param('id') id: string): Promise<{ message: string }> {
     await this.servicesService.delete(id);
     return { message: 'Service deleted successfully' };
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) : Promise<Service> {
+    return this.servicesService.update(id, updateServiceDto);
   }
 }
