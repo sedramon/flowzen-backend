@@ -64,4 +64,8 @@ export class EmployeeService {
     async findOne(id: string): Promise<Employee> {
         return this.employeeModel.findById(id).exec();
     }
+
+    async delete(id: string): Promise<void> {
+        await this.employeeModel.findByIdAndDelete(id).exec();
+    }
 }

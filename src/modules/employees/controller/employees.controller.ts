@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseInterceptors, UploadedFile, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put, UseInterceptors, UploadedFile, Query, Delete } from "@nestjs/common";
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -53,5 +53,10 @@ export class EmployeesController {
     )
     uploadAvatar(@UploadedFile() file: Express.Multer.File) {
       return { url: `/uploads/avatars/${file.filename}` };
+    }
+
+    @Delete(':id')
+    async delete(@Param('id') id: string): Promise<void> {
+        return await this.employeeService.delete(id);
     }
 }
