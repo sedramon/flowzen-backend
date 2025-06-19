@@ -11,10 +11,21 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ServicesModule } from './modules/services/services.module';
 import { EmployeeModule } from './modules/employees/employees.module';
 import { ClientsModule } from './modules/clients/clients.module';
+import { FacilityModule } from './modules/facility/facility.module';
 
 @Module({
   imports: [
-    DatabaseModule, UsersModule, AuthModule, ScopeModule, RolesModule, TenantsModule, AppointmentsModule, ServicesModule, EmployeeModule, ClientsModule
+    DatabaseModule,
+    UsersModule,
+    AuthModule,
+    ScopeModule,
+    RolesModule,
+    TenantsModule,
+    AppointmentsModule,
+    ServicesModule,
+    EmployeeModule,
+    ClientsModule,
+    FacilityModule
   ],
   controllers: [AppController],
   providers: [AppService],
