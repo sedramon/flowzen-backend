@@ -12,6 +12,7 @@ import { ServicesModule } from './modules/services/services.module';
 import { EmployeeModule } from './modules/employees/employees.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { FacilityModule } from './modules/facility/facility.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -25,7 +26,11 @@ import { FacilityModule } from './modules/facility/facility.module';
     ServicesModule,
     EmployeeModule,
     ClientsModule,
-    FacilityModule
+    FacilityModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env'
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

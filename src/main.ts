@@ -5,20 +5,27 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // pull in your env vars
+  const config = app.get(ConfigService);
+  const port = config.get<number>('PORT', 3000);
+  const frontend = config.get<string>('FRONTEND_URL');
+
   app.useGlobalPipes(new ValidationPipe());
+
   app.enableCors({
-    origin: [
-      'http://localhost:4200',
-      'https://your-vercel-app.vercel.app'
-    ],
-    credentials: true
+    origin: [frontend],
+    credentials: true,
   });
-  app.useStaticAssets(join(process.cwd(), 'uploads'), {  // ili join(__dirname, '..', 'uploads')
-    prefix: '/uploads',           // <-- ruta mora da se poklapa s onim što frontend traži
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    // ili join(__dirname, '..', 'uploads')
+    prefix: '/uploads', // <-- ruta mora da se poklapa s onim što frontend traži
   });
-  await app.listen(process.env.PORT ?? 3000);
+  
+  await app.listen(port);
 }
 bootstrap();
