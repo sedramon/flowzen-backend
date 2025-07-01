@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
-    origin: [frontend],
+    origin: [frontend, 'http://localhost:4200'],
     credentials: true,
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), {

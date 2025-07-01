@@ -13,6 +13,8 @@ import { EmployeeModule } from './modules/employees/employees.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { FacilityModule } from './modules/facility/facility.module';
 import { ConfigModule } from '@nestjs/config';
+import { ShiftModule } from './modules/shifts/shifts.module';
+import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { ConfigModule } from '@nestjs/config';
     EmployeeModule,
     ClientsModule,
     FacilityModule,
+    WorkingShiftsModule,
+    ShiftModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'
