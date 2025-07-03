@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema()
 export class Shift {
-  @Prop({ required: true })
-  tenantId: string;
+  @Prop({ type: Types.ObjectId, required: true, ref: 'Tenant' })
+  tenantId: Types.ObjectId;
 
   @Prop({ type: String, enum: ['morning', 'afternoon', 'evening', 'full', 'custom'], required: true })
   value: string; // enum

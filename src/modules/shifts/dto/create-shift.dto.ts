@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty, IsOptional, IsIn, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsIn, IsNumber, IsMongoId } from 'class-validator';
 
 export class CreateShiftDto {
-  @IsString()
+  @IsMongoId()
   @IsNotEmpty()
   tenantId: string;
 

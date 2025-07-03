@@ -7,10 +7,16 @@ import * as path from 'path';
 import { CreateEmployeeDto } from "../dto/CreateEmployee.dto";
 import { Employee } from "../schema/employee.schema";
 import { EmployeeService } from "../service/employees.service";
+import { InjectModel } from "@nestjs/mongoose";
+import { WorkingShift } from "src/modules/working-shifts/schemas/working-shift.schema";
+import { Model, Types } from "mongoose";
 
 @Controller('employees')
 export class EmployeesController {
-    constructor(private readonly employeeService: EmployeeService) {}
+    constructor(
+      private readonly employeeService: EmployeeService, 
+      @InjectModel(WorkingShift.name) private workingShiftModel: Model<WorkingShift>
+    ) {}
 
     @Post()
     async create(@Body() createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
@@ -20,6 +26,40 @@ export class EmployeesController {
     @Put(':id')
     async update(@Param('id') id: string, @Body() createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
         return await this.employeeService.update(id, createEmployeeDto);
+    }
+
+    @Get('with-working-shift')
+    async getEmployeesWithWorkingShift(
+      @Query('tenant') tenant: string,
+      @Query('date') date: string
+    ) {
+      const employees = await this.employeeService.findAll(tenant).then(list =>
+        list.map(e => (e.toObject ? e.toObject() : e))
+      );
+
+      const results = await Promise.all(
+        employees.map(async emp => {
+          const ws = await this.workingShiftModel.findOne({
+            employeeId: Types.ObjectId.createFromHexString(emp._id.toString()),
+            tenantId: Types.ObjectId.createFromHexString(tenant.toString()),
+            date
+          }).lean();
+          return {
+            ...emp,
+            workingShift: ws
+              ? {
+                  date: ws.date,
+                  shiftType: ws.shiftType,
+                  startHour: ws.startHour,
+                  endHour: ws.endHour,
+                  note: ws.note
+                }
+              : null
+          };
+        })
+      );
+
+      return results;
     }
 
     @Get()

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Shift, ShiftSchema } from './schemas/shift.schema';
-import { ShiftController } from './controller/controller.controller';
+import { ShiftController } from './controller/shifts.controller';
 import { ShiftService } from './service/shifts.service';
 
 @Module({
