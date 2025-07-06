@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { CreateTenantDto } from "../dto/CreateTenant.dto";
 import { UpdateTenantLicenseDto } from "../dto/UpdateTenantLicense.dto";
 import { Tenant } from "../schemas/tenant.schema";

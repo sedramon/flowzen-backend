@@ -31,7 +31,7 @@ export class AuthService {
   
 
   async login(user: any) {
-    // Include roles and scopes in the payload
+
     const payload = {
       username: user.name,
       sub: user._id,

@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Facility } from '../schema/facility.schema';
 import { isValidObjectId, Model } from 'mongoose';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { CreateFacilityDto } from '../dto/CreateFacility.dto';
+import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
 
 @Injectable()
 export class FacilityService {

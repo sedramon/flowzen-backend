@@ -1,10 +1,18 @@
 import { Module } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 
 @Module({
     imports: [
-      MongooseModule.forRoot('mongodb+srv://aljosagadjanskibozic:Kikiriki1231@flowzen.f4fxw.mongodb.net/flowzen?retryWrites=true&w=majority&appName=Flowzen'),
-    ],
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('MONGODB_URI'),
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }),
+    }),
+  ],
     exports: [MongooseModule],
   })
   export class DatabaseModule {}

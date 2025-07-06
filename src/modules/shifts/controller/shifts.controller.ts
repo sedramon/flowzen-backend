@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query, UseGuards } from '@nestjs/common';
 import { CreateShiftDto } from '../dto/create-shift.dto';
 import { UpdateShiftDto } from '../dto/update-shift.dto';
 import { ShiftService } from '../service/shifts.service';
+import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
 
 @Controller('shifts')
+@UseGuards(JwtAuthGuard)
 export class ShiftController {
   constructor(private readonly service: ShiftService) {}
 
