@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
+import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { Appointment } from '../schemas/appointment.schema';
 
 @Injectable()
@@ -13,7 +14,8 @@ export class AppointmentsService {
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
     return this.appointmentModel.create({
       ...createAppointmentDto,
-      employeeId: new Types.ObjectId(createAppointmentDto.employeeId)
+      employeeId: new Types.ObjectId(createAppointmentDto.employeeId),
+      tenantId: new Types.ObjectId(createAppointmentDto.tenantId),
     });
   }
 
@@ -24,11 +26,32 @@ export class AppointmentsService {
   async findAll(): Promise<Appointment[]> {
     return this.appointmentModel.find().populate('employee').exec();
   }
+
+  async findAllByTenant(tenantId: string): Promise<Appointment[]> {
+    return this.appointmentModel
+      .find({ tenantId: new Types.ObjectId(tenantId) })
+      .populate('employee')
+      .exec();
+  }
+
+  async findOneByTenant(id: string, tenantId: string): Promise<Appointment | null> {
+    return this.appointmentModel
+      .findOne({ _id: id, tenantId: new Types.ObjectId(tenantId) })
+      .populate('employee')
+      .exec();
+  }
   
-  async update(id: string, updateAppointmentDto: Partial<CreateAppointmentDto>): Promise<Appointment> {
+  async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+    const updateData: any = { ...updateAppointmentDto };
+    if (updateAppointmentDto.tenantId) {
+      updateData.tenantId = new Types.ObjectId(updateAppointmentDto.tenantId);
+    }
+    if (updateAppointmentDto.employeeId) {
+      updateData.employeeId = new Types.ObjectId(updateAppointmentDto.employeeId);
+    }
     return this.appointmentModel.findByIdAndUpdate(
       id,
-      updateAppointmentDto,
+      updateData,
       { new: true }
     ).populate('employee').exec();
   }
