@@ -43,8 +43,4 @@ export class CreateEmployeeDto {
         // @IsString()
         avatarUrl: string;
 
-        @IsArray()
-        @IsString({ each: true })
-        @IsNotEmpty({ each: true })
-        workingDays: string[]; // npr. ['2025-05-16', '2025-05-18']
 }

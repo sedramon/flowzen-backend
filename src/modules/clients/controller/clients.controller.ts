@@ -5,22 +5,23 @@ import { ClientsService } from "../service/clients.service";
 import { JwtAuthGuard } from "src/modules/auth/auth.guard";
 import { ScopesGuard } from "src/modules/auth/scopes.guard";
 import { Scopes } from "src/modules/auth/scopes.decorator";
+import { FilterClientsDto } from "../dto/filter-clients.dto";
 
 @Controller('clients')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class ClientsController {
-    constructor(private readonly clientsService: ClientsService) {}
+    constructor(private readonly clientsService: ClientsService) { }
 
     @Scopes('scope_clients:create')
     @Post()
-    async createClient(@Body() createClientDto: CreateClientDto) : Promise<Client> {
+    async createClient(@Body() createClientDto: CreateClientDto): Promise<Client> {
         return await this.clientsService.create(createClientDto);
     }
 
     @Scopes('scope_clients:read')
     @Get()
-    async findAll(@Query('tenant') tenantId?: string): Promise<Client[]> {
-        return await this.clientsService.findAll(tenantId);
+    async findAll(@Query() qs: FilterClientsDto) {
+        return await this.clientsService.findAll(qs);
     }
 
     @Scopes('scope_clients:read')

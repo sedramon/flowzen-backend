@@ -38,8 +38,6 @@ export class Employee extends Document {
     @Prop()
     avatarUrl?: string;
 
-    @Prop({ type: [String]})
-    workingDays: string[];
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date
