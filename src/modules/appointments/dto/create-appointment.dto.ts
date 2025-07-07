@@ -4,6 +4,9 @@ export class CreateAppointmentDto {
   @IsMongoId()
   employeeId: string;
 
+  @IsMongoId()
+  tenantId: string;
+
   @IsString()
   serviceName: string;
 

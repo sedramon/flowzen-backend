@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
+import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { Appointment } from '../schemas/appointment.schema';
 import { AppointmentsService } from '../service/appointments.service';
 import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
@@ -19,21 +20,26 @@ export class AppointmentsController {
 
   @Scopes('scope_appoitments:read')
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Appointment> {
-    return this.appointmentsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @Query('tenantId') tenantId: string
+  ): Promise<Appointment> {
+    if (!tenantId) throw new BadRequestException('tenantId is required');
+    return this.appointmentsService.findOneByTenant(id, tenantId);
   }
 
   @Scopes('scope_appoitments:read')
   @Get()
-  async findAll(): Promise<Appointment[]> {
-    return this.appointmentsService.findAll();
+  async findAll(@Query('tenantId') tenantId: string): Promise<Appointment[]> {
+    if (!tenantId) throw new BadRequestException('tenantId is required');
+    return this.appointmentsService.findAllByTenant(tenantId);
   }
 
   @Scopes('scope_appoitments:update')
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateAppointmentDto: Partial<CreateAppointmentDto>
+    @Body() updateAppointmentDto: UpdateAppointmentDto
   ): Promise<Appointment> {
     return this.appointmentsService.update(id, updateAppointmentDto);
   }

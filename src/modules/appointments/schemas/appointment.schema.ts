@@ -6,6 +6,9 @@ export class Appointment extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Employee', required: true })
   employeeId: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true })
+  tenantId: Types.ObjectId;
+
   @Prop({ required: true })
   startHour: number;
 
