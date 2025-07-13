@@ -15,6 +15,7 @@ import { FacilityModule } from './modules/facility/facility.module';
 import { ConfigModule } from '@nestjs/config';
 import { ShiftModule } from './modules/shifts/shifts.module';
 import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.module';
+import { HealthController } from './modules/health/health.controller';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.mod
       envFilePath: '.env'
     })
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService],
 })
 export class AppModule {}
