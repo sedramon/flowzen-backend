@@ -25,6 +25,12 @@ export class ClientsController {
     }
 
     @Scopes('scope_clients:read')
+    @Get('all')
+    async findAllData(@Query('tenant') tenantId: string) {
+        return await this.clientsService.findAllData(tenantId);
+    }
+
+    @Scopes('scope_clients:read')
     @Get(':id')
     async findOne(@Param('id') id: string): Promise<Client> {
         return await this.clientsService.findOne(id);
@@ -41,5 +47,6 @@ export class ClientsController {
     async update(@Param('id') id: string, @Body() createClientDto: CreateClientDto): Promise<Client> {
         return await this.clientsService.update(id, createClientDto);
     }
+
 
 }

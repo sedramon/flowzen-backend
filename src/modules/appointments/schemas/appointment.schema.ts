@@ -1,13 +1,20 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
+import { Document, Query, Types, Schema as MongooseSchema } from 'mongoose';
+import { Client } from 'src/modules/clients/schemas/client.schema';
+import { Employee } from 'src/modules/employees/schema/employee.schema';
+import { Service } from 'src/modules/services/schemas/service.schema';
+import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 
-@Schema()
-export class Appointment extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'Employee', required: true })
-  employeeId: Types.ObjectId;
+@Schema({timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform }})
+export class Appointment {
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Employee', required: true })
+  employee: Employee;
 
-  @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true })
-  tenantId: Types.ObjectId;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Client', required: true})
+  client: Client;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
+  tenant: Tenant;
 
   @Prop({ required: true })
   startHour: number;
@@ -15,28 +22,75 @@ export class Appointment extends Document {
   @Prop({ required: true })
   endHour: number;
 
-  @Prop({ required: true })
-  serviceName: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Service', required: true})
+  service: Service;
 
   @Prop({ required: true })
   date: string;
 
-  // Virtual property for populated employee
-  employee?: any;
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
+
 }
 
-export const AppointmentSchema = SchemaFactory.createForClass(Appointment);
+const AppointmentSchema = SchemaFactory.createForClass(Appointment);
 
-// Add this line to remove 'id' virtual
-AppointmentSchema.set('id', false);
-
-// Add virtual for employee
-AppointmentSchema.virtual('employee', {
-  ref: 'Employee',
-  localField: 'employeeId',
-  foreignField: '_id',
-  justOne: true,
+AppointmentSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('tenant');
+  next();
 });
 
-AppointmentSchema.set('toObject', { virtuals: true });
-AppointmentSchema.set('toJSON', { virtuals: true });
+AppointmentSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('tenant');
+  next();
+});
+
+AppointmentSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('client');
+  next();
+});
+
+AppointmentSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('client');
+  next();
+});
+
+AppointmentSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('employee');
+  next();
+});
+
+AppointmentSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('employee');
+  next();
+});
+
+
+AppointmentSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('service');
+  next();
+});
+
+
+AppointmentSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('service');
+  next();
+});
+
+function docToJsonTransform(doc: any, ret:any) {
+  ret.id = ret._id;
+  delete ret._id;
+  return ret;
+}
+
+
+
+export { AppointmentSchema }

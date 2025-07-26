@@ -1,13 +1,36 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateAppointmentDto } from './create-appointment.dto';
-import { IsMongoId, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+} from 'class-validator';
 
-export class UpdateAppointmentDto extends PartialType(CreateAppointmentDto) {
-  @IsOptional()
+export class UpdateAppointmentDto {
   @IsMongoId()
-  employeeId?: string;
+  @IsNotEmpty()
+  employee: string;
 
-  @IsOptional()
   @IsMongoId()
-  tenantId?: string;
+  @IsNotEmpty()
+  client: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  tenant: string;
+
+  @IsMongoId()
+  @IsNotEmpty()
+  service: string;
+
+  @IsDateString()
+  @IsNotEmpty()
+  date: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  startHour: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  endHour: number;
 }

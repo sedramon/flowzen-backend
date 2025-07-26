@@ -16,6 +16,6 @@ import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/work
     ],
     controllers: [EmployeesController],
     providers: [EmployeeService],
-    exports: []
+    exports: [MongooseModule]
 })
 export class EmployeeModule{}

@@ -10,6 +10,6 @@ import { ClientsService } from "./service/clients.service";
     imports: [MongooseModule.forFeature([{name: 'Client', schema: ClientsSchema}]), TenantsModule],
     controllers: [ClientsController],
     providers: [ClientsService],
-    exports: []
+    exports: [MongooseModule]
 })
 export class ClientsModule {}
