@@ -19,12 +19,12 @@ export class ScopesGuard implements CanActivate {
         const req = context.switchToHttp().getRequest();
         const user = req.user;
 
-        const rawScopes: any[] = user?.role?.availableScopes || [];
-        const userScopeNames = rawScopes.map((scope) => scope.name);
+        const userScopeNames: string[] = user?.scopes || [];
 
         const missing = requiredScopes.filter(
             (scope) => !userScopeNames.includes(scope),
         );
+
         if (missing.length) {
             throw new ForbiddenException(
                 `Missing required scopes: ${missing.join(', ')}`,
@@ -33,4 +33,5 @@ export class ScopesGuard implements CanActivate {
 
         return true;
     }
+
 }

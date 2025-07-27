@@ -16,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ShiftModule } from './modules/shifts/shifts.module';
 import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.module';
 import { HealthController } from './modules/health/health.controller';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HealthController } from './modules/health/health.controller';
     FacilityModule,
     WorkingShiftsModule,
     ShiftModule,
+    SuppliersModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env'

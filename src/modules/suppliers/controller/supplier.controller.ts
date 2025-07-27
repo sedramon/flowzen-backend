@@ -1,0 +1,40 @@
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { SuppliersService } from "../service/supplier.service";
+import { JwtAuthGuard } from "src/modules/auth/auth.guard";
+import { ScopesGuard } from "src/modules/auth/scopes.guard";
+import { Scopes } from "src/modules/auth/scopes.decorator";
+import { CreateSupplierDto } from "../dto/CreateSupplier.dto";
+import { Supplier } from "../schema/supplier.schema";
+import { Scope } from "src/modules/scopes/schemas/scope.schema";
+
+@Controller('suppliers')
+@UseGuards(JwtAuthGuard, ScopesGuard)
+export class SupplierController {
+    constructor(
+        private readonly supplierService: SuppliersService
+    ) {}
+
+    @Scopes('scope_suppliers:create')
+    @Post()
+    async create(@Body() createSupplierDto: CreateSupplierDto): Promise<Supplier> {
+        return await this.supplierService.create(createSupplierDto);
+    }
+
+    @Scopes('scope_suppliers:read')
+    @Get()
+    async findAll(@Query('tenant') tenantId?: string): Promise<Supplier[]> {
+        return await this.supplierService.findAll(tenantId);
+    }
+
+    @Scopes('scope_suppliers:read')
+    @Get(':id')
+    async findOne(@Param('id') id: string): Promise<Supplier> {
+        return await this.supplierService.findOne(id);
+    }
+
+    @Scopes('scope_suppliers:update')
+    @Post(':id')
+    async update(@Param('id') id: string, @Body() updateSupplierDto: CreateSupplierDto): Promise<Supplier> {
+        return await this.supplierService.update(id, updateSupplierDto);
+    }
+}

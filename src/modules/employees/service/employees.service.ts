@@ -58,7 +58,7 @@ export class EmployeeService {
         if (!isValidObjectId(tenantId)) {
             throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
         }
-        return this.employeeModel.find().exec();
+        return this.employeeModel.find({tenant: tenantId}).exec();
     }
 
     async findOne(id: string): Promise<Employee> {

@@ -31,11 +31,14 @@ export class AuthService {
   
 
   async login(user: any) {
+    const roleId = user.role?._id || user.role;
+    const scopes = user.role?.availableScopes.map((scope) => scope.name) || [];
 
     const payload = {
       username: user.name,
       sub: user._id,
-      role: user.role,
+      role: roleId,
+      scopes,
       tenant: user.tenant._id
     };
   
