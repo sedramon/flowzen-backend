@@ -6,8 +6,10 @@ import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
 import { ScopesGuard } from 'src/modules/auth/scopes.guard';
 import { Scope } from 'src/modules/scopes/schemas/scope.schema';
 import { Scopes } from 'src/modules/auth/scopes.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('working-shifts')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class WorkingShiftsController {
   constructor(private readonly service: WorkingShiftService) {}

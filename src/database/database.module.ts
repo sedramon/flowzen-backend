@@ -10,8 +10,6 @@ import { DataSource } from 'typeorm';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>('MONGODB_URI'),
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       }),
     }),
     TypeOrmModule.forRootAsync({

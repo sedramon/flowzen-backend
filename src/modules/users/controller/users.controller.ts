@@ -7,8 +7,10 @@ import { UpdateUserDtoNameAndRole } from '../dto/UpdateUser.dto';
 import { UsersService } from '../service/users.service';
 import { Scopes } from 'src/modules/auth/scopes.decorator';
 import { ScopesGuard } from 'src/modules/auth/scopes.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }

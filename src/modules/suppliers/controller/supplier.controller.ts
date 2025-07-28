@@ -6,8 +6,10 @@ import { Scopes } from "src/modules/auth/scopes.decorator";
 import { CreateSupplierDto } from "../dto/CreateSupplier.dto";
 import { Supplier } from "../schema/supplier.schema";
 import { Scope } from "src/modules/scopes/schemas/scope.schema";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('suppliers')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class SupplierController {
     constructor(

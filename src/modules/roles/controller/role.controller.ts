@@ -6,8 +6,10 @@ import { RoleService } from "../service/role.service";
 import { JwtAuthGuard } from "src/modules/auth/auth.guard";
 import { ScopesGuard } from "src/modules/auth/scopes.guard";
 import { Scopes } from "src/modules/auth/scopes.decorator";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('roles')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class RolesController {
     constructor(private readonly roleService: RoleService) {}

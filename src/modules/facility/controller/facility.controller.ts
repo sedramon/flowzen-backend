@@ -15,8 +15,10 @@ import { CreateFacilityDto } from '../dto/CreateFacility.dto';
 import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
 import { ScopesGuard } from 'src/modules/auth/scopes.guard';
 import { Scopes } from 'src/modules/auth/scopes.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('facility')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class FacilityController {
   constructor(private readonly facilityService: FacilityService) {}

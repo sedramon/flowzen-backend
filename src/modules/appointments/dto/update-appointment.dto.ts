@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsMongoId,
@@ -6,31 +7,38 @@ import {
 } from 'class-validator';
 
 export class UpdateAppointmentDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  employee: string;
-
-  @IsMongoId()
-  @IsNotEmpty()
-  client: string;
-
-  @IsMongoId()
-  @IsNotEmpty()
-  tenant: string;
-
-  @IsMongoId()
-  @IsNotEmpty()
-  service: string;
-
-  @IsDateString()
-  @IsNotEmpty()
-  date: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  startHour: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  endHour: number;
+  @ApiProperty({ description: 'ID of the employee' })
+    @IsMongoId()
+    @IsNotEmpty()
+    employee: string;
+  
+    @ApiProperty({ description: 'ID of the client' })
+    @IsMongoId()
+    @IsNotEmpty()
+    client: string;
+  
+    @ApiProperty({ description: 'ID of the tenant' })
+    @IsMongoId()
+    @IsNotEmpty()
+    tenant: string;
+  
+    @ApiProperty({ description: 'ID of the service' })
+    @IsMongoId()
+    @IsNotEmpty()
+    service: string;
+  
+    @ApiProperty({ description: 'Appointment date (ISO string)' })
+    @IsDateString()
+    @IsNotEmpty()
+    date: string;
+  
+    @ApiProperty({ description: 'Appointment start time (number)' })
+    @IsNumber()
+    @IsNotEmpty()
+    startHour: number;
+  
+    @ApiProperty({ description: 'Appointment start time (number)' })
+    @IsNumber()
+    @IsNotEmpty()
+    endHour: number;
 }

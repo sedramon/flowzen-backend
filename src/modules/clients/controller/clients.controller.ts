@@ -6,8 +6,10 @@ import { JwtAuthGuard } from "src/modules/auth/auth.guard";
 import { ScopesGuard } from "src/modules/auth/scopes.guard";
 import { Scopes } from "src/modules/auth/scopes.decorator";
 import { FilterClientsDto } from "../dto/filter-clients.dto";
+import { ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('clients')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class ClientsController {
     constructor(private readonly clientsService: ClientsService) { }

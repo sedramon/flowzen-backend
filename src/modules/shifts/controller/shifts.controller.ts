@@ -3,8 +3,10 @@ import { CreateShiftDto } from '../dto/create-shift.dto';
 import { UpdateShiftDto } from '../dto/update-shift.dto';
 import { ShiftService } from '../service/shifts.service';
 import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('shifts')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 export class ShiftController {
   constructor(private readonly service: ShiftService) {}

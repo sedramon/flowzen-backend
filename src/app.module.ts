@@ -17,6 +17,7 @@ import { ShiftModule } from './modules/shifts/shifts.module';
 import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.module';
 import { HealthController } from './modules/health/health.controller';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { envSchema } from './config/env.schema';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
     SuppliersModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      envFilePath: '.env',
+      validationSchema: envSchema
     })
   ],
   controllers: [AppController, HealthController],
