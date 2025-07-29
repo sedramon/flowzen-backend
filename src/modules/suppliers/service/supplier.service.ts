@@ -5,19 +5,28 @@ import { isValidObjectId, Model } from "mongoose";
 import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 import { CreateSupplierDto } from "../dto/CreateSupplier.dto";
 import { UpdateSupplierDto } from "../dto/UpdateSupplier.dto";
+import { PinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class SuppliersService {
     constructor(
         @InjectModel(Supplier.name) private readonly supplierModel: Model<Supplier>,
         @InjectModel(Tenant.name) private readonly tenantModel: Model<Tenant>,
-    ) {}
+        private readonly logger: PinoLogger
+    ) {
+        this.logger.setContext(SuppliersService.name)
+    }
 
     async findAll(tenantId: string): Promise<Supplier[]> {
+        this.logger.debug({tenantId}, 'Finding all suppliers for tenant')
         if(!isValidObjectId(tenantId)){
+            this.logger.warn({tenantId}, 'Invalid tenant ID supplied to findAll')
             throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
         }
-        return this.supplierModel.find({tenant: tenantId}).exec();
+
+        const suppliers = await this.supplierModel.find({tenant: tenantId}).exec();
+        this.logger.info({count: suppliers.length}, 'Retrieved suppliers')
+        return suppliers;
     }
 
     async delete(id: string): Promise<void> {

@@ -18,6 +18,7 @@ import { WorkingShiftsModule } from './modules/working-shifts/working-shifts.mod
 import { HealthController } from './modules/health/health.controller';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { envSchema } from './config/env.schema';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -39,9 +40,42 @@ import { envSchema } from './config/env.schema';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema: envSchema
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.LOG_LEVEL || 'info',
+        // in dev, run logs through pino-pretty
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+              target: 'pino-pretty',
+              options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+              },
+            }
+            : undefined,
+        serializers: {
+          req: (req) => ({
+            id: (req as any).id,
+            method: req.method,
+            url: req.url,
+            params: req.params,
+            query: req.query,
+            headers: {
+              'x-request-id': req.headers['x-request-id'] as string,
+              host: req.headers['host'] as string,
+            },
+            remoteAddress: (req as any).remoteAddress,
+            remotePort: (req as any).remotePort,
+          }),
+          res: (res) => ({ statusCode: res.statusCode }),
+          err: (err) => ({ message: err.message, stack: err.stack }),
+        },
+      },
     })
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

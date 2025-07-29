@@ -7,9 +7,23 @@ import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
+import { randomUUID } from 'crypto';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    { bufferLogs: true }
+  );
+
+  app.useLogger(app.get(Logger))
+
+  app.use((req,res,next) => {
+    const id = randomUUID();
+    req.headers['x-request-id'] = id;
+    res.setHeader('X-Request-Id', id);
+    next();
+  })
 
   const config = app.get(ConfigService);
   const port = config.get<number>('PORT');
