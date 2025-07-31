@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { SuppliersService } from "../service/supplier.service";
 import { JwtAuthGuard } from "src/modules/auth/auth.guard";
 import { ScopesGuard } from "src/modules/auth/scopes.guard";
@@ -14,7 +14,7 @@ import { ApiBearerAuth } from "@nestjs/swagger";
 export class SupplierController {
     constructor(
         private readonly supplierService: SuppliersService
-    ) {}
+    ) { }
 
     @Scopes('scope_suppliers:create')
     @Post()
@@ -35,8 +35,15 @@ export class SupplierController {
     }
 
     @Scopes('scope_suppliers:update')
-    @Post(':id')
+    @Put(':id')
     async update(@Param('id') id: string, @Body() updateSupplierDto: CreateSupplierDto): Promise<Supplier> {
         return await this.supplierService.update(id, updateSupplierDto);
+    }
+
+    @Scopes('scope_suppliers:delete')
+    @Delete(':id')
+    async delete(@Param('id') id: string): Promise<{ message: string }> {
+        await this.supplierService.delete(id);
+        return { message: 'Supplier deleted succesfully!' }
     }
 }
