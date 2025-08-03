@@ -1,28 +1,83 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateSupplierDto {
-    @ApiProperty({description: 'Supplier name'})
+    @ApiProperty({ description: 'Supplier name' })
     @IsNotEmpty()
     @IsString()
     name: string;
 
-    @ApiProperty({description: 'Supplier address'})
+    @ApiProperty({ description: 'Supplier address' })
     @IsNotEmpty()
     @IsString()
     address: string;
 
-    @ApiProperty({description: 'Supplier contact phone'})
+    @ApiProperty({ description: 'Supplier city' })
+    @IsNotEmpty()
+    @IsString()
+    city: string;
+
+
+    @ApiProperty({ description: 'Supplier contact phone' })
     @IsNotEmpty()
     @IsString()
     contactPhone: string;
 
-    @ApiProperty({description: 'Supplier contact email'})
+    @ApiProperty({
+        description: 'Supplier contact landline',
+        required: false,
+        nullable: true,
+        example: ''
+    })
+    @IsString()
+    @IsOptional()
+    contactLandline?: string;
+
+    @ApiProperty({ description: 'Supplier contact email' })
     @IsNotEmpty()
     @IsString()
     contactEmail: string;
 
-    @ApiProperty({description: 'Tenant ID'})
+    @ApiProperty({
+        description: 'Supplier contact person',
+        required: false,
+        nullable: true,
+        example: ''
+    })
+    @IsString()
+    @IsOptional()
+    contactPerson?: string;
+
+    @ApiProperty({
+        description: 'Supplier PIB',
+        required: false,
+        nullable: true,
+        example: ''
+    })
+    @IsString()
+    @IsOptional()
+    pib?: string;
+
+    @ApiProperty({
+        description: 'Supplier remark',
+        required: false,
+        nullable: true,
+        example: ''
+    })
+    @IsString()
+    @IsOptional()
+    remark?: string;
+
+    @ApiProperty({
+        description: 'Supplier remark',
+        required: false,
+        default: true
+    })
+    @IsBoolean()
+    @IsOptional()
+    isActive: boolean;
+
+    @ApiProperty({ description: 'Tenant ID' })
     @IsNotEmpty()
     @IsMongoId()
     tenant: string

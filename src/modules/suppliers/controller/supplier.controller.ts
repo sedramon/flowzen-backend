@@ -7,6 +7,7 @@ import { CreateSupplierDto } from "../dto/CreateSupplier.dto";
 import { Supplier } from "../schema/supplier.schema";
 import { Scope } from "src/modules/scopes/schemas/scope.schema";
 import { ApiBearerAuth } from "@nestjs/swagger";
+import { UpdateSupplierDto } from "../dto/UpdateSupplier.dto";
 
 @Controller('suppliers')
 @ApiBearerAuth('access-token')
@@ -36,7 +37,7 @@ export class SupplierController {
 
     @Scopes('scope_suppliers:update')
     @Put(':id')
-    async update(@Param('id') id: string, @Body() updateSupplierDto: CreateSupplierDto): Promise<Supplier> {
+    async update(@Param('id') id: string, @Body() updateSupplierDto: UpdateSupplierDto): Promise<Supplier> {
         return await this.supplierService.update(id, updateSupplierDto);
     }
 
