@@ -1,29 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { CreateSupplierDto } from "./CreateSupplier.dto";
 
-export class UpdateSupplierDto {
-    @ApiProperty({description: 'Supplier name'})
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+export class UpdateSupplierDto extends PartialType(CreateSupplierDto) {
 
-    @ApiProperty({description: 'Supplier address'})
-    @IsNotEmpty()
-    @IsString()
-    address: string;
-
-    @ApiProperty({description: 'Supplier contact phone'})
-    @IsNotEmpty()
-    @IsString()
-    contactPhone: string;
-
-    @ApiProperty({description: 'Supplier contact email'})
-    @IsNotEmpty()
-    @IsString()
-    contactEmail: string;
-
-    @ApiProperty({description: 'Tenant ID'})
-    @IsNotEmpty()
-    @IsMongoId()
-    tenant: string
 }

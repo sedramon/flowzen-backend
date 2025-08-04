@@ -1,40 +1,76 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Query, Types, Schema as MongooseSchema } from 'mongoose';
+import { Types, Schema as MongooseSchema } from 'mongoose';
 import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 
-@Schema({timestamps: true})
+@Schema({ timestamps: true })
 export class Supplier {
-    @Prop({required: true})
-    name: string
+  @Prop({ type: String, required: true, trim: true })
+  name: string
 
-    @Prop({required: true})
-    address: string
+  @Prop({ type: String, required: true, trim: true })
+  address: string;
 
-    @Prop({required: true})
-    contactPhone: string
+  @Prop({ type: String, required: true, trim: true })
+  city: string;
 
-    @Prop({required: true})
-    contactEmail: string
+  @Prop({ type: String, required: true, trim: true })
+  contactPhone: string;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
-    tenant: Tenant;
+  @Prop({
+    type: String,
+    trim: true,
+    default: ''
+  })
+  contactLandline: string;
 
-    readonly createdAt?: Date
-    readonly updatedAt?: Date
+  @Prop({
+    type: String,
+    required: true,
+    trim: true,
+    lowercase: true,
+    index: true
+  })
+  contactEmail: string;
+
+  @Prop({
+    type: String,
+    trim: true,
+    default: ''
+  })
+  contactPerson: string;
+
+  @Prop({
+    type: String,
+    trim: true,
+    default: ''
+  })
+  pib: string;
+
+  @Prop({
+    type: String,
+    trim: true,
+    default: ''
+  })
+  remark: string;
+
+  @Prop({
+    type: Boolean,
+    default: true
+  })
+  isActive: boolean;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true,
+    autopopulate: true
+  })
+  tenant: Types.ObjectId | Tenant;
+
 }
 
 const SupplierSchema = SchemaFactory.createForClass(Supplier);
 
-SupplierSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('tenant');
-  next();
-});
-
-SupplierSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('tenant');
-  next();
-});
+SupplierSchema.plugin(require('mongoose-autopopulate'));
 
 export { SupplierSchema }
