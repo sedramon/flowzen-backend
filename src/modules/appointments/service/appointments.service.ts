@@ -13,6 +13,7 @@ import { Employee } from 'src/modules/employees/schema/employee.schema';
 import { Client } from 'src/modules/clients/schemas/client.schema';
 import { Service } from 'src/modules/services/schemas/service.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
+import { Facility } from 'src/modules/facility/schema/facility.schema';
 
 @Injectable()
 export class AppointmentsService {
@@ -23,13 +24,14 @@ export class AppointmentsService {
     @InjectModel(Client.name) private readonly clientModel: Model<Client>,
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
     @InjectModel(Tenant.name) private readonly tenantModel: Model<Tenant>,
+    @InjectModel(Facility.name) private readonly facilityModel: Model<Facility>,
   ) {}
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<Appointment> {
     try {
-      const { employee, client, tenant, service, ...appoitmentDetails } =
+      const { employee, client, tenant, facility, service, ...appoitmentDetails } =
         createAppointmentDto;
 
       if (!isValidObjectId(tenant))
@@ -56,6 +58,14 @@ export class AppointmentsService {
       if (!clientDocument)
         throw new ConflictException(`Client with ${client} not found!`);
 
+      const facilityDocument = await this.facilityModel
+        .findOne({ _id: facility, tenant: tenant })
+        .lean()
+        .exec();
+
+      if (!facilityDocument)
+        throw new ConflictException(`Facility with ${facility} not found or does not belong to this tenant!`);
+
       const serviceDocument = await this.serviceModel
         .findOne({ _id: service, tenant: tenant })
         .lean()
@@ -69,6 +79,7 @@ export class AppointmentsService {
         tenant: tenantDocument._id,
         client: clientDocument._id,
         employee: employeeDocument._id,
+        facility: facilityDocument._id,
         service: serviceDocument._id,
       });
 
@@ -79,6 +90,7 @@ export class AppointmentsService {
         .populate('client')
         .populate('service')
         .populate('employee')
+        .populate('facility')
         .populate('tenant')
         .exec();
 
@@ -102,6 +114,24 @@ export class AppointmentsService {
       .exec();
   }
 
+  async findAllByFacility(facilityId: string, tenantId?: string): Promise<Appointment[]> {
+    // Ako je prosleđen tenantId, proveri da li facility pripada tom tenant-u
+    if (tenantId) {
+      const facility = await this.facilityModel.findOne({
+        _id: facilityId,
+        tenant: tenantId
+      }).exec();
+      
+      if (!facility) {
+        throw new BadRequestException('Facility does not belong to this tenant');
+      }
+    }
+    
+    return this.appointmentModel
+      .find({ facility: new Types.ObjectId(facilityId) })
+      .exec();
+  }
+
   async findOneByTenant(
     id: string,
     tenantId: string,
@@ -116,7 +146,7 @@ export class AppointmentsService {
     updateAppointmentDto: UpdateAppointmentDto,
   ): Promise<Appointment> {
     try {
-      const { employee, client, tenant, service, ...appoitmentDetails } =
+      const { employee, client, tenant, facility, service, ...appoitmentDetails } =
         updateAppointmentDto;
 
       if (!isValidObjectId(tenant))
@@ -142,6 +172,14 @@ export class AppointmentsService {
 
       if (!clientDocument)
         throw new ConflictException(`Client with ${client} not found!`);
+
+      const facilityDocument = await this.facilityModel
+        .findOne({ _id: facility, tenant: tenant })
+        .lean()
+        .exec();
+
+      if (!facilityDocument)
+        throw new ConflictException(`Facility with ${facility} not found or does not belong to this tenant!`);
 
       const serviceDocument = await this.serviceModel
         .findOne({ _id: service, tenant: tenant })

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDateString, IsMongoId, IsNotEmpty, IsNumber, IsString, Validate } from 'class-validator';
 
 export class CreateAppointmentDto {
   @ApiProperty({ description: 'ID of the employee' })
@@ -16,6 +16,11 @@ export class CreateAppointmentDto {
   @IsMongoId()
   @IsNotEmpty()
   tenant: string;
+
+  @ApiProperty({ description: 'ID of the facility' })
+  @IsMongoId()
+  @IsNotEmpty()
+  facility: string;
 
   @ApiProperty({ description: 'ID of the service' })
   @IsMongoId()

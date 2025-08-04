@@ -4,6 +4,7 @@ import {
   IsMongoId,
   IsNotEmpty,
   IsNumber,
+  Validate,
 } from 'class-validator';
 
 export class UpdateAppointmentDto {
@@ -21,6 +22,11 @@ export class UpdateAppointmentDto {
     @IsMongoId()
     @IsNotEmpty()
     tenant: string;
+
+    @ApiProperty({ description: 'ID of the facility' })
+    @IsMongoId()
+    @IsNotEmpty()
+    facility: string;
   
     @ApiProperty({ description: 'ID of the service' })
     @IsMongoId()

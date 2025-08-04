@@ -4,6 +4,7 @@ import { Client } from 'src/modules/clients/schemas/client.schema';
 import { Employee } from 'src/modules/employees/schema/employee.schema';
 import { Service } from 'src/modules/services/schemas/service.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
+import { Facility } from 'src/modules/facility/schema/facility.schema';
 
 @Schema({timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform }})
 export class Appointment {
@@ -15,6 +16,9 @@ export class Appointment {
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
   tenant: Tenant;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility', required: true })
+  facility: Facility;
 
   @Prop({ required: true })
   startHour: number;
@@ -85,12 +89,22 @@ AppointmentSchema.pre(/^findOne/, function (next) {
   next();
 });
 
+AppointmentSchema.pre(/^find/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('facility');
+  next();
+});
+
+AppointmentSchema.pre(/^findOne/, function (next) {
+  const query = this as Query<any, Document>;
+  query.populate('facility');
+  next();
+});
+
 function docToJsonTransform(doc: any, ret:any) {
   ret.id = ret._id;
   delete ret._id;
   return ret;
 }
-
-
 
 export { AppointmentSchema }

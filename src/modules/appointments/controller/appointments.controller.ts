@@ -7,12 +7,18 @@ import { JwtAuthGuard } from 'src/modules/auth/auth.guard';
 import { ScopesGuard } from 'src/modules/auth/scopes.guard';
 import { Scopes } from 'src/modules/auth/scopes.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Facility } from 'src/modules/facility/schema/facility.schema';
 
 @Controller('appointments')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class AppointmentsController {
-  constructor(private readonly appointmentsService: AppointmentsService) {}
+  constructor(
+    private readonly appointmentsService: AppointmentsService,
+    @InjectModel(Facility.name) private facilityModel: Model<Facility>
+  ) {}
 
   @Scopes('scope_appoitments:create')
   @Post()
@@ -32,8 +38,26 @@ export class AppointmentsController {
 
   @Scopes('scope_appoitments:read')
   @Get()
-  async findAll(@Query('tenantId') tenantId: string): Promise<Appointment[]> {
+  async findAll(
+    @Query('tenantId') tenantId: string,
+    @Query('facilityId') facilityId?: string
+  ): Promise<Appointment[]> {
     if (!tenantId) throw new BadRequestException('tenantId is required');
+    
+    if (facilityId) {
+      // Proveri da li facility pripada tenant-u
+      const facility = await this.facilityModel.findOne({
+        _id: facilityId,
+        tenant: tenantId
+      }).exec();
+      
+      if (!facility) {
+        throw new BadRequestException('Facility does not belong to this tenant');
+      }
+      
+      return this.appointmentsService.findAllByFacility(facilityId, tenantId);
+    }
+    
     return this.appointmentsService.findAllByTenant(tenantId);
   }
 

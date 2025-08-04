@@ -7,14 +7,20 @@ import { ClientsModule } from '../clients/clients.module';
 import { ServicesModule } from '../services/services.module';
 import { EmployeeModule } from '../employees/employees.module';
 import { TenantsModule } from '../tenants/tenants.module';
+import { FacilityModule } from '../facility/facility.module';
+import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Appointment.name, schema: AppointmentSchema }]),
+    MongooseModule.forFeature([
+      { name: Appointment.name, schema: AppointmentSchema },
+      { name: Facility.name, schema: FacilitySchema }
+    ]),
     ClientsModule,
     ServicesModule,
     EmployeeModule,
-    TenantsModule
+    TenantsModule,
+    FacilityModule
   ],
   controllers: [AppointmentsController],
   providers: [AppointmentsService],
