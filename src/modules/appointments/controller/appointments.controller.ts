@@ -40,25 +40,12 @@ export class AppointmentsController {
   @Get()
   async findAll(
     @Query('tenantId') tenantId: string,
-    @Query('facilityId') facilityId?: string
+    @Query('facilityId') facilityId?: string,
+    @Query('date') date?: string
   ): Promise<Appointment[]> {
     if (!tenantId) throw new BadRequestException('tenantId is required');
     
-    if (facilityId) {
-      // Proveri da li facility pripada tenant-u
-      const facility = await this.facilityModel.findOne({
-        _id: facilityId,
-        tenant: tenantId
-      }).exec();
-      
-      if (!facility) {
-        throw new BadRequestException('Facility does not belong to this tenant');
-      }
-      
-      return this.appointmentsService.findAllByFacility(facilityId, tenantId);
-    }
-    
-    return this.appointmentsService.findAllByTenant(tenantId);
+    return this.appointmentsService.findAllWithFilters(tenantId, facilityId, date);
   }
 
   @Scopes('scope_appoitments:update')

@@ -83,11 +83,21 @@ export class EmployeeService {
         }
     }
 
-    async findAll(tenantId: string): Promise<Employee[]> {
+    async findAll(tenantId: string, facilityId?: string): Promise<Employee[]> {
         if (!isValidObjectId(tenantId)) {
             throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
         }
-        return this.employeeModel.find({tenant: tenantId}).exec();
+        
+        const filter: any = { tenant: tenantId };
+        
+        if (facilityId) {
+            if (!isValidObjectId(facilityId)) {
+                throw new BadRequestException(`Invalid facility ID: ${facilityId}`);
+            }
+            filter.facility = facilityId;
+        }
+        
+        return this.employeeModel.find(filter).exec();
     }
 
     async findOne(id: string): Promise<Employee> {

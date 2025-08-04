@@ -41,9 +41,10 @@ export class EmployeesController {
     @Get('with-working-shift')
     async getEmployeesWithWorkingShift(
       @Query('tenant') tenant: string,
-      @Query('date') date: string
+      @Query('date') date: string,
+      @Query('facility') facilityId?: string
     ) {
-      const employees = await this.employeeService.findAll(tenant).then(list =>
+      const employees = await this.employeeService.findAll(tenant, facilityId).then(list =>
         list.map(e => (e.toObject ? e.toObject() : e))
       );
 
@@ -74,8 +75,11 @@ export class EmployeesController {
 
     @Scopes('scope_employees:read')
     @Get()
-    async findAll(@Query('tenant') tenantId?: string): Promise<Employee[]> {
-        return await this.employeeService.findAll(tenantId);
+    async findAll(
+        @Query('tenant') tenantId?: string,
+        @Query('facility') facilityId?: string
+    ): Promise<Employee[]> {
+        return await this.employeeService.findAll(tenantId, facilityId);
     }
 
     @Scopes('scope_employees:read')

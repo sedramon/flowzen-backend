@@ -104,19 +104,11 @@ export class AppointmentsService {
     return this.appointmentModel.findById(id).exec();
   }
 
-  async findAll(): Promise<Appointment[]> {
-    return this.appointmentModel.find().exec();
-  }
-
-  async findAllByTenant(tenantId: string): Promise<Appointment[]> {
-    return this.appointmentModel
-      .find({ tenant: new Types.ObjectId(tenantId) })
-      .exec();
-  }
-
-  async findAllByFacility(facilityId: string, tenantId?: string): Promise<Appointment[]> {
-    // Ako je prosleđen tenantId, proveri da li facility pripada tom tenant-u
-    if (tenantId) {
+  async findAllWithFilters(tenantId: string, facilityId?: string, date?: string): Promise<Appointment[]> {
+    const filter: any = { tenant: new Types.ObjectId(tenantId) };
+    
+    if (facilityId) {
+      // Proveri da li facility pripada tenant-u
       const facility = await this.facilityModel.findOne({
         _id: facilityId,
         tenant: tenantId
@@ -125,10 +117,21 @@ export class AppointmentsService {
       if (!facility) {
         throw new BadRequestException('Facility does not belong to this tenant');
       }
+      
+      filter.facility = new Types.ObjectId(facilityId);
+    }
+    
+    if (date) {
+      filter.date = date;
     }
     
     return this.appointmentModel
-      .find({ facility: new Types.ObjectId(facilityId) })
+      .find(filter)
+      .populate('client')
+      .populate('service')
+      .populate('employee')
+      .populate('facility')
+      .populate('tenant')
       .exec();
   }
 
