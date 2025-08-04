@@ -25,7 +25,7 @@ export class FacilityController {
 
   @Scopes('scope_facilities:create')
   @Post()
-  async create(@Body() createFacilityDto: any): Promise<Facility> {
+  async create(@Body() createFacilityDto: CreateFacilityDto): Promise<Facility> {
     return await this.facilityService.create(createFacilityDto);
   }
 

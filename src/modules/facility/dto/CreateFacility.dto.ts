@@ -12,12 +12,12 @@ export class CreateFacilityDto {
     @IsNotEmpty()
     address: string;
 
-    @ApiProperty({description: 'Facility opening hour ( number )'})
+    @ApiProperty({description: 'Facility opening hour'})
     @IsString()
     @IsNotEmpty()
     openingHour: string;
 
-    @ApiProperty({description: 'Facility closing hour ( number )'})
+    @ApiProperty({description: 'Facility closing hour'})
     @IsString()
     @IsNotEmpty()
     closingHour: string;
