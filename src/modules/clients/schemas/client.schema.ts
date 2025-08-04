@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 
-
 @Schema({timestamps: true})
 export class Client extends Document {
     @Prop({ required: true })
@@ -21,14 +20,18 @@ export class Client extends Document {
     address: string;
 
     @Prop({
-        type: MongooseSchema.Types.ObjectId, // Reference to Tenant model
+        type: MongooseSchema.Types.ObjectId,
         ref: 'Tenant',
         required: true,
+        autopopulate: { select: 'name' }
     })
-    tenant: Tenant; // Use Tenant type for populated data
+    tenant: Tenant;
     
     readonly createdAt?: Date;
     readonly updatedAt?: Date
 }
 
 export const ClientsSchema = SchemaFactory.createForClass(Client);
+
+// Apply mongoose-autopopulate plugin
+ClientsSchema.plugin(require('mongoose-autopopulate'));

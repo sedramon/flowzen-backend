@@ -3,8 +3,8 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Employee } from "../schema/employee.schema";
 import { isValidObjectId, Model } from "mongoose";
 import { CreateEmployeeDto } from "../dto/CreateEmployee.dto";
+import { UpdateEmployeeDto } from "../dto/UpdateEmployee.dto";
 import { Tenant } from "../../tenants/schemas/tenant.schema";
-
 
 @Injectable()
 export class EmployeeService {
@@ -13,7 +13,7 @@ export class EmployeeService {
 
     async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
         try {
-            const { tenant, ...employeeDetails } = createEmployeeDto;
+            const { tenant, facility, ...employeeDetails } = createEmployeeDto;
 
             if (!isValidObjectId(tenant)) {
                 throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
@@ -25,8 +25,19 @@ export class EmployeeService {
                 throw new NotFoundException(`Tenant with ID ${tenant} not found`);
             }
 
+            // Handle facility - convert empty string to null
+            let facilityId = facility;
+            if (facilityId === '') {
+                facilityId = null;
+            }
 
-            const employee = await this.employeeModel.create(createEmployeeDto);
+            const employeeData = {
+                ...employeeDetails,
+                tenant,
+                facility: facilityId
+            };
+
+            const employee = await this.employeeModel.create(employeeData);
             
             return employee;
         } catch (error) {
@@ -34,21 +45,39 @@ export class EmployeeService {
         }
     }
 
-    async update(id: string, createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+    async update(id: string, updateEmployeeDto: UpdateEmployeeDto): Promise<Employee> {
         try {
-            const { tenant, ...employeeDetails } = createEmployeeDto;
-
-            if (!isValidObjectId(tenant)) {
-                throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+            // Handle tenant object from autopopulate
+            let tenantId = updateEmployeeDto.tenant;
+            if (typeof updateEmployeeDto.tenant === 'object' && updateEmployeeDto.tenant !== null) {
+                tenantId = (updateEmployeeDto.tenant as any)._id || (updateEmployeeDto.tenant as any).id;
             }
 
-             // Check if tenant exists
-             const tenantDocument = await this.tenantModel.findById(tenant).exec();
-             if (!tenantDocument) {
-                 throw new NotFoundException(`Tenant with ID ${tenant} not found`);
-             }
+            // Handle facility - convert empty string to null
+            let facilityId = updateEmployeeDto.facility;
+            if (facilityId === '') {
+                facilityId = null;
+            }
 
-            return await this.employeeModel.findByIdAndUpdate(id, createEmployeeDto, { new: true }).exec();
+            const updateData = {
+                ...updateEmployeeDto,
+                tenant: tenantId,
+                facility: facilityId
+            };
+
+            if (tenantId && !isValidObjectId(tenantId)) {
+                throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
+            }
+
+            if (tenantId) {
+                // Check if tenant exists
+                const tenantDocument = await this.tenantModel.findById(tenantId).exec();
+                if (!tenantDocument) {
+                    throw new NotFoundException(`Tenant with ID ${tenantId} not found`);
+                }
+            }
+
+            return await this.employeeModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
         } catch (error) {
             throw error;
         }

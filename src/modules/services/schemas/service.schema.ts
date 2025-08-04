@@ -26,8 +26,12 @@ export class Service extends Document {
         type: MongooseSchema.Types.ObjectId,
         ref: 'Tenant',
         required: true,
+        autopopulate: { select: 'name' }
     })
     tenant: Tenant;
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);
+
+// Apply mongoose-autopopulate plugin
+ServiceSchema.plugin(require('mongoose-autopopulate'));

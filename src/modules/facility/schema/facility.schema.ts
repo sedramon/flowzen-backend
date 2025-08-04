@@ -5,9 +5,10 @@ import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 @Schema({ timestamps: true })
 export class Facility extends Document {
   @Prop({
-    type: MongooseSchema.Types.ObjectId, // Reference to Tenant model
+    type: MongooseSchema.Types.ObjectId,
     ref: 'Tenant',
     required: true,
+    autopopulate: { select: 'name' }
   })
   tenant: Tenant;
 
@@ -28,3 +29,6 @@ export class Facility extends Document {
 }
 
 export const FacilitySchema = SchemaFactory.createForClass(Facility);
+
+// Apply mongoose-autopopulate plugin
+FacilitySchema.plugin(require('mongoose-autopopulate'));

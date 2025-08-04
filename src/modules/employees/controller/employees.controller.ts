@@ -5,6 +5,7 @@ import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { CreateEmployeeDto } from "../dto/CreateEmployee.dto";
+import { UpdateEmployeeDto } from "../dto/UpdateEmployee.dto";
 import { Employee } from "../schema/employee.schema";
 import { EmployeeService } from "../service/employees.service";
 import { InjectModel } from "@nestjs/mongoose";
@@ -32,8 +33,8 @@ export class EmployeesController {
 
     @Scopes('scope_employees:update')
     @Put(':id')
-    async update(@Param('id') id: string, @Body() createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
-        return await this.employeeService.update(id, createEmployeeDto);
+    async update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto): Promise<Employee> {
+        return await this.employeeService.update(id, updateEmployeeDto);
     }
 
     @Scopes('scope_employees:read')

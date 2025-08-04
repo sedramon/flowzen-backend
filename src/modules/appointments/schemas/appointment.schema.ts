@@ -1,5 +1,5 @@
 import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
-import { Document, Query, Types, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Client } from 'src/modules/clients/schemas/client.schema';
 import { Employee } from 'src/modules/employees/schema/employee.schema';
 import { Service } from 'src/modules/services/schemas/service.schema';
@@ -8,16 +8,36 @@ import { Facility } from 'src/modules/facility/schema/facility.schema';
 
 @Schema({timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform }})
 export class Appointment {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Employee', required: true })
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    ref: 'Employee', 
+    required: true,
+    autopopulate: { select: 'firstName lastName' }
+  })
   employee: Employee;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Client', required: true})
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    ref: 'Client', 
+    required: true,
+    autopopulate: { select: 'firstName lastName' }
+  })
   client: Client;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    ref: 'Tenant', 
+    required: true,
+    autopopulate: { select: 'name' }
+  })
   tenant: Tenant;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility', required: true })
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    ref: 'Facility', 
+    required: true,
+    autopopulate: { select: 'name' }
+  })
   facility: Facility;
 
   @Prop({ required: true })
@@ -26,7 +46,12 @@ export class Appointment {
   @Prop({ required: true })
   endHour: number;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Service', required: true})
+  @Prop({ 
+    type: MongooseSchema.Types.ObjectId, 
+    ref: 'Service', 
+    required: true,
+    autopopulate: { select: 'name' }
+  })
   service: Service;
 
   @Prop({ required: true })
@@ -34,72 +59,12 @@ export class Appointment {
 
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
-
 }
 
 const AppointmentSchema = SchemaFactory.createForClass(Appointment);
 
-AppointmentSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('tenant');
-  next();
-});
-
-AppointmentSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('tenant');
-  next();
-});
-
-AppointmentSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('client');
-  next();
-});
-
-AppointmentSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('client');
-  next();
-});
-
-AppointmentSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('employee');
-  next();
-});
-
-AppointmentSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('employee');
-  next();
-});
-
-
-AppointmentSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('service');
-  next();
-});
-
-
-AppointmentSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('service');
-  next();
-});
-
-AppointmentSchema.pre(/^find/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('facility');
-  next();
-});
-
-AppointmentSchema.pre(/^findOne/, function (next) {
-  const query = this as Query<any, Document>;
-  query.populate('facility');
-  next();
-});
+// Apply mongoose-autopopulate plugin
+AppointmentSchema.plugin(require('mongoose-autopopulate'));
 
 function docToJsonTransform(doc: any, ret:any) {
   ret.id = ret._id;
