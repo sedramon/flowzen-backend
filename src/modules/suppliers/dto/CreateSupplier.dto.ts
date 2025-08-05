@@ -26,7 +26,6 @@ export class CreateSupplierDto {
     @ApiProperty({
         description: 'Supplier contact landline',
         required: false,
-        nullable: true,
         example: ''
     })
     @IsString()
@@ -41,7 +40,6 @@ export class CreateSupplierDto {
     @ApiProperty({
         description: 'Supplier contact person',
         required: false,
-        nullable: true,
         example: ''
     })
     @IsString()
@@ -51,7 +49,6 @@ export class CreateSupplierDto {
     @ApiProperty({
         description: 'Supplier PIB',
         required: false,
-        nullable: true,
         example: ''
     })
     @IsString()
@@ -61,7 +58,6 @@ export class CreateSupplierDto {
     @ApiProperty({
         description: 'Supplier remark',
         required: false,
-        nullable: true,
         example: ''
     })
     @IsString()
@@ -70,12 +66,11 @@ export class CreateSupplierDto {
 
     @ApiProperty({
         description: 'Supplier remark',
-        required: false,
-        default: true
+        required: false
     })
     @IsBoolean()
     @IsOptional()
-    isActive: boolean;
+    isActive?: boolean;
 
     @ApiProperty({ description: 'Tenant ID' })
     @IsNotEmpty()
