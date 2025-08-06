@@ -17,8 +17,8 @@ export class ShiftController {
   }
 
   @Get()
-  findAll(@Query('tenantId') tenantId: string) {
-    return this.service.findAll(tenantId);
+  findAll(@Query('tenant') tenant: string, @Query('facility') facility?: string) {
+    return this.service.findAll(tenant, facility);
   }
 
   @Get(':id')

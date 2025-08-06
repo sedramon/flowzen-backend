@@ -30,22 +30,22 @@ export class AppointmentsController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @Query('tenantId') tenantId: string
+    @Query('tenant') tenant: string
   ): Promise<Appointment> {
-    if (!tenantId) throw new BadRequestException('tenantId is required');
-    return this.appointmentsService.findOneByTenant(id, tenantId);
+    if (!tenant) throw new BadRequestException('tenant is required');
+    return this.appointmentsService.findOneByTenant(id, tenant);
   }
 
   @Scopes('scope_appoitments:read')
   @Get()
   async findAll(
-    @Query('tenantId') tenantId: string,
-    @Query('facilityId') facilityId?: string,
+    @Query('tenant') tenant: string,
+    @Query('facility') facility?: string,
     @Query('date') date?: string
   ): Promise<Appointment[]> {
-    if (!tenantId) throw new BadRequestException('tenantId is required');
+    if (!tenant) throw new BadRequestException('tenant is required');
     
-    return this.appointmentsService.findAllWithFilters(tenantId, facilityId, date);
+    return this.appointmentsService.findAllWithFilters(tenant, facility, date);
   }
 
   @Scopes('scope_appoitments:update')

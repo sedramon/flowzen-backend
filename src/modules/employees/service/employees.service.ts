@@ -13,7 +13,7 @@ export class EmployeeService {
 
     async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
         try {
-            const { tenant, facility, ...employeeDetails } = createEmployeeDto;
+            const { tenant, facilities, ...employeeDetails } = createEmployeeDto;
 
             if (!isValidObjectId(tenant)) {
                 throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
@@ -25,16 +25,20 @@ export class EmployeeService {
                 throw new NotFoundException(`Tenant with ID ${tenant} not found`);
             }
 
-            // Handle facility - convert empty string to null
-            let facilityId = facility;
-            if (facilityId === '') {
-                facilityId = null;
+            // Validate facilities array
+            let facilitiesArray = facilities || [];
+            if (facilitiesArray.length > 0) {
+                for (const facilityId of facilitiesArray) {
+                    if (!isValidObjectId(facilityId)) {
+                        throw new BadRequestException(`Invalid facility ID: ${facilityId}`);
+                    }
+                }
             }
 
             const employeeData = {
                 ...employeeDetails,
                 tenant,
-                facility: facilityId
+                facilities: facilitiesArray
             };
 
             const employee = await this.employeeModel.create(employeeData);
@@ -53,16 +57,20 @@ export class EmployeeService {
                 tenantId = (updateEmployeeDto.tenant as any)._id || (updateEmployeeDto.tenant as any).id;
             }
 
-            // Handle facility - convert empty string to null
-            let facilityId = updateEmployeeDto.facility;
-            if (facilityId === '') {
-                facilityId = null;
+            // Handle facilities array
+            let facilitiesArray = updateEmployeeDto.facilities || [];
+            if (facilitiesArray.length > 0) {
+                for (const facilityId of facilitiesArray) {
+                    if (!isValidObjectId(facilityId)) {
+                        throw new BadRequestException(`Invalid facility ID: ${facilityId}`);
+                    }
+                }
             }
 
             const updateData = {
                 ...updateEmployeeDto,
                 tenant: tenantId,
-                facility: facilityId
+                facilities: facilitiesArray
             };
 
             if (tenantId && !isValidObjectId(tenantId)) {
@@ -94,7 +102,8 @@ export class EmployeeService {
             if (!isValidObjectId(facilityId)) {
                 throw new BadRequestException(`Invalid facility ID: ${facilityId}`);
             }
-            filter.facility = facilityId;
+            // Filter employees who work in the specified facility
+            filter.facilities = facilityId;
         }
         
         return this.employeeModel.find(filter).exec();

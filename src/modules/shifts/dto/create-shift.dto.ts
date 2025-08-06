@@ -5,7 +5,12 @@ export class CreateShiftDto {
   @ApiProperty({ description: 'Tenant ID' })
   @IsMongoId()
   @IsNotEmpty()
-  tenantId: string;
+  tenant: string;
+
+  @ApiProperty({ description: 'Facility ID' })
+  @IsMongoId()
+  @IsNotEmpty()
+  facility: string;
 
   @ApiProperty({ description: 'Shift value' })
   @IsString()

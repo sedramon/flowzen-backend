@@ -38,12 +38,13 @@ export class Employee extends Document {
     tenant: Tenant;
 
     @Prop({
-        type: MongooseSchema.Types.ObjectId,
+        type: [MongooseSchema.Types.ObjectId],
         ref: 'Facility',
         required: false,
+        default: [],
         autopopulate: { select: 'name' }
     })
-    facility?: Facility;
+    facilities?: Facility[];
 
     @Prop()
     avatarUrl?: string;

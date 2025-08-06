@@ -50,6 +50,11 @@ export class AppointmentsService {
       if (!employeeDocument)
         throw new ConflictException(`Employee with ${employee} not found!`);
 
+      // Check if employee works in the specified facility
+      if (!employeeDocument.facilities || !employeeDocument.facilities.some(f => f.toString() === facility)) {
+        throw new ConflictException(`Employee ${employee} does not work in facility ${facility}!`);
+      }
+
       const clientDocument = await this.clientModel
         .findOne({ _id: client, tenant: tenant })
         .lean()
@@ -104,21 +109,21 @@ export class AppointmentsService {
     return this.appointmentModel.findById(id).exec();
   }
 
-  async findAllWithFilters(tenantId: string, facilityId?: string, date?: string): Promise<Appointment[]> {
-    const filter: any = { tenant: new Types.ObjectId(tenantId) };
+  async findAllWithFilters(tenant: string, facility?: string, date?: string): Promise<Appointment[]> {
+    const filter: any = { tenant: new Types.ObjectId(tenant) };
     
-    if (facilityId) {
+    if (facility) {
       // Proveri da li facility pripada tenant-u
-      const facility = await this.facilityModel.findOne({
-        _id: facilityId,
-        tenant: tenantId
+      const facilityDoc = await this.facilityModel.findOne({
+        _id: facility,
+        tenant: tenant
       }).exec();
       
-      if (!facility) {
+      if (!facilityDoc) {
         throw new BadRequestException('Facility does not belong to this tenant');
       }
       
-      filter.facility = new Types.ObjectId(facilityId);
+      filter.facility = new Types.ObjectId(facility);
     }
     
     if (date) {
@@ -137,10 +142,10 @@ export class AppointmentsService {
 
   async findOneByTenant(
     id: string,
-    tenantId: string,
+    tenant: string,
   ): Promise<Appointment | null> {
     return this.appointmentModel
-      .findOne({ _id: id, tenant: new Types.ObjectId(tenantId) })
+      .findOne({ _id: id, tenant: new Types.ObjectId(tenant) })
       .exec();
   }
 
@@ -167,6 +172,11 @@ export class AppointmentsService {
 
       if (!employeeDocument)
         throw new ConflictException(`Employee with ${employee} not found!`);
+
+      // Check if employee works in the specified facility
+      if (!employeeDocument.facilities || !employeeDocument.facilities.some(f => f.toString() === facility)) {
+        throw new ConflictException(`Employee ${employee} does not work in facility ${facility}!`);
+      }
 
       const clientDocument = await this.clientModel
         .findOne({ _id: client, tenant: tenant })

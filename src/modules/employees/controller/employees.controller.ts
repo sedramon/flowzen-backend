@@ -42,19 +42,22 @@ export class EmployeesController {
     async getEmployeesWithWorkingShift(
       @Query('tenant') tenant: string,
       @Query('date') date: string,
-      @Query('facility') facilityId?: string
+      @Query('facility') facility: string
     ) {
-      const employees = await this.employeeService.findAll(tenant, facilityId).then(list =>
+      const employees = await this.employeeService.findAll(tenant, facility).then(list =>
         list.map(e => (e.toObject ? e.toObject() : e))
       );
 
       const results = await Promise.all(
         employees.map(async emp => {
-          const ws = await this.workingShiftModel.findOne({
-            employeeId: Types.ObjectId.createFromHexString(emp._id.toString()),
-            tenantId: Types.ObjectId.createFromHexString(tenant.toString()),
+          const wsQuery: any = {
+            employee: Types.ObjectId.createFromHexString(emp._id.toString()),
+            tenant: Types.ObjectId.createFromHexString(tenant.toString()),
+            facility: Types.ObjectId.createFromHexString(facility),
             date
-          }).lean();
+          };
+
+          const ws = await this.workingShiftModel.findOne(wsQuery).lean();
           return {
             ...emp,
             workingShift: ws

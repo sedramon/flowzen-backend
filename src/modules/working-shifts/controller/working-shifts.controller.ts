@@ -23,14 +23,16 @@ export class WorkingShiftsController {
   @Scopes('scope_working_shifts:read')
   @Get()
   async findAll(
-    @Query('employeeId') employeeId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('employee') employee: string,
+    @Query('tenant') tenant: string,
+    @Query('facility') facility: string,
     @Query('month') month: string,
     @Query('year') year: string
   ) {
     return this.service.findForEmployeeMonth(
-      employeeId,
-      tenantId,
+      employee,
+      tenant,
+      facility,
       parseInt(month, 10),
       parseInt(year, 10)
     );
@@ -51,11 +53,12 @@ export class WorkingShiftsController {
   @Scopes('scope_working_shifts:delete')
   @Delete('by-employee-date')
   removeByEmployeeDate(
-    @Query('employeeId') employeeId: string,
+    @Query('employee') employee: string,
     @Query('date') date: string,
-    @Query('tenantId') tenantId: string
+    @Query('tenant') tenant: string,
+    @Query('facility') facility: string
   ) {
-    return this.service.removeByEmployeeDate(employeeId, date, tenantId);
+    return this.service.removeByEmployeeDate(employee, date, tenant, facility);
   }
 
   @Scopes('scope_working_shifts:delete')

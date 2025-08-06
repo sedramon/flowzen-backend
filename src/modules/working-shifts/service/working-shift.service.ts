@@ -19,18 +19,22 @@ export class WorkingShiftService {
   async create(createDto: CreateWorkingShiftDto) {
     return this.workingShiftModel.create({
       ...createDto,
-      employeeId: toObjectId(createDto.employeeId),
-      tenantId: toObjectId(createDto.tenantId),
+      employee: toObjectId(createDto.employee),
+      tenant: toObjectId(createDto.tenant),
+      facility: toObjectId(createDto.facility),
     });
   }
 
   async findAll(filter: any = {}) {
     const query: any = { ...filter };
-    if (query.employeeId) {
-      query.employeeId = toObjectId(query.employeeId);
+    if (query.employee) {
+      query.employee = toObjectId(query.employee);
     }
-    if (query.tenantId) {
-      query.tenantId = toObjectId(query.tenantId);
+    if (query.tenant) {
+      query.tenant = toObjectId(query.tenant);
+    }
+    if (query.facility) {
+      query.facility = toObjectId(query.facility);
     }
     return this.workingShiftModel.find(query).exec();
   }
@@ -41,11 +45,14 @@ export class WorkingShiftService {
 
   async update(id: string, updateDto: UpdateWorkingShiftDto) {
     const dto: any = { ...updateDto };
-    if (dto.employeeId) {
-      dto.employeeId = toObjectId(dto.employeeId);
+    if (dto.employee) {
+      dto.employee = toObjectId(dto.employee);
     }
-    if (dto.tenantId) {
-      dto.tenantId = toObjectId(dto.tenantId);
+    if (dto.tenant) {
+      dto.tenant = toObjectId(dto.tenant);
+    }
+    if (dto.facility) {
+      dto.facility = toObjectId(dto.facility);
     }
     return this.workingShiftModel.findByIdAndUpdate(toObjectId(id), dto, { new: true }).exec();
   }
@@ -57,34 +64,38 @@ export class WorkingShiftService {
   async upsertShift(dto: CreateWorkingShiftDto) {
     return this.workingShiftModel.findOneAndUpdate(
       {
-        employeeId: toObjectId(dto.employeeId),
+        employee: toObjectId(dto.employee),
         date: dto.date,
-        tenantId: toObjectId(dto.tenantId)
+        tenant: toObjectId(dto.tenant),
+        facility: toObjectId(dto.facility)
       },
       {
         ...dto,
-        employeeId: toObjectId(dto.employeeId),
-        tenantId: toObjectId(dto.tenantId)
+        employee: toObjectId(dto.employee),
+        tenant: toObjectId(dto.tenant),
+        facility: toObjectId(dto.facility)
       },
       { upsert: true, new: true }
     ).exec();
   }
 
-  async removeByEmployeeDate(employeeId: string, date: string, tenantId: string) {
-    return this.workingShiftModel.findOneAndDelete({
-      employeeId: toObjectId(employeeId),
+  async removeByEmployeeDate(employee: string, date: string, tenant: string, facility: string) {
+    return this.workingShiftModel.deleteOne({
+      employee: toObjectId(employee),
       date,
-      tenantId: toObjectId(tenantId)
+      tenant: toObjectId(tenant),
+      facility: toObjectId(facility)
     }).exec();
   }
 
-  async findForEmployeeMonth(employeeId: string, tenantId: string, month: number, year: number) {
+  async findForEmployeeMonth(employee: string, tenant: string, facility: string, month: number, year: number) {
     const monthStr = (month + 1).toString().padStart(2, '0');
     const yearStr = year.toString();
     const dateRegex = new RegExp(`^${yearStr}-${monthStr}-\\d{2}$`);
     return this.workingShiftModel.find({
-      employeeId: toObjectId(employeeId),
-      tenantId: toObjectId(tenantId),
+      employee: toObjectId(employee),
+      tenant: toObjectId(tenant),
+      facility: toObjectId(facility),
       date: { $regex: dateRegex }
     }).exec();
   }

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Shift, ShiftDocument } from '../schemas/shift.schema';
 import { CreateShiftDto } from '../dto/create-shift.dto';
 import { UpdateShiftDto } from '../dto/update-shift.dto';
+import { Shift, ShiftDocument } from '../schemas/shift.schema';
 
 @Injectable()
 export class ShiftService {
@@ -14,12 +14,17 @@ export class ShiftService {
   async create(dto: CreateShiftDto) {
     return this.shiftModel.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
+      tenant: new Types.ObjectId(dto.tenant),
+      facility: new Types.ObjectId(dto.facility)
     });
   }
 
-  async findAll(tenantId: string) {
-    return this.shiftModel.find({ tenantId: new Types.ObjectId(tenantId) }).exec();
+  async findAll(tenant: string, facility?: string) {
+    const filter: any = { tenant: new Types.ObjectId(tenant) };
+    if (facility) {
+      filter.facility = new Types.ObjectId(facility);
+    }
+    return this.shiftModel.find(filter).exec();
   }
 
   async findOne(id: string) {
@@ -28,8 +33,11 @@ export class ShiftService {
 
   async update(id: string, dto: UpdateShiftDto) {
     const updateData = { ...dto } as any;
-    if (updateData.tenantId) {
-      updateData.tenantId = new Types.ObjectId(updateData.tenantId);
+    if (updateData.tenant) {
+      updateData.tenant = new Types.ObjectId(updateData.tenant);
+    }
+    if (updateData.facility) {
+      updateData.facility = new Types.ObjectId(updateData.facility);
     }
     return this.shiftModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
   }

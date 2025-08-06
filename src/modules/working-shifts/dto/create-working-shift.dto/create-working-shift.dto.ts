@@ -4,7 +4,8 @@ import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, IsMongoId } from 'c
 export class CreateWorkingShiftDto {
   @ApiProperty({ description: 'Employee ID' })
   @IsMongoId()
-  employeeId: string;
+  @IsNotEmpty()
+  employee: string;
 
   @ApiProperty({ description: 'Shift date (ISO string)' })
   @IsString()
@@ -34,5 +35,10 @@ export class CreateWorkingShiftDto {
   @ApiProperty({ description: 'Tenant ID' })
   @IsNotEmpty()
   @IsMongoId()
-  tenantId: string;
+  tenant: string;
+
+  @ApiProperty({ description: 'Facility ID' })
+  @IsNotEmpty()
+  @IsMongoId()
+  facility: string;
 }

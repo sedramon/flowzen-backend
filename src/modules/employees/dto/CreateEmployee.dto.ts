@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsDate, IsNotEmpty, IsString, IsOptional } from "class-validator";
+import { IsBoolean, IsDate, IsNotEmpty, IsString, IsOptional, IsArray } from "class-validator";
 
 export class CreateEmployeeDto {
     @ApiProperty({description: 'Employee first name'})
@@ -49,10 +49,11 @@ export class CreateEmployeeDto {
     @IsNotEmpty()
     tenant: string;
 
-    @ApiProperty({description: 'Facility ID where employee works', required: false})
+    @ApiProperty({description: 'Array of Facility IDs where employee works', required: false, type: [String]})
     @IsOptional()
-    @IsString()
-    facility?: string;
+    @IsArray()
+    @IsString({ each: true })
+    facilities?: string[];
 
     @ApiProperty({description: 'Employee avatar URL', required: false})
     @IsOptional()
