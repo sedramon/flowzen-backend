@@ -30,7 +30,7 @@ export class ArticleController {
     }
 
     @Scopes('scope_articles:read')
-    @Get('active')
+    @Get('active/get')
     async getActive(@Query('tenant') tenantId?: string): Promise<Article[]> {
         return await this.articleService.findActiveAll(tenantId);
     }
