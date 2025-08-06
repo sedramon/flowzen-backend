@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Types, Schema as MongooseSchema } from 'mongoose';
 import { Supplier } from "src/modules/suppliers/schema/supplier.schema";
+import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 
 @Schema({ timestamps: true })
 export class Article {
@@ -25,8 +26,11 @@ export class Article {
     @Prop({ type: Number, default: 0, min: 0 })
     taxRates: number;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Supplier', autopopulate: true, default: null })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Supplier', autopopulate: { maxDepth: 1}, default: null })
     supplier: Types.ObjectId | Supplier | null;
+
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', autopopulate: true, required: true, index: true })
+    tenant: Types.ObjectId | Tenant;
 
     @Prop({ type: Boolean, default: true })
     isActive: boolean;
@@ -36,6 +40,8 @@ export class Article {
 }
 
 const ArticleSchema = SchemaFactory.createForClass(Article);
+
+ArticleSchema.index({tenant: 1, isActive: 1});
 
 ArticleSchema.plugin(require('mongoose-autopopulate'))
 

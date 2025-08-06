@@ -45,6 +45,11 @@ export class CreateArticleDto {
     @IsOptional()
     supplier?: string | null;
 
+    @ApiProperty({description: 'Article Tenant'})
+    @IsNotEmpty()
+    @IsMongoId()
+    tenant: string;
+
     @ApiProperty({ description: 'Article activity', required: false })
     @IsBoolean()
     @IsOptional()

@@ -19,6 +19,7 @@ import { HealthController } from './modules/health/health.controller';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { envSchema } from './config/env.schema';
 import { LoggerModule } from 'nestjs-pino';
+import { ArticlesModule } from './modules/articles/articles.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { LoggerModule } from 'nestjs-pino';
     WorkingShiftsModule,
     ShiftModule,
     SuppliersModule,
+    ArticlesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

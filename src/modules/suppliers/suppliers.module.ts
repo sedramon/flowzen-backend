@@ -21,6 +21,6 @@ import { TenantsModule } from "../tenants/tenants.module";
     providers: [
         SuppliersService
     ],
-    exports: []
+    exports: [MongooseModule]
 })
 export class SuppliersModule {}

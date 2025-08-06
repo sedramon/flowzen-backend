@@ -63,6 +63,7 @@ export class Supplier {
     type: MongooseSchema.Types.ObjectId,
     ref: 'Tenant',
     required: true,
+    index: true,
     autopopulate: true
   })
   tenant: Types.ObjectId | Tenant;

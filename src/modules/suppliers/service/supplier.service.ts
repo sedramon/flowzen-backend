@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Supplier } from "../schema/supplier.schema";
 import { isValidObjectId, Model } from "mongoose";
@@ -8,13 +8,17 @@ import { UpdateSupplierDto } from "../dto/UpdateSupplier.dto";
 import { PinoLogger } from "nestjs-pino";
 
 @Injectable()
-export class SuppliersService {
+export class SuppliersService implements OnModuleInit {
     constructor(
         @InjectModel(Supplier.name) private readonly supplierModel: Model<Supplier>,
         @InjectModel(Tenant.name) private readonly tenantModel: Model<Tenant>,
         private readonly logger: PinoLogger
     ) {
         this.logger.setContext(SuppliersService.name)
+    }
+
+    async onModuleInit() {
+        await this.supplierModel.syncIndexes();
     }
 
     async findAll(tenantId: string): Promise<Supplier[]> {
