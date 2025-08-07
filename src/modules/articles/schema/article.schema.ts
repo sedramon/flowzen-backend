@@ -14,8 +14,8 @@ export class Article {
     @Prop({ type: Number, required: true, min: 0 })
     price: number;
 
-    @Prop({ type: Number, default: 0, min: 0 })
-    salePrice: number;
+    @Prop({ type: Number, default: null, min: 0 })
+    salePrice: number | null;
 
     @Prop({ type: Boolean, default: false })
     isOnSale: boolean;

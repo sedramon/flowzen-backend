@@ -18,7 +18,7 @@ export class CreateArticleDto {
     @Min(0)
     price: number;
 
-    @ApiProperty({ description: 'Article sale price', required: false })
+    @ApiProperty({ description: 'Article sale price', nullable: true, required: false })
     @IsOptional()
     @IsNumber()
     @Min(0)
