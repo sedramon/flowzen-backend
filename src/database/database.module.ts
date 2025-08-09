@@ -13,22 +13,23 @@ import { DataSource } from 'typeorm';
       }),
     }),
     TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
+      useFactory: () => ({
         type: 'postgres',
-        url: config.get<string>('POSTGRES_URI'),
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        host: process.env.POSTGRES_URI,
+        port: Number(process.env.DB_PORT),
+        username: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME, // <-- now points to appdb
         autoLoadEntities: true,
-        synchronize: false,
+        synchronize: true, // for dev only
+        ssl: { rejectUnauthorized: false }, // RDS quick setup
       }),
     }),
   ],
   exports: [MongooseModule, TypeOrmModule],
 })
 export class DatabaseModule implements OnModuleInit {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async onModuleInit() {
     const logger = new Logger('DatabaseModule');
