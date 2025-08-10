@@ -12,32 +12,33 @@ import { DataSource } from 'typeorm';
         uri: config.get<string>('MONGODB_URI'),
       }),
     }),
-    TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'postgres',
-        host: process.env.POSTGRES_URI,
-        port: Number(process.env.DB_PORT),
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME, // <-- now points to appdb
-        autoLoadEntities: true,
-        synchronize: true, // for dev only
-        ssl: { rejectUnauthorized: false }, // RDS quick setup
-      }),
-    }),
+    // TypeOrmModule.forRootAsync({
+    //   useFactory: () => ({
+    //     type: 'postgres',
+    //     host: process.env.POSTGRES_URI,
+    //     port: Number(process.env.DB_PORT),
+    //     username: process.env.DB_USER,
+    //     password: process.env.DB_PASS,
+    //     database: process.env.DB_NAME, // <-- now points to appdb
+    //     autoLoadEntities: true,
+    //     synchronize: true, // for dev only
+    //     ssl: { rejectUnauthorized: false }, // RDS quick setup
+    //   }),
+    // }),
   ],
-  exports: [MongooseModule, TypeOrmModule],
+  exports: [MongooseModule],
 })
-export class DatabaseModule implements OnModuleInit {
-  constructor(private dataSource: DataSource) { }
+// export class DatabaseModule implements OnModuleInit {
+//   constructor(private dataSource: DataSource) { }
 
-  async onModuleInit() {
-    const logger = new Logger('DatabaseModule');
+//   async onModuleInit() {
+//     const logger = new Logger('DatabaseModule');
 
-    if (this.dataSource.isInitialized) {
-      logger.log('✅ PostgreSQL connected');
-    }
+//     if (this.dataSource.isInitialized) {
+//       logger.log('✅ PostgreSQL connected');
+//     }
 
-    logger.log('✅ MongoDB connection initialized (assumed)');
-  }
-}
+//     logger.log('✅ MongoDB connection initialized (assumed)');
+//   }
+// }
+export class DatabaseModule {}
