@@ -17,7 +17,7 @@ export class User extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Role', required: true }) // admin, manager, or employee
   role: Role;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true}) // tenant id
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true, index: true}) // tenant id
   tenant: Tenant;
 
   _id: Types.ObjectId;

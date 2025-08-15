@@ -121,12 +121,6 @@ export class UsersService {
     }
   }
 
-
-
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().populate('role').exec();
-  }
-
   async findAllByTenant(tenantId: string): Promise<User[]> {
     // Validate the tenant ID
     if (!isValidObjectId(tenantId)) {

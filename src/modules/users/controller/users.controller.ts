@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, HttpException, UseGuards, Patch, Query } from '@nestjs/common';
 import { User } from '../schemas/user.schema';
 import { CreateUserDto } from '../dto/CreateUser.dto';
 import mongoose from 'mongoose';
@@ -26,12 +26,6 @@ export class UsersController {
   //  @UsePipes(new ValidationPipe())
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
-  }
-
-  @Scopes('scope_user_administration:read')
-  @Get()
-  async findAll() {
-    return this.usersService.findAll();
   }
 
   @Scopes('scope_user_administration:read')
