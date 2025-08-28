@@ -26,6 +26,14 @@ export class AppointmentsController {
     return this.appointmentsService.create(createAppointmentDto);
   }
 
+  @Scopes('scope_appoitments:create')
+  @Post('bulk')
+  async bulkCreate(
+    @Body() body: { appointments: CreateAppointmentDto[] }
+  ): Promise<Appointment[]> {
+    return this.appointmentsService.bulkCreate(body.appointments || []);
+  }
+
   @Scopes('scope_appoitments:read')
   @Get(':id')
   async findOne(
