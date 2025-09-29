@@ -6,9 +6,10 @@ describe('WorkingShiftService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [WorkingShiftService],
+      providers: [
+        { provide: WorkingShiftService, useValue: {} },
+      ],
     }).compile();
-
     service = module.get<WorkingShiftService>(WorkingShiftService);
   });
 

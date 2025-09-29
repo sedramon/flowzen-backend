@@ -21,6 +21,7 @@ import { envSchema } from './config/env.schema';
 import { LoggerModule } from 'nestjs-pino';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { PosModule } from './modules/pos/pos.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     SuppliersModule,
     ArticlesModule,
     SettingsModule,
+    PosModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

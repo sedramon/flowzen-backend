@@ -35,6 +35,12 @@ export class Article {
     @Prop({ type: Boolean, default: true })
     isActive: boolean;
 
+    @Prop({ type: Number, default: 0 })
+    stock: number;
+
+    @Prop({ type: Number, default: 0 })
+    minStock: number;
+
     @Prop({ type: String, default: '', trim: true })
     remark: string;
 }

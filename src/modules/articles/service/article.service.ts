@@ -119,4 +119,41 @@ export class ArticleService implements OnModuleInit {
         this.logger.info({ count: articles.length }, 'Retrieved active articles')
         return articles;
     }
+
+    async updateBulkStock(articles: Array<{ id: string; stock: number; minStock: number }>): Promise<{ message: string; updated: number }> {
+        this.logger.debug({ articles }, 'Updating bulk stock for articles')
+        
+        let updatedCount = 0;
+        const bulkOps = [];
+
+        for (const article of articles) {
+            if (!isValidObjectId(article.id)) {
+                this.logger.warn({ id: article.id }, 'Invalid article ID in bulk update')
+                continue;
+            }
+
+            bulkOps.push({
+                updateOne: {
+                    filter: { _id: article.id },
+                    update: { 
+                        $set: { 
+                            stock: article.stock,
+                            minStock: article.minStock 
+                        } 
+                    }
+                }
+            });
+        }
+
+        if (bulkOps.length > 0) {
+            const result = await this.articleModel.bulkWrite(bulkOps);
+            updatedCount = result.modifiedCount;
+            this.logger.info({ updatedCount }, 'Bulk stock update completed')
+        }
+
+        return {
+            message: `Successfully updated stock for ${updatedCount} articles`,
+            updated: updatedCount
+        };
+    }
 }

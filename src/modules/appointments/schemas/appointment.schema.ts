@@ -6,37 +6,40 @@ import { Service } from 'src/modules/services/schemas/service.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { Facility } from 'src/modules/facility/schema/facility.schema';
 
-@Schema({timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform }})
+@Schema({
+  timestamps: true,
+  toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform },
+})
 export class Appointment {
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Employee', 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Employee',
     required: true,
-    autopopulate: { select: 'firstName lastName' }
+    autopopulate: { select: 'firstName lastName' },
   })
   employee: Employee;
 
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Client', 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Client',
     required: true,
-    autopopulate: { select: 'firstName lastName' }
+    autopopulate: { select: 'firstName lastName' },
   })
   client: Client;
 
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Tenant', 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Tenant',
     required: true,
-    autopopulate: { select: 'name' }
+    autopopulate: { select: 'name' },
   })
   tenant: Tenant;
 
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Facility', 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Facility',
     required: true,
-    autopopulate: { select: 'name' }
+    autopopulate: true,
   })
   facility: Facility;
 
@@ -46,16 +49,26 @@ export class Appointment {
   @Prop({ required: true })
   endHour: number;
 
-  @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Service', 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Service',
     required: true,
-    autopopulate: { select: 'name' }
+    autopopulate: true,
   })
   service: Service;
 
   @Prop({ required: true })
   date: string;
+
+  @Prop({ type: Boolean, default: false })
+  paid: boolean;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Sale',
+    autopopulate: true,
+  })
+  sale?: any;
 
   readonly createdAt?: Date;
   readonly updatedAt?: Date;

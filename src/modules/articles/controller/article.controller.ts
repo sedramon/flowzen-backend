@@ -54,4 +54,10 @@ export class ArticleController {
         return await this.articleService.create(createArticleDto);
     }
 
+    @Scopes('scope_articles:update')
+    @Post('bulk-stock')
+    async updateBulkStock(@Body() bulkStockDto: { articles: Array<{ id: string; stock: number; minStock: number }> }): Promise<{ message: string; updated: number }> {
+        return await this.articleService.updateBulkStock(bulkStockDto.articles);
+    }
+
 }

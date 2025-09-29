@@ -209,6 +209,7 @@ export class AppointmentsService {
       .populate('employee')
       .populate('facility')
       .populate('tenant')
+      .populate('sale')
       .exec();
   }
 
@@ -218,6 +219,12 @@ export class AppointmentsService {
   ): Promise<Appointment | null> {
     return this.appointmentModel
       .findOne({ _id: id, tenant: new Types.ObjectId(tenant) })
+      .populate('client')
+      .populate('service')
+      .populate('employee')
+      .populate('facility')
+      .populate('tenant')
+      .populate('sale')
       .exec();
   }
 
