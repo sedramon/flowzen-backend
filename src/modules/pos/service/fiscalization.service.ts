@@ -45,9 +45,34 @@ export class FiscalizationService {
     // 1. Pronađi prodaju
     const sale = await this.saleModel.findById(saleId);
     if (!sale) throw new BadRequestException('Prodaja nije pronađena.');
+    
+    this.logger.log(`=== FISCALIZATION SERVICE START ===`);
+    this.logger.log(`Sale ID: ${saleId}`);
+    this.logger.log(`Sale fiscal status: ${sale.fiscal?.status || 'none'}`);
+    this.logger.log(`Sale fiscal object: ${JSON.stringify(sale.fiscal)}`);
+    this.logger.log(`Sale updatedAt: ${(sale as any).updatedAt}`);
+    
+    // Proveri da li je pending status zastario (stariji od 30 sekundi)
+    if (sale.fiscal?.status === 'pending') {
+      const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+      const saleUpdatedAt = (sale as any).updatedAt;
+      this.logger.log(`Sale ${saleId} has pending status, updatedAt: ${saleUpdatedAt}, thirtySecondsAgo: ${thirtySecondsAgo}`);
+      
+      if (saleUpdatedAt && saleUpdatedAt < thirtySecondsAgo) {
+        this.logger.warn(`Resetting stale pending fiscalization for sale ${saleId}`);
+        sale.fiscal = undefined;
+        await sale.save();
+      } else {
+        this.logger.warn(`Fiscalization already pending for sale ${saleId}`);
+        throw new BadRequestException('Fiskalizacija je u toku');
+      }
+    }
     // 2. Pronađi podešavanja
     const posSettings = await this.settingsModel.findOne({ facility, tenant: user.tenant });
     const providerType = posSettings?.fiscalization?.provider || 'none';
+    this.logger.log(`Looking for POS settings - facility: ${facility}, tenant: ${user.tenant}`);
+    this.logger.log(`POS Settings found: ${posSettings ? 'yes' : 'no'}, fiscalization: ${JSON.stringify(posSettings?.fiscalization)}`);
+    this.logger.log(`Using provider type: ${providerType}`);
     const provider = this.getProvider(providerType);
     this.logger.log(`Fiscalizing sale ${sale.id} with provider ${providerType}`);
     // 3. Kreiraj log

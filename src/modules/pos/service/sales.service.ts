@@ -9,6 +9,7 @@ import { NotFoundException, ForbiddenException, BadRequestException } from '@nes
 import { CreateSaleDto } from '../dto/create-sale.dto';
 import { RefundSaleDto } from '../dto/refund-sale.dto';
 import { User } from '../../users/schemas/user.schema';
+import { FiscalizationService } from './fiscalization.service';
 
 // JWT user payload type
 interface JwtUserPayload {
@@ -28,6 +29,7 @@ export class SalesService {
     @InjectModel(CashSession.name) private readonly cashSessionModel: Model<CashSession>,
     @InjectModel(Article.name) private readonly articleModel: Model<Article>,
     @InjectModel(Appointment.name) private readonly appointmentModel: Model<Appointment>,
+    private readonly fiscalizationService: FiscalizationService,
   ) {}
 
   async createSale(dto: CreateSaleDto, user: JwtUserPayload) {
@@ -208,15 +210,87 @@ export class SalesService {
 
   async fiscalize(saleId: string, facility: string, user: JwtUserPayload) {
     const sale = await this.saleModel.findById(saleId);
-    if (!sale) throw new NotFoundException('Sale not found');
-    if (sale.fiscal?.status === 'done') throw new ForbiddenException('Račun je već fiskalizovan.');
-    sale.fiscal = { status: 'done', correlationId: 'FISC-' + Math.floor(Math.random()*1000000) };
-    await sale.save();
-    return { id: sale.id, fiscal: sale.fiscal };
+    if (!sale) throw new NotFoundException('Prodaja nije pronađena');
+    
+    this.logger.log(`=== FISCALIZATION START ===`);
+    this.logger.log(`Sale ID: ${saleId}`);
+    this.logger.log(`Facility: ${facility}`);
+    this.logger.log(`User: ${user.username}`);
+    this.logger.log(`Current fiscal status: ${sale.fiscal?.status || 'none'}`);
+    this.logger.log(`Sale fiscal object: ${JSON.stringify(sale.fiscal)}`);
+    
+    // Proveri da li je već uspešno fiskalizovana
+    if (sale.fiscal?.status === 'success') {
+      this.logger.log(`Sale ${saleId} already successfully fiscalized`);
+      throw new BadRequestException('Račun je već fiskalizovan');
+    }
+    
+    // Ako je fiskalizacija bila neuspešna, omogući ponovni pokušaj
+    if (sale.fiscal?.status === 'error') {
+      this.logger.log(`Sale ${saleId} had failed fiscalization, allowing retry`);
+      // Ukloni postojeći fiscal status da omogućimo ponovni pokušaj
+      sale.fiscal = undefined;
+      await sale.save();
+      this.logger.log(`Fiscal status cleared for sale ${saleId}`);
+    }
+
+    this.logger.log(`Calling fiscalization service for sale ${saleId}`);
+    // Pozovi fiskalizaciju servis direktno
+    const result = await this.fiscalizationService.fiscalize(saleId, facility, user);
+    
+    this.logger.log(`Fiscalized sale ${saleId}: ${result.status}`);
+    this.logger.log(`=== FISCALIZATION END ===`);
+    return {
+      id: sale.id,
+      fiscal: {
+        status: result.status,
+        correlationId: result.correlationId,
+        fiscalNumber: result.fiscalNumber
+      }
+    };
   }
 
   async getReceipt(id: string, user: JwtUserPayload) {
     // TODO: Implement receipt generation
     return '<html><body>Receipt stub</body></html>';
+  }
+
+  async resetPendingFiscalizations(tenant: string) {
+    // Resetuj sve pending fiskalizacije starije od 10 minuta
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    
+    const result = await this.saleModel.updateMany(
+      {
+        tenant,
+        'fiscal.status': 'pending',
+        updatedAt: { $lt: tenMinutesAgo }
+      },
+      {
+        $unset: { fiscal: 1 }
+      }
+    );
+
+    this.logger.log(`Reset ${result.modifiedCount} stale pending fiscalizations for tenant ${tenant}`);
+    return { resetCount: result.modifiedCount };
+  }
+
+  async resetFiscalization(saleId: string, user: JwtUserPayload) {
+    const sale = await this.saleModel.findById(saleId);
+    if (!sale) throw new NotFoundException('Prodaja nije pronađena');
+    
+    if (!sale.fiscal) {
+      throw new BadRequestException('Prodaja nema fiskalizaciju za resetovanje');
+    }
+
+    this.logger.log(`Resetting fiscalization for sale ${saleId}, current status: ${sale.fiscal.status}`);
+    
+    sale.fiscal = undefined;
+    await sale.save();
+    
+    return { 
+      message: 'Fiskalizacija je resetovana. Možete ponovo pokušati.',
+      saleId: sale.id,
+      previousStatus: sale.fiscal?.status || 'unknown'
+    };
   }
 }

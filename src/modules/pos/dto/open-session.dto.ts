@@ -1,4 +1,4 @@
-import { IsMongoId, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsMongoId } from 'class-validator';
 
 export class OpenSessionDto {
   @IsMongoId()

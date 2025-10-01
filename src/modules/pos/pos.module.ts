@@ -10,14 +10,20 @@ import { SalesService } from './service/sales.service';
 import { ReportsService } from './service/reports.service';
 import { SettingsService } from './service/settings.service';
 import { FiscalizationService } from './service/fiscalization.service';
+import { AnalyticsService } from './service/analytics.service';
 import { CashSessionController } from './controller/cash-session.controller';
 import { SalesController } from './controller/sales.controller';
 import { ReportsController } from './controller/reports.controller';
 import { SettingsController } from './controller/settings.controller';
+import { AnalyticsController } from './controller/analytics.controller';
 import { ArticlesModule } from '../articles/articles.module';
 import { Appointment, AppointmentSchema } from '../appointments/schemas/appointment.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
+import { Employee, EmployeeSchema } from '../employees/schema/employee.schema';
+import { Client, ClientsSchema } from '../clients/schemas/client.schema';
+import { Article, ArticleSchema } from '../articles/schema/article.schema';
+import { Service, ServiceSchema } from '../services/schemas/service.schema';
 
 @Module({
   imports: [
@@ -30,6 +36,10 @@ import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
       { name: Appointment.name, schema: AppointmentSchema },
       { name: User.name, schema: UserSchema },
       { name: Facility.name, schema: FacilitySchema },
+      { name: Employee.name, schema: EmployeeSchema },
+      { name: Client.name, schema: ClientsSchema },
+      { name: Article.name, schema: ArticleSchema },
+      { name: Service.name, schema: ServiceSchema },
     ]),
     ArticlesModule,
   ],
@@ -38,6 +48,7 @@ import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
     SalesController,
     ReportsController,
     SettingsController,
+    AnalyticsController,
   ],
   providers: [
     CashSessionService,
@@ -45,6 +56,7 @@ import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
     ReportsService,
     SettingsService,
     FiscalizationService,
+    AnalyticsService,
   ],
   exports: [],
 })
