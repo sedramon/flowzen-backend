@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SalesService } from './sales.service';
+import { SalesService } from '../service/sales.service';
 import { getModelToken } from '@nestjs/mongoose';
 
 describe('SalesService', () => {

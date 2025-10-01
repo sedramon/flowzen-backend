@@ -1,46 +1,57 @@
-import { FiscalProvider, FiscalizeResult } from './fiscal.provider';
+import { FiscalProvider } from './fiscal.provider';
+import { FiscalizeResult } from '../../types';
 
+/**
+ * Device Fiscal Provider
+ * 
+ * Simulates communication with a physical fiscal device.
+ * In a real implementation, this would use the device SDK
+ * to communicate with the actual fiscal printer/device.
+ */
 export class DeviceFiscalProvider implements FiscalProvider {
+  /**
+   * Fiscalize sale through physical device
+   * @param sale - Sale transaction data
+   * @returns Promise resolving to fiscalization result
+   */
   async fiscalize(sale: any): Promise<FiscalizeResult> {
-    // Simulacija fiskalnog uređaja
-    // U realnoj implementaciji bi ovde bio SDK za komunikaciju sa fiskalnim uređajem
-    
     try {
-      // Simuliraj komunikaciju sa uređajem (0.5-1 sekunda)
+      // Simulate device communication delay (0.5-1 second)
       const delay = Math.random() * 500 + 500;
       await new Promise(resolve => setTimeout(resolve, delay));
       
-      // Simuliraj uspešnu fiskalizaciju (90% šanse)
+      // Simulate successful fiscalization (90% success rate)
       if (Math.random() > 0.1) {
-        const fiscalNumber = `FISC-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const fiscalNumber = `DEV-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         
         return {
           status: 'success',
-          number: fiscalNumber,
-          time: new Date(),
+          fiscalNumber,
+          correlationId: `device-${sale._id || 'unknown'}`,
           error: undefined,
         };
       } else {
-        // Simuliraj grešku
+        // Simulate device errors
         const errors = [
-          'Uređaj nije dostupan',
-          'Greška komunikacije sa uređajem',
-          'Uređaj je zauzet',
-          'Nedovoljno papira'
+          'Device not available',
+          'Communication error with device',
+          'Device is busy',
+          'Insufficient paper',
+          'Device offline'
         ];
         const randomError = errors[Math.floor(Math.random() * errors.length)];
         
         return {
           status: 'error',
           error: randomError,
-          time: new Date(),
+          correlationId: `device-${sale._id || 'unknown'}`,
         };
       }
     } catch (error: any) {
       return {
         status: 'error',
-        error: error.message || 'Nepoznata greška fiskalnog uređaja',
-        time: new Date(),
+        error: error.message || 'Unknown fiscal device error',
+        correlationId: `device-${sale._id || 'unknown'}`,
       };
     }
   }

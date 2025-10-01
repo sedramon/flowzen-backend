@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FiscalizationService } from './fiscalization.service';
-import { NoneFiscalProvider } from './fiscal-providers/none.provider';
-import { DeviceFiscalProvider } from './fiscal-providers/device.provider';
-import { CloudFiscalProvider } from './fiscal-providers/cloud.provider';
+import { FiscalizationService } from '../service/fiscalization.service';
+import { NoneFiscalProvider } from '../service/fiscal-providers/none.provider';
+import { DeviceFiscalProvider } from '../service/fiscal-providers/device.provider';
+import { CloudFiscalProvider } from '../service/fiscal-providers/cloud.provider';
 
 describe('FiscalizationService', () => {
   let service: FiscalizationService;

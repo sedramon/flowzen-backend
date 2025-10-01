@@ -3,19 +3,22 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CashSession } from '../schemas/cash-session.schema';
 import { Sale } from '../schemas/sale.schema';
-import { OpenSessionDto } from '../dto/open-session.dto';
-import { CloseSessionDto } from '../dto/close-session.dto';
-import { CashCountingDto, CashVerificationDto, CashVarianceDto } from '../dto/cash-counting.dto';
+import { OpenSessionDto } from '../dto/sessions/open-session.dto';
+import { CloseSessionDto } from '../dto/sessions/close-session.dto';
+import { CashCountingDto, CashVerificationDto, CashVarianceDto } from '../dto/sessions/cash-counting.dto';
+import {
+  JwtUserPayload,
+  CashSessionSummary,
+  PaymentTotals,
+  PosApiResponse
+} from '../types';
 
-// JWT user payload type
-interface JwtUserPayload {
-  userId: string;
-  username: string;
-  tenant: string;
-  role: string;
-  scopes: string[];
-}
-
+/**
+ * Cash Session Service
+ * 
+ * Handles all cash session operations including opening, closing,
+ * cash counting, verification, and reconciliation.
+ */
 @Injectable()
 export class CashSessionService {
   private readonly logger = new Logger(CashSessionService.name);
@@ -30,9 +33,13 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Otvaranje nove cash sesije
+   * Open new cash session
+   * @param dto - Session opening data
+   * @param user - Authenticated user
+   * @returns Created session ID
    */
-  async openSession(dto: OpenSessionDto, user: JwtUserPayload) {
+  async openSession(dto: OpenSessionDto, user: JwtUserPayload): Promise<{ id: string }> {
+    
     // 1. Proveri da li već postoji otvorena sesija za ovog usera i facility
     const existing = await this.cashSessionModel.findOne({
       tenant: user.tenant,
@@ -46,7 +53,7 @@ export class CashSessionService {
     }
 
     // 2. Kreiraj novu sesiju
-    const session = await this.cashSessionModel.create({
+    const sessionData = {
       tenant: user.tenant,
       facility: dto.facility,
       openedBy: user.userId,
@@ -57,20 +64,26 @@ export class CashSessionService {
       totalsByMethod: { cash: 0, card: 0, voucher: 0, gift: 0, bank: 0, other: 0 },
       expectedCash: dto.openingFloat,
       variance: 0,
-    });
-
-    this.logger.log(`Otvorena nova sesija ${session.id} za usera ${user.userId} na facility ${dto.facility}`);
+    };
+    
+    const session = await this.cashSessionModel.create(sessionData);
     return { id: session.id };
   }
 
   /**
-   * Zatvaranje cash sesije sa profesionalnom kalkulacijom
+   * Close cash session with professional calculations
+   * @param id - Session ID
+   * @param dto - Session closing data
+   * @param user - Authenticated user
+   * @returns Session closing summary
    */
-  async closeSession(id: string, dto: CloseSessionDto, user: JwtUserPayload) {
+  async closeSession(id: string, dto: CloseSessionDto, user: JwtUserPayload): Promise<CashSessionSummary> {
+    
     // 1. Pronađi sesiju
     const session = await this.cashSessionModel.findOne({ _id: id, tenant: user.tenant }).exec();
     if (!session) throw new NotFoundException('Sesija nije pronađena.');
     if (session.status === 'closed') throw new ForbiddenException('Sesija je već zatvorena.');
+    
     
     // 2. Proveri da li user ima pravo da zatvori (može samo onaj ko je otvorio ili admin)
     if (String(session.openedBy) !== String(user.userId) && !user.scopes?.includes('scope_pos_admin')) {
@@ -82,6 +95,7 @@ export class CashSessionService {
     
     // 4. Izračunaj variance
     const variance = dto.closingCount - expectedCash;
+    const variancePercentage = expectedCash > 0 ? (variance / expectedCash) * 100 : 0;
     
     // 5. Validacija variance (opciono - može se konfigurirati)
     if (Math.abs(variance) > 100) { // Ako je razlika veća od 100 dinara
@@ -89,59 +103,75 @@ export class CashSessionService {
     }
     
     // 6. Zatvori sesiju
-    session.closedBy = user.userId;
-    session.closedAt = new Date();
-    session.closingCount = dto.closingCount;
-    session.expectedCash = expectedCash;
-    session.variance = variance;
-    session.status = 'closed';
-    session.note = dto.note;
-    session.totalsByMethod = totalsByMethod;
+    const updateData = {
+      closedBy: user.userId,
+      closedAt: new Date(),
+      closingCount: dto.closingCount,
+      expectedCash: expectedCash,
+      variance: variance,
+      status: 'closed',
+      note: dto.note,
+      totalsByMethod: totalsByMethod
+    };
     
-    await session.save();
-    
-    this.logger.log(`Zatvorena sesija ${session.id} od strane ${user.userId}. Variance: ${variance}`);
+    await this.cashSessionModel.updateOne(
+      { _id: id },
+      { $set: updateData }
+    );
     
     return {
-      id: session.id,
+      id: id,
       variance,
       expectedCash,
       closingCount: dto.closingCount,
-      closedAt: session.closedAt,
+      closedAt: new Date(),
       totalsByMethod,
       summary: {
         openingFloat: session.openingFloat,
         totalSales: expectedCash - session.openingFloat,
         closingCount: dto.closingCount,
         variance: variance,
-        variancePercentage: expectedCash > 0 ? (variance / expectedCash) * 100 : 0
+        variancePercentage: variancePercentage
       }
     };
   }
 
   /**
-   * Pronalaženje svih sesija sa filterima
+   * Find all sessions with filters
+   * @param query - Query parameters
+   * @param user - Authenticated user
+   * @returns Array of sessions
    */
-  async findAll(query: any, user: JwtUserPayload) {
+  async findAll(query: any, user: JwtUserPayload): Promise<CashSession[]> {
     const filter: any = { tenant: user.tenant };
     if (query.status) filter.status = query.status;
     if (query.facility) filter.facility = query.facility;
     if (query.employee) filter.openedBy = query.employee;
     
-    return this.cashSessionModel.find(filter).sort({ openedAt: -1 }).lean();
+    const sessions = await this.cashSessionModel.find(filter)
+      .populate('facility', 'name')
+      .populate('openedBy', 'name email')
+      .populate('closedBy', 'name email')
+      .sort({ openedAt: -1 })
+      .lean();
+    
+    return sessions;
   }
 
   /**
-   * Pronalaženje sesije po ID
+   * Find session by ID
+   * @param id - Session ID
+   * @param user - Authenticated user
+   * @returns Session details
    */
-  async findById(id: string, user: JwtUserPayload) {
+  async findById(id: string, user: JwtUserPayload): Promise<CashSession & { calculatedTotals?: any }> {
     const session = await this.cashSessionModel.findOne({ 
       _id: id, 
       tenant: user.tenant 
     })
     .populate('facility', 'name')
-    .populate('openedBy', 'firstName lastName')
-    .populate('closedBy', 'firstName lastName')
+    .populate('openedBy', 'name email')
+    .populate('closedBy', 'name email')
     .lean();
 
     if (!session) {
@@ -168,17 +198,27 @@ export class CashSessionService {
   }
 
   /**
-   * Pronalaženje trenutne aktivne sesije
+   * Get current active session
+   * @param user - Authenticated user
+   * @param facility - Optional facility filter
+   * @returns Current session or null
    */
-  async getCurrentSession(user: JwtUserPayload) {
-    const session = await this.cashSessionModel.findOne({
+  async getCurrentSession(user: JwtUserPayload, facility?: string): Promise<CashSession | null> {
+    const filter: any = {
       tenant: user.tenant,
       openedBy: user.userId,
       status: 'open'
-    })
+    };
+    
+    if (facility) {
+      filter.facility = facility;
+    }
+    
+    const session = await this.cashSessionModel.findOne(filter)
     .populate('facility', 'name')
-    .populate('openedBy', 'firstName lastName')
+    .populate('openedBy', 'name email')
     .lean();
+    
     
     if (!session) {
       return null; // Nema aktivne sesije
@@ -192,9 +232,21 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Profesionalno brojanje novca
+   * Professional cash counting
+   * @param sessionId - Session ID
+   * @param dto - Cash counting data
+   * @param user - Authenticated user
+   * @returns Cash counting results
    */
-  async countCash(sessionId: string, dto: CashCountingDto, user: JwtUserPayload) {
+  async countCash(sessionId: string, dto: CashCountingDto, user: JwtUserPayload): Promise<{
+    sessionId: string;
+    expectedCash: number;
+    countedCash: number;
+    variance: number;
+    variancePercentage: number;
+    status: string;
+    recommendations: string[];
+  }> {
     const session = await this.cashSessionModel.findById(sessionId);
     if (!session) throw new NotFoundException('Sesija nije pronađena.');
     if (session.status === 'closed') throw new ForbiddenException('Sesija je već zatvorena.');
@@ -220,9 +272,21 @@ export class CashSessionService {
   }
 
   /**
-   * Verifikacija brojanja novca
+   * Verify cash count
+   * @param sessionId - Session ID
+   * @param dto - Cash verification data
+   * @param user - Authenticated user
+   * @returns Verification results
    */
-  async verifyCashCount(sessionId: string, dto: CashVerificationDto, user: JwtUserPayload) {
+  async verifyCashCount(sessionId: string, dto: CashVerificationDto, user: JwtUserPayload): Promise<{
+    sessionId: string;
+    verified: boolean;
+    expectedCash: number;
+    actualCash: number;
+    variance: number;
+    variancePercentage: number;
+    timestamp: Date;
+  }> {
     const session = await this.cashSessionModel.findById(sessionId);
     if (!session) throw new NotFoundException('Sesija nije pronađena.');
     
@@ -249,9 +313,20 @@ export class CashSessionService {
   }
 
   /**
-   * Rukovanje variance (nedostatak/višak novca)
+   * Handle cash variance (shortage/excess)
+   * @param sessionId - Session ID
+   * @param dto - Variance handling data
+   * @param user - Authenticated user
+   * @returns Variance handling results
    */
-  async handleCashVariance(sessionId: string, dto: CashVarianceDto, user: JwtUserPayload) {
+  async handleCashVariance(sessionId: string, dto: CashVarianceDto, user: JwtUserPayload): Promise<{
+    sessionId: string;
+    action: string;
+    variance: number;
+    reason: string;
+    timestamp: Date;
+    handledBy: string;
+  }> {
     const session = await this.cashSessionModel.findById(sessionId);
     if (!session) throw new NotFoundException('Sesija nije pronađena.');
     
@@ -284,9 +359,32 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Profesionalna metoda za usklađivanje cash-a
+   * Professional cash reconciliation method
+   * @param sessionId - Session ID
+   * @param user - Authenticated user
+   * @returns Reconciliation results
    */
-  async reconcileSession(sessionId: string, user: JwtUserPayload) {
+  async reconcileSession(sessionId: string, user: JwtUserPayload): Promise<{
+    sessionId: string;
+    openingFloat: number;
+    expectedCash: number;
+    actualCash: number;
+    variance: number;
+    totalsByMethod: PaymentTotals;
+    summary: {
+      totalSales: number;
+      totalRefunds: number;
+      netSales: number;
+      cashFlow: {
+        opening: number;
+        sales: number;
+        refunds: number;
+        expected: number;
+        actual: number;
+        variance: number;
+      };
+    };
+  }> {
     const session = await this.cashSessionModel.findById(sessionId);
     if (!session) throw new NotFoundException('Sesija nije pronađena.');
     
@@ -320,9 +418,15 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Generalni POS izveštaji
+   * General POS reports
+   * @param tenant - Tenant ID
+   * @param facility - Facility ID
+   * @param dateFrom - Start date
+   * @param dateTo - End date
+   * @param user - Authenticated user
+   * @returns POS reports data
    */
-  async getReports(tenant: string, facility: string, dateFrom: string, dateTo: string, user: JwtUserPayload) {
+  async getReports(tenant: string, facility: string, dateFrom: string, dateTo: string, user: JwtUserPayload): Promise<any> {
     // Mock podaci za sada - treba implementirati pravu logiku
     return {
       summary: {
@@ -354,9 +458,36 @@ export class CashSessionService {
   }
 
   /**
-   * Dnevni cash izveštaj
+   * Daily cash report
+   * @param facility - Facility ID
+   * @param date - Report date
+   * @param user - Authenticated user
+   * @returns Daily cash report data
    */
-  async getDailyCashReport(facility: string, date: string, user: JwtUserPayload) {
+  async getDailyCashReport(facility: string, date: string, user: JwtUserPayload): Promise<{
+    date: string;
+    facility: string;
+    sessionCount: number;
+    summary: {
+      totalOpeningFloat: number;
+      totalExpectedCash: number;
+      totalActualCash: number;
+      totalVariance: number;
+      variancePercentage: number;
+    };
+    totalsByMethod: PaymentTotals;
+    sessions: Array<{
+      id: string;
+      openedBy: string;
+      closedBy: string;
+      openedAt: Date;
+      closedAt: Date;
+      openingFloat: number;
+      expectedCash: number;
+      actualCash: number;
+      variance: number;
+    }>;
+  }> {
     const startDate = new Date(date);
     startDate.setHours(0, 0, 0, 0);
     
@@ -410,7 +541,7 @@ export class CashSessionService {
       },
       totalsByMethod,
       sessions: sessions.map(s => ({
-        id: s._id,
+        id: s._id.toString(),
         openedBy: s.openedBy,
         closedBy: s.closedBy,
         openedAt: s.openedAt,
@@ -428,10 +559,19 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * PROFESIONALNA METODA ZA KALKULACIJU SESIJE
-   * Izračunava stvarne totals iz prodaja i refundova
+   * PROFESSIONAL SESSION CALCULATION METHOD
+   * Calculates actual totals from sales and refunds
+   * @param sessionId - Session ID
+   * @returns Session totals calculation
    */
-  private async calculateSessionTotals(sessionId: string) {
+  private async calculateSessionTotals(sessionId: string): Promise<{
+    totalsByMethod: PaymentTotals;
+    expectedCash: number;
+    totalSales: number;
+    totalRefunds: number;
+    netTotal: number;
+    openingFloat: number;
+  }> {
     // 1. Uzmi sesiju da dobijemo openingFloat
     const session = await this.cashSessionModel.findById(sessionId).lean();
     if (!session) {
@@ -441,8 +581,8 @@ export class CashSessionService {
     // 2. Uzmi sve prodaje za ovu sesiju
     const sales = await this.saleModel.find({ session: sessionId }).lean();
     
-    // 3. Inicijalizuj totals
-    const totalsByMethod = {
+    // 3. Initialize totals with proper typing
+    const totalsByMethod: PaymentTotals = {
       cash: 0,
       card: 0,
       voucher: 0,
@@ -504,8 +644,6 @@ export class CashSessionService {
     // 7. PROFESIONALNA KALKULACIJA: expectedCash = openingFloat + cash sales - cash refunds
     const expectedCash = session.openingFloat + totalsByMethod.cash;
     
-    this.logger.log(`Session ${sessionId} calculation: Opening: ${session.openingFloat}, Cash Sales: ${totalsByMethod.cash}, Cash Refunds: ${totalRefunds}, Expected Cash: ${expectedCash}`);
-    
     return {
       totalsByMethod,
       expectedCash,
@@ -521,9 +659,12 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Određuje status variance na osnovu procenta
+   * Determine variance status based on percentage
+   * @param variance - Cash variance amount
+   * @param percentage - Variance percentage
+   * @returns Status string
    */
-  private getVarianceStatus(variance: number, percentage: number): string {
+  private getVarianceStatus(variance: number, percentage: number): 'acceptable' | 'warning' | 'critical' | 'severe' {
     if (Math.abs(percentage) <= 1) return 'acceptable';
     if (Math.abs(percentage) <= 5) return 'warning';
     if (Math.abs(percentage) <= 10) return 'critical';
@@ -531,7 +672,10 @@ export class CashSessionService {
   }
 
   /**
-   * Generiše preporuke za handling variance
+   * Generate recommendations for handling variance
+   * @param variance - Cash variance amount
+   * @param percentage - Variance percentage
+   * @returns Array of recommendations
    */
   private getVarianceRecommendations(variance: number, percentage: number): string[] {
     const recommendations = [];
@@ -559,9 +703,12 @@ export class CashSessionService {
   // ============================================================================
 
   /**
-   * Zatvaranje svih test sesija (samo za development)
+   * Close all test sessions (development only)
+   * @param facility - Facility ID
+   * @param userId - User ID
+   * @returns Number of closed sessions
    */
-  async closeAllTestSessions(facility: string, userId: string) {
+  async closeAllTestSessions(facility: string, userId: string): Promise<number> {
     const filter: any = { status: 'open' };
     if (facility) filter.facility = facility;
     if (userId) filter.openedBy = userId;

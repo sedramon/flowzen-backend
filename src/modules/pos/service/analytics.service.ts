@@ -3,16 +3,23 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Sale } from '../schemas/sale.schema';
 import { CashSession } from '../schemas/cash-session.schema';
+import { 
+  JwtUserPayload, 
+  AnalyticsQuery, 
+  AnalyticsPeriod, 
+  DateRange,
+  SalesAnalytics,
+  CashFlowAnalytics,
+  PerformanceAnalytics,
+  GeneralAnalytics
+} from '../types';
 
-// JWT user payload type
-interface JwtUserPayload {
-  userId: string;
-  username: string;
-  tenant: string;
-  role: string;
-  scopes: string[];
-}
-
+/**
+ * Analytics Service
+ * 
+ * Handles all analytics operations for POS system including
+ * sales analytics, cash flow analytics, and performance metrics.
+ */
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
@@ -22,8 +29,14 @@ export class AnalyticsService {
     @InjectModel(CashSession.name) private readonly cashSessionModel: Model<CashSession>,
   ) {}
 
-  async getAnalytics(filters: any, user: JwtUserPayload) {
-    const { facility, period = 'week', startDate, endDate } = filters;
+  /**
+   * Get general analytics data
+   * @param filters - Analytics query filters
+   * @param user - Authenticated user
+   * @returns General analytics data
+   */
+  async getAnalytics(filters: AnalyticsQuery, user: JwtUserPayload): Promise<GeneralAnalytics> {
+    const { facility, period = '7d', startDate, endDate } = filters;
     
     // Calculate date range based on period
     const dateRange = this.calculateDateRange(period, startDate, endDate);
@@ -75,7 +88,14 @@ export class AnalyticsService {
     };
   }
 
-  async getCashFlowAnalytics(facility: string, period: string, user: JwtUserPayload) {
+  /**
+   * Get cash flow analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param user - Authenticated user
+   * @returns Cash flow analytics data
+   */
+  async getCashFlowAnalytics(facility: string, period: AnalyticsPeriod, user: JwtUserPayload): Promise<CashFlowAnalytics> {
     const dateRange = this.calculateDateRange(period);
     
     const sessions = await this.cashSessionModel.find({
@@ -98,7 +118,14 @@ export class AnalyticsService {
     };
   }
 
-  async getSalesAnalytics(facility: string, period: string, user: JwtUserPayload) {
+  /**
+   * Get sales analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param user - Authenticated user
+   * @returns Sales analytics data
+   */
+  async getSalesAnalytics(facility: string, period: AnalyticsPeriod, user: JwtUserPayload): Promise<SalesAnalytics> {
     const dateRange = this.calculateDateRange(period);
     
     const sales = await this.saleModel.find({
@@ -130,7 +157,14 @@ export class AnalyticsService {
     };
   }
 
-  async getPerformanceAnalytics(facility: string, period: string, user: JwtUserPayload) {
+  /**
+   * Get performance analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param user - Authenticated user
+   * @returns Performance analytics data
+   */
+  async getPerformanceAnalytics(facility: string, period: AnalyticsPeriod, user: JwtUserPayload): Promise<PerformanceAnalytics> {
     const dateRange = this.calculateDateRange(period);
     
     const sessions = await this.cashSessionModel.find({
@@ -158,40 +192,6 @@ export class AnalyticsService {
   // PRIVATE HELPER METHODS
   // ============================================================================
 
-  private calculateDateRange(period: string, startDate?: string, endDate?: string) {
-    const now = new Date();
-    let start: Date;
-    let end: Date = now;
-
-    if (startDate && endDate) {
-      start = new Date(startDate);
-      end = new Date(endDate);
-    } else {
-      switch (period) {
-        case 'day':
-          start = new Date(now);
-          start.setHours(0, 0, 0, 0);
-          break;
-        case 'week':
-          start = new Date(now);
-          start.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          start = new Date(now);
-          start.setMonth(now.getMonth() - 1);
-          break;
-        case 'quarter':
-          start = new Date(now);
-          start.setMonth(now.getMonth() - 3);
-          break;
-        default:
-          start = new Date(now);
-          start.setDate(now.getDate() - 7);
-      }
-    }
-
-    return { start, end };
-  }
 
   private calculateVarianceTrend(sessions: any[]): 'improving' | 'stable' | 'declining' {
     if (sessions.length < 2) return 'stable';
@@ -366,5 +366,53 @@ export class AnalyticsService {
     
     const totalHours = totalDuration / (1000 * 60 * 60);
     return totalHours > 0 ? totalCash / totalHours : 0;
+  }
+
+  // ============================================================================
+  // HELPER METHODS
+  // ============================================================================
+
+  /**
+   * Calculate date range based on period
+   * @param period - Analytics period
+   * @param startDate - Custom start date (optional)
+   * @param endDate - Custom end date (optional)
+   * @returns Date range object
+   */
+  private calculateDateRange(period: AnalyticsPeriod, startDate?: string, endDate?: string): DateRange {
+    const end = new Date();
+    const start = new Date();
+
+    if (startDate && endDate) {
+      return {
+        start: new Date(startDate),
+        end: new Date(endDate)
+      };
+    }
+
+    switch (period) {
+      case '1d':
+        start.setDate(end.getDate() - 1);
+        break;
+      case '7d':
+        start.setDate(end.getDate() - 7);
+        break;
+      case '30d':
+        start.setDate(end.getDate() - 30);
+        break;
+      case '90d':
+        start.setDate(end.getDate() - 90);
+        break;
+      case '1y':
+        start.setFullYear(end.getFullYear() - 1);
+        break;
+      default:
+        start.setDate(end.getDate() - 7);
+    }
+
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+
+    return { start, end };
   }
 }

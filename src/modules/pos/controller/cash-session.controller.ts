@@ -1,12 +1,26 @@
-import { Controller, Post, Body, Param, Get, Query, UseGuards, Req, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Query,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  NotFoundException
+} from '@nestjs/common';
+import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../../auth/auth.guard';
 import { ScopesGuard } from '../../auth/scopes.guard';
 import { CashSessionService } from '../service/cash-session.service';
-import { OpenSessionDto } from '../dto/open-session.dto';
-import { CloseSessionDto } from '../dto/close-session.dto';
-import { CashCountingDto, CashVerificationDto, CashVarianceDto } from '../dto/cash-counting.dto';
+import { OpenSessionDto } from '../dto/sessions/open-session.dto';
+import { CloseSessionDto } from '../dto/sessions/close-session.dto';
+import { CashCountingDto, CashVerificationDto, CashVarianceDto } from '../dto/sessions/cash-counting.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { User } from '../../users/schemas/user.schema';
 import { Facility } from '../../facility/schema/facility.schema';
 import { Employee } from '../../employees/schema/employee.schema';
@@ -15,6 +29,7 @@ import { Article } from '../../articles/schema/article.schema';
 import { Service } from '../../services/schemas/service.schema';
 import { Appointment } from '../../appointments/schemas/appointment.schema';
 import { CashSession } from '../schemas/cash-session.schema';
+import { JwtUserPayload, PosApiResponse } from '../types';
 
 @Controller('pos/sessions')
 @UseGuards(JwtAuthGuard, ScopesGuard)
@@ -36,39 +51,142 @@ export class CashSessionController {
   // ============================================================================
 
   /**
-   * Otvaranje nove cash sesije
+   * Open a new cash session
+   * 
+   * @param dto - Session opening data
+   * @param req - Request object containing user information
+   * @returns Created session information
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sessions/open
+   * {
+   *   "facility": "64a1b2c3d4e5f6789012345a",
+   *   "openingFloat": 1000,
+   *   "note": "Morning shift"
+   * }
+   * ```
    */
   @Post('open')
-  async open(@Body() dto: OpenSessionDto, @Req() req) {
-    return this.cashSessionService.openSession(dto, req.user);
+  @HttpCode(HttpStatus.CREATED)
+  async open(
+    @Body() dto: OpenSessionDto,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const session = await this.cashSessionService.openSession(dto, req.user);
+      return {
+        success: true,
+        data: session,
+        message: 'Cash session opened successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to open cash session');
+    }
   }
 
   /**
-   * Zatvaranje cash sesije
+   * Close a cash session
+   * 
+   * @param id - Session ID to close
+   * @param dto - Session closing data
+   * @param req - Request object containing user information
+   * @returns Closed session summary
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sessions/64a1b2c3d4e5f6789012345a/close
+   * {
+   *   "closingCount": 1500,
+   *   "note": "End of shift"
+   * }
+   * ```
    */
   @Post(':id/close')
-  async close(@Param('id') id: string, @Body() dto: CloseSessionDto, @Req() req) {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
+  @HttpCode(HttpStatus.OK)
+  async close(
+    @Param('id') id: string,
+    @Body() dto: CloseSessionDto,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid session ID format');
+      }
+
+      const result = await this.cashSessionService.closeSession(id, dto, req.user);
+      return {
+        success: true,
+        data: result,
+        message: 'Cash session closed successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to close cash session');
     }
-    return this.cashSessionService.closeSession(id, dto, req.user);
   }
 
   /**
-   * Pronalaženje svih sesija
+   * Get all cash sessions with optional filtering
+   * 
+   * @param query - Query parameters for filtering
+   * @param req - Request object containing user information
+   * @returns List of cash sessions
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sessions?facility=64a1b2c3d4e5f6789012345a&status=open&limit=10
+   * ```
    */
   @Get()
-  async findAll(@Query() query, @Req() req) {
-    return this.cashSessionService.findAll(query, req.user);
+  @HttpCode(HttpStatus.OK)
+  async findAll(
+    @Query() query: { status?: string; facility?: string; employee?: string; limit?: string },
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const sessions = await this.cashSessionService.findAll(query, req.user);
+      return {
+        success: true,
+        data: sessions,
+        message: 'Cash sessions retrieved successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to retrieve cash sessions');
+    }
   }
 
   /**
-   * Pronalaženje trenutne aktivne sesije
+   * Get current active cash session
+   * 
+   * @param query - Query parameters (facility)
+   * @param req - Request object containing user information
+   * @returns Current active session or null
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sessions/current?facility=64a1b2c3d4e5f6789012345a
+   * ```
    */
   @Get('current')
-  @UseGuards(ScopesGuard)
-  async getCurrentSession(@Req() req) {
-    return this.cashSessionService.getCurrentSession(req.user);
+  @HttpCode(HttpStatus.OK)
+  async getCurrentSession(
+    @Query() query: { facility?: string },
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const session = await this.cashSessionService.getCurrentSession(req.user, query.facility);
+      return {
+        success: true,
+        data: session,
+        message: session ? 'Current session found' : 'No active session found'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to get current session');
+    }
   }
 
   // ============================================================================
@@ -76,7 +194,13 @@ export class CashSessionController {
   // ============================================================================
 
   /**
-   * Generalni POS izveštaji
+   * General POS reports
+   * @param tenant - Tenant ID
+   * @param facility - Facility ID
+   * @param dateFrom - Start date
+   * @param dateTo - End date
+   * @param req - Request object
+   * @returns POS reports data
    */
   @Get('reports')
   @UseGuards(ScopesGuard)
@@ -85,16 +209,30 @@ export class CashSessionController {
     @Query('facility') facility: string,
     @Query('dateFrom') dateFrom: string,
     @Query('dateTo') dateTo: string,
-    @Req() req
-  ) {
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
     return this.cashSessionService.getReports(tenant, facility, dateFrom, dateTo, req.user);
   }
 
   /**
-   * Kreiranje realnih testnih podataka za POS sistem
+   * Create real test data for POS system
+   * @param req - Request object
+   * @returns Seed data results
    */
   @Post('seed-real-data')
-  async seedRealData(@Req() req) {
+  async seedRealData(@Req() req: { user: JwtUserPayload }): Promise<{
+    success: boolean;
+    message: string;
+    counts?: {
+      articles: number;
+      services: number;
+      employees: number;
+      clients: number;
+      appointments: number;
+      cashSessions: number;
+    };
+    error?: string;
+  }> {
     const tenant = req.user.tenant;
     const facilityId = '68d855f9f07f767dc2582ba2'; // Test Facility ID
     
@@ -482,10 +620,18 @@ export class CashSessionController {
   }
 
   /**
-   * Pregled baze podataka - svi entiteti i broj zapisa
+   * Database overview - all entities and record counts
+   * @param secret - Secret key for authorization
+   * @returns Database overview data
    */
   @Get('database-overview')
-  async getDatabaseOverview(@Query('secret') secret: string) {
+  async getDatabaseOverview(@Query('secret') secret: string): Promise<{
+    error?: string;
+    success?: boolean;
+    overview?: any;
+    detailedInfo?: any;
+    message?: string;
+  }> {
     if (secret !== 'flowzen-setup-2025') {
       return { error: 'Unauthorized' };
     }
@@ -544,10 +690,13 @@ export class CashSessionController {
   }
 
   /**
-   * Pronalaženje sesije po ID
+   * Find session by ID
+   * @param id - Session ID
+   * @param req - Request object
+   * @returns Session details
    */
   @Get(':id')
-  async findById(@Param('id') id: string, @Req() req) {
+  async findById(@Param('id') id: string, @Req() req: { user: JwtUserPayload }): Promise<CashSession> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid session ID format');
     }
@@ -559,10 +708,26 @@ export class CashSessionController {
   // ============================================================================
 
   /**
-   * Brojanje novca u sesiji
+   * Count cash in session
+   * @param id - Session ID
+   * @param dto - Cash counting data
+   * @param req - Request object
+   * @returns Cash counting results
    */
   @Post(':id/count-cash')
-  async countCash(@Param('id') id: string, @Body() dto: CashCountingDto, @Req() req) {
+  async countCash(
+    @Param('id') id: string, 
+    @Body() dto: CashCountingDto, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<{
+    sessionId: string;
+    expectedCash: number;
+    countedCash: number;
+    variance: number;
+    variancePercentage: number;
+    status: string;
+    recommendations: string[];
+  }> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid session ID format');
     }
@@ -570,10 +735,26 @@ export class CashSessionController {
   }
 
   /**
-   * Verifikacija brojanja novca
+   * Verify cash count
+   * @param id - Session ID
+   * @param dto - Cash verification data
+   * @param req - Request object
+   * @returns Verification results
    */
   @Post(':id/verify-cash')
-  async verifyCashCount(@Param('id') id: string, @Body() dto: CashVerificationDto, @Req() req) {
+  async verifyCashCount(
+    @Param('id') id: string, 
+    @Body() dto: CashVerificationDto, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<{
+    sessionId: string;
+    verified: boolean;
+    expectedCash: number;
+    actualCash: number;
+    variance: number;
+    variancePercentage: number;
+    timestamp: Date;
+  }> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid session ID format');
     }
@@ -581,10 +762,25 @@ export class CashSessionController {
   }
 
   /**
-   * Rukovanje variance (nedostatak/višak novca)
+   * Handle cash variance (shortage/excess)
+   * @param id - Session ID
+   * @param dto - Variance handling data
+   * @param req - Request object
+   * @returns Variance handling results
    */
   @Post(':id/handle-variance')
-  async handleCashVariance(@Param('id') id: string, @Body() dto: CashVarianceDto, @Req() req) {
+  async handleCashVariance(
+    @Param('id') id: string, 
+    @Body() dto: CashVarianceDto, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<{
+    sessionId: string;
+    action: string;
+    variance: number;
+    reason: string;
+    timestamp: Date;
+    handledBy: string;
+  }> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid session ID format');
     }
@@ -596,10 +792,13 @@ export class CashSessionController {
   // ============================================================================
 
   /**
-   * Usklađivanje cash-a za sesiju
+   * Reconcile cash for session
+   * @param id - Session ID
+   * @param req - Request object
+   * @returns Reconciliation results
    */
   @Get(':id/reconcile')
-  async reconcileSession(@Param('id') id: string, @Req() req) {
+  async reconcileSession(@Param('id') id: string, @Req() req: { user: JwtUserPayload }): Promise<any> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid session ID format');
     }
@@ -607,14 +806,18 @@ export class CashSessionController {
   }
 
   /**
-   * Dnevni cash izveštaj
+   * Daily cash report
+   * @param facility - Facility ID
+   * @param date - Report date
+   * @param req - Request object
+   * @returns Daily cash report data
    */
   @Get('reports/daily')
   async getDailyCashReport(
     @Query('facility') facility: string,
     @Query('date') date: string,
-    @Req() req
-  ) {
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<any> {
     if (!Types.ObjectId.isValid(facility)) {
       throw new BadRequestException('Invalid facility ID format');
     }
@@ -622,14 +825,18 @@ export class CashSessionController {
   }
 
   /**
-   * Nedeljni cash izveštaj
+   * Weekly cash report
+   * @param facility - Facility ID
+   * @param week - Week in YYYY-WW format
+   * @param req - Request object
+   * @returns Weekly cash report data
    */
   @Get('reports/weekly')
   async getWeeklyCashReport(
     @Query('facility') facility: string,
-    @Query('week') week: string, // YYYY-WW format
-    @Req() req
-  ) {
+    @Query('week') week: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<{ message: string }> {
     if (!Types.ObjectId.isValid(facility)) {
       throw new BadRequestException('Invalid facility ID format');
     }
@@ -638,14 +845,18 @@ export class CashSessionController {
   }
 
   /**
-   * Mesečni cash izveštaj
+   * Monthly cash report
+   * @param facility - Facility ID
+   * @param month - Month in YYYY-MM format
+   * @param req - Request object
+   * @returns Monthly cash report data
    */
   @Get('reports/monthly')
   async getMonthlyCashReport(
     @Query('facility') facility: string,
-    @Query('month') month: string, // YYYY-MM format
-    @Req() req
-  ) {
+    @Query('month') month: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<{ message: string }> {
     if (!Types.ObjectId.isValid(facility)) {
       throw new BadRequestException('Invalid facility ID format');
     }
@@ -658,13 +869,16 @@ export class CashSessionController {
   // ============================================================================
 
   /**
-   * Zatvaranje svih test sesija (samo za development)
+   * Close all test sessions (development only)
+   * @param secret - Secret key for authorization
+   * @param body - Request body with facility and userId
+   * @returns Number of closed sessions
    */
   @Post('close-all-test-sessions')
   async closeAllTestSessions(
     @Query('secret') secret: string, 
-    @Body() body: { facility: string, userId: string }
-  ) {
+    @Body() body: { facility: string; userId: string }
+  ): Promise<{ error?: string; closed?: number }> {
     if (secret !== 'flowzen-setup-2025') {
       return { error: 'Unauthorized' };
     }
@@ -673,215 +887,16 @@ export class CashSessionController {
   }
 
   /**
-   * Kreiranje svih test podataka (samo za development)
-   */
-  @Post('seed-all-test-data')
-  async seedAllTestData(@Query('secret') secret: string) {
-    if (secret !== 'flowzen-setup-2025') {
-      return { error: 'Unauthorized' };
-    }
-
-    // 1. Pronađi test usera, facility, tenant
-    const user = await this.userModel.findOne({ email: 'test@flowzen.com' });
-    const facility = await this.facilityModel.findOne({ name: 'Test Facility' });
-    const tenant = user?.tenant || facility?.tenant;
-    
-    if (!user || !facility || !tenant) {
-      return { error: 'Test user, facility, or tenant not found. Run all-entities and create them first.' };
-    }
-
-    // 1a. Proveri i ažuriraj scope_pos_admin na roli pos-test-admin
-    const rolesCol = this.userModel.db.collection('roles');
-    const scopesCol = this.userModel.db.collection('scopes');
-    
-    // Kreiraj sve potrebne POS scope-ove (uključujući postojeće i nove)
-    const posScopes = [
-      // Postojeći scope-ovi iz create-test-role.ts
-      { name: 'scope_pos:read', description: 'POS Read Access' },
-      { name: 'scope_pos:sale', description: 'POS Sales Access' },
-      { name: 'scope_pos:refund', description: 'POS Refund Access' },
-      { name: 'scope_pos:session', description: 'POS Sessions Access' },
-      { name: 'scope_pos:report', description: 'POS Reports Access' },
-      { name: 'scope_pos:settings', description: 'POS Settings Access' },
-      // Novi scope-ovi za Cash Management
-      { name: 'scope_pos_admin', description: 'POS admin scope' },
-      { name: 'scope_pos:cash_management', description: 'Cash Management Access' },
-      { name: 'scope_pos:cash_reports', description: 'Cash Reports Access' },
-      { name: 'scope_pos:cash_analytics', description: 'Cash Analytics Access' }
-    ];
-    
-    const createdScopes = [];
-    const existingScopes = [];
-    
-    for (const scope of posScopes) {
-      let existingScope = await scopesCol.findOne({ name: scope.name });
-      if (!existingScope) {
-        // Kreiraj novi scope samo ako ne postoji
-        const insertResult = await scopesCol.insertOne({ 
-          name: scope.name, 
-          description: scope.description,
-          module: 'pos',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        });
-        existingScope = { 
-          _id: insertResult.insertedId, 
-          name: scope.name, 
-          description: scope.description,
-          module: 'pos',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        createdScopes.push(existingScope);
-        console.log(`✅ Kreiran novi scope: ${scope.name}`);
-      } else {
-        existingScopes.push(existingScope);
-        console.log(`ℹ️ Scope već postoji: ${scope.name}`);
-      }
-    }
-    
-    // Kombinuj sve scope-ove (postojeće i nove)
-    const allScopes = [...createdScopes, ...existingScopes];
-    
-    const posAdminScope = createdScopes.find(s => s.name === 'scope_pos_admin');
-
-    const posTestAdminRole = await rolesCol.findOne({ name: 'pos-test-admin', tenant: tenant._id });
-    if (posTestAdminRole) {
-      // Učitaj sve validne scope _id iz kolekcije scopes
-      const allScopes = await scopesCol.find({}).toArray();
-      const validScopeIds = new Set(allScopes.map(s => String(s._id)));
-      let availableScopes = Array.isArray(posTestAdminRole.availableScopes) ? posTestAdminRole.availableScopes : [];
-      
-      // Očisti duplikate i nepostojeće scope-ove
-      availableScopes = Array.from(new Set(availableScopes.map(id => String(id))))
-        .filter(id => validScopeIds.has(id))
-        .map(id => allScopes.find(s => String(s._id) === id)._id);
-      
-      // Dodaj sve POS scope-ove u rolu (postojeće i nove)
-      const posScopeIds = allScopes.map(s => s._id);
-      availableScopes = [...new Set([...availableScopes, ...posScopeIds])];
-      
-      await rolesCol.updateOne({ _id: posTestAdminRole._id }, { $set: { availableScopes } });
-    }
-
-    // 1c. Obezbedi da je test user vezan za pravu rolu i tenant
-    const posTestAdminRoleId = posTestAdminRole?._id;
-    if (user) {
-      let needsUpdate = false;
-      if (String(user.role) !== String(posTestAdminRoleId)) needsUpdate = true;
-      if (String(user.tenant?._id || user.tenant) !== String(tenant._id)) needsUpdate = true;
-      
-      if (needsUpdate) {
-        await this.userModel.updateOne(
-          { _id: user._id }, 
-          { $set: { role: posTestAdminRoleId, tenant: tenant._id } }
-        );
-      }
-    }
-
-    // 1d. Obezbedi da je facility vezan za pravi tenant
-    if (facility && String(facility.tenant) !== String(tenant._id)) {
-      await this.facilityModel.updateOne(
-        { _id: facility._id }, 
-        { $set: { tenant: tenant._id } }
-      );
-    }
-
-    // 2. Kreiraj artikle
-    const articleModel = this.userModel.db.collection('articles');
-    const articles = [
-      { name: 'Šampon', unitOfMeasure: 'kom', price: 500, tenant: tenant._id, isActive: true, stock: 100 },
-      { name: 'Feniranje', unitOfMeasure: 'usluga', price: 1200, tenant: tenant._id, isActive: true, stock: 0 },
-      { name: 'Maska za kosu', unitOfMeasure: 'kom', price: 800, tenant: tenant._id, isActive: true, stock: 50 },
-    ];
-    
-    for (const a of articles) {
-      const exists = await articleModel.findOne({ name: a.name, tenant: tenant._id });
-      if (!exists) await articleModel.insertOne(a);
-    }
-
-    // 3. Kreiraj klijente
-    const clientModel = this.userModel.db.collection('clients');
-    const clients = [
-      { firstName: 'Mina', lastName: 'Test', phone: '0601111111', tenant: tenant._id },
-      { firstName: 'Jovana', lastName: 'Test', phone: '0602222222', tenant: tenant._id },
-    ];
-    
-    for (const c of clients) {
-      const exists = await clientModel.findOne({ phone: c.phone, tenant: tenant._id });
-      if (!exists) await clientModel.insertOne(c);
-    }
-
-    // 4. Kreiraj usluge
-    const serviceModel = this.userModel.db.collection('services');
-    const services = [
-      { name: 'Pranje kose', price: 400, tenant: tenant._id, isActive: true },
-      { name: 'Šišanje', price: 1000, tenant: tenant._id, isActive: true },
-    ];
-    
-    for (const s of services) {
-      const exists = await serviceModel.findOne({ name: s.name, tenant: tenant._id });
-      if (!exists) await serviceModel.insertOne(s);
-    }
-
-    // 5. Kreiraj appointments
-    const appointmentModel = this.userModel.db.collection('appointments');
-    const now = new Date();
-    const appointments = [
-      { 
-        employee: user._id, 
-        client: (await clientModel.findOne({ phone: '0601111111', tenant: tenant._id }))._id, 
-        tenant: tenant._id, 
-        facility: facility._id, 
-        startHour: 10, 
-        endHour: 11, 
-        service: (await serviceModel.findOne({ name: 'Pranje kose', tenant: tenant._id }))._id, 
-        date: now.toISOString().slice(0, 10), 
-        paid: false 
-      },
-      { 
-        employee: user._id, 
-        client: (await clientModel.findOne({ phone: '0602222222', tenant: tenant._id }))._id, 
-        tenant: tenant._id, 
-        facility: facility._id, 
-        startHour: 12, 
-        endHour: 13, 
-        service: (await serviceModel.findOne({ name: 'Šišanje', tenant: tenant._id }))._id, 
-        date: now.toISOString().slice(0, 10), 
-        paid: false 
-      },
-    ];
-    
-    for (const ap of appointments) {
-      const exists = await appointmentModel.findOne({ 
-        client: ap.client, 
-        date: ap.date, 
-        service: ap.service 
-      });
-      if (!exists) await appointmentModel.insertOne(ap);
-    }
-
-    // 6. Vrati ID-jeve
-    return {
-      userId: user._id,
-      facilityId: facility._id,
-      tenantId: tenant._id,
-      articles: await articleModel.find({ tenant: tenant._id }).toArray(),
-      clients: await clientModel.find({ tenant: tenant._id }).toArray(),
-      services: await serviceModel.find({ tenant: tenant._id }).toArray(),
-      appointments: await appointmentModel.find({ tenant: tenant._id }).toArray(),
-      scopes: allScopes,
-      createdScopes: createdScopes,
-      existingScopes: existingScopes,
-      role: posTestAdminRole
-    };
-  }
-
-  /**
-   * Pronalaženje test ID-jeva (samo za development)
+   * Find test IDs (development only)
+   * @param secret - Secret key for authorization
+   * @returns Test user and facility IDs
    */
   @Get('test-ids')
-  async getTestIds(@Query('secret') secret: string) {
+  async getTestIds(@Query('secret') secret: string): Promise<{ 
+    error?: string; 
+    users?: any[]; 
+    facilities?: any[] 
+  }> {
     if (secret !== 'flowzen-setup-2025') {
       return { error: 'Unauthorized' };
     }
@@ -895,10 +910,16 @@ export class CashSessionController {
   }
 
   /**
-   * Pronalaženje svih entiteta (samo za development)
+   * Find all entities (development only)
+   * @param secret - Secret key for authorization
+   * @returns All roles and scopes
    */
   @Get('all-entities')
-  async getAllEntities(@Query('secret') secret: string) {
+  async getAllEntities(@Query('secret') secret: string): Promise<{ 
+    error?: string; 
+    roles?: any[]; 
+    scopes?: any[] 
+  }> {
     if (secret !== 'flowzen-setup-2025') {
       return { error: 'Unauthorized' };
     }

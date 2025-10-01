@@ -1,46 +1,58 @@
-import { FiscalProvider, FiscalizeResult } from './fiscal.provider';
+import { FiscalProvider } from './fiscal.provider';
+import { FiscalizeResult } from '../../types';
 
+/**
+ * Cloud Fiscal Provider
+ * 
+ * Simulates communication with a cloud-based fiscal service.
+ * In a real implementation, this would make HTTP requests
+ * to the fiscal service API.
+ */
 export class CloudFiscalProvider implements FiscalProvider {
+  /**
+   * Fiscalize sale through cloud service
+   * @param sale - Sale transaction data
+   * @returns Promise resolving to fiscalization result
+   */
   async fiscalize(sale: any): Promise<FiscalizeResult> {
-    // Simulacija cloud fiskalizacije
-    // U realnoj implementaciji bi ovde bio HTTP poziv ka cloud servisu
-    
     try {
-      // Simuliraj HTTP poziv (1-3 sekunde)
+      // Simulate HTTP request delay (1-3 seconds)
       const delay = Math.random() * 2000 + 1000;
       await new Promise(resolve => setTimeout(resolve, delay));
       
-      // Simuliraj uspešnu fiskalizaciju (95% šanse)
+      // Simulate successful fiscalization (95% success rate)
       if (Math.random() > 0.05) {
         const fiscalNumber = `CLOUD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         
         return {
           status: 'success',
-          number: fiscalNumber,
-          time: new Date(),
+          fiscalNumber,
+          correlationId: `cloud-${sale._id || 'unknown'}`,
           error: undefined,
         };
       } else {
-        // Simuliraj grešku
+        // Simulate cloud service errors
         const errors = [
-          'Cloud servis nije dostupan',
-          'Timeout greška',
-          'Neispravni API ključ',
-          'Servis trenutno nedostupan'
+          'Cloud service unavailable',
+          'Request timeout',
+          'Invalid API key',
+          'Service temporarily unavailable',
+          'Network error',
+          'Rate limit exceeded'
         ];
         const randomError = errors[Math.floor(Math.random() * errors.length)];
         
         return {
           status: 'error',
           error: randomError,
-          time: new Date(),
+          correlationId: `cloud-${sale._id || 'unknown'}`,
         };
       }
     } catch (error: any) {
       return {
         status: 'error',
-        error: error.message || 'Nepoznata greška cloud servisa',
-        time: new Date(),
+        error: error.message || 'Unknown cloud service error',
+        correlationId: `cloud-${sale._id || 'unknown'}`,
       };
     }
   }

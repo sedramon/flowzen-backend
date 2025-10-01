@@ -1,15 +1,41 @@
-import { Controller, Post, Body, Param, Get, Query, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Query,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  BadRequestException,
+  NotFoundException
+} from '@nestjs/common';
+import { Types } from 'mongoose';
 import { JwtAuthGuard } from '../../auth/auth.guard';
 import { ScopesGuard } from '../../auth/scopes.guard';
 import { SalesService } from '../service/sales.service';
-import { CreateSaleDto } from '../dto/create-sale.dto';
-import { RefundSaleDto } from '../dto/refund-sale.dto';
+import { CreateSaleDto } from '../dto/sales/create-sale.dto';
+import { RefundSaleDto } from '../dto/sales/refund-sale.dto';
+import { JwtUserPayload, PosApiResponse } from '../types';
 
 /**
  * Sales Controller
  * 
- * Upravlja prodajama u POS sistemu.
- * Omogućava kreiranje, pregled, povraćaj i fiskalizaciju prodaja.
+ * Manages sales transactions in the POS system.
+ * Provides endpoints for creating, retrieving, refunding, and fiscalizing sales.
+ * 
+ * @example
+ * ```typescript
+ * // Create a new sale
+ * POST /pos/sales
+ * {
+ *   "facility": "64a1b2c3d4e5f6789012345a",
+ *   "items": [...],
+ *   "payments": [...]
+ * }
+ * ```
  */
 @Controller('pos/sales')
 @UseGuards(JwtAuthGuard, ScopesGuard)
@@ -21,30 +47,126 @@ export class SalesController {
   // ============================================================================
 
   /**
-   * Kreiranje nove prodaje
+   * Create a new sale transaction
+   * 
+   * @param dto - Sale creation data
+   * @param req - Request object containing user information
+   * @returns Created sale with generated receipt number
+   * 
+   * @example
+   * ```typescript
    * POST /pos/sales
+   * {
+   *   "facility": "64a1b2c3d4e5f6789012345a",
+   *   "items": [
+   *     {
+   *       "refId": "64a1b2c3d4e5f6789012345b",
+   *       "type": "service",
+   *       "name": "Haircut",
+   *       "qty": 1,
+   *       "unitPrice": 1500,
+   *       "discount": 0,
+   *       "taxRate": 20,
+   *       "total": 1500
+   *     }
+   *   ],
+   *   "payments": [
+   *     {
+   *       "method": "cash",
+   *       "amount": 1500
+   *     }
+   *   ]
+   * }
+   * ```
    */
   @Post()
-  async create(@Body() dto: CreateSaleDto, @Req() req) {
-    return this.salesService.createSale(dto, req.user);
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Body() dto: CreateSaleDto,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const sale = await this.salesService.createSale(dto, req.user);
+      return {
+        success: true,
+        data: sale,
+        message: 'Sale created successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to create sale');
+    }
   }
 
   /**
-   * Dohvatanje svih prodaja sa filterima
-   * GET /pos/sales
+   * Retrieve all sales with optional filtering
+   * 
+   * @param query - Query parameters for filtering
+   * @param req - Request object containing user information
+   * @returns Paginated list of sales
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sales?facility=64a1b2c3d4e5f6789012345a&status=final&limit=10
+   * ```
    */
   @Get()
-  async findAll(@Query() query, @Req() req) {
-    return this.salesService.findAll(query, req.user);
+  @HttpCode(HttpStatus.OK)
+  async findAll(
+    @Query() query: any,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const sales = await this.salesService.findAll(query, req.user);
+      return {
+        success: true,
+        data: sales,
+        message: 'Sales retrieved successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to retrieve sales');
+    }
   }
 
   /**
-   * Dohvatanje prodaje po ID
-   * GET /pos/sales/:id
+   * Retrieve a specific sale by ID
+   * 
+   * @param id - Sale ID (MongoDB ObjectId)
+   * @param req - Request object containing user information
+   * @returns Sale details
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sales/64a1b2c3d4e5f6789012345c
+   * ```
    */
   @Get(':id')
-  async findById(@Param('id') id: string, @Req() req) {
-    return this.salesService.findById(id, req.user);
+  @HttpCode(HttpStatus.OK)
+  async findById(
+    @Param('id') id: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+
+      const sale = await this.salesService.findById(id, req.user);
+      if (!sale) {
+        throw new NotFoundException('Sale not found');
+      }
+      
+      return {
+        success: true,
+        data: sale,
+        message: 'Sale retrieved successfully'
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to retrieve sale');
+    }
   }
 
   // ============================================================================
@@ -52,12 +174,53 @@ export class SalesController {
   // ============================================================================
 
   /**
-   * Povraćaj prodaje
-   * POST /pos/sales/:id/refund
+   * Refund a sale transaction
+   * 
+   * @param id - Sale ID to refund
+   * @param dto - Refund data
+   * @param req - Request object containing user information
+   * @returns Refund transaction details
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sales/64a1b2c3d4e5f6789012345c/refund
+   * {
+   *   "items": [
+   *     {
+   *       "refId": "64a1b2c3d4e5f6789012345b",
+   *       "qty": 1,
+   *       "amount": 1500
+   *     }
+   *   ],
+   *   "reason": "Customer request"
+   * }
+   * ```
    */
   @Post(':id/refund')
-  async refund(@Param('id') id: string, @Body() dto: RefundSaleDto, @Req() req) {
-    return this.salesService.refundSale(id, dto, req.user);
+  @HttpCode(HttpStatus.OK)
+  async refund(
+    @Param('id') id: string,
+    @Body() dto: RefundSaleDto,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+
+      const refund = await this.salesService.refundSale(id, dto, req.user);
+      return {
+        success: true,
+        data: refund,
+        message: 'Sale refunded successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to refund sale');
+    }
   }
 
   // ============================================================================
@@ -65,67 +228,194 @@ export class SalesController {
   // ============================================================================
 
   /**
-   * Generisanje računa za prodaju
-   * GET /pos/sales/:id/receipt
+   * Generate receipt for a sale
+   * 
+   * @param id - Sale ID
+   * @param req - Request object containing user information
+   * @returns Receipt HTML content
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sales/64a1b2c3d4e5f6789012345c/receipt
+   * ```
    */
   @Get(':id/receipt')
-  async getReceipt(@Param('id') id: string, @Req() req) {
-    return this.salesService.getReceipt(id, req.user);
+  @HttpCode(HttpStatus.OK)
+  async getReceipt(
+    @Param('id') id: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+
+      const receipt = await this.salesService.getReceipt(id, req.user);
+      return {
+        success: true,
+        data: receipt,
+        message: 'Receipt generated successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to generate receipt');
+    }
   }
 
   /**
-   * Fiskalizacija prodaje
-   * POST /pos/sales/:id/fiscalize
+   * Fiscalize a sale transaction
+   * 
+   * @param id - Sale ID to fiscalize
+   * @param body - Request body containing facility ID
+   * @param req - Request object containing user information
+   * @returns Fiscalization result
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sales/64a1b2c3d4e5f6789012345c/fiscalize
+   * {
+   *   "facility": "64a1b2c3d4e5f6789012345a"
+   * }
+   * ```
    */
   @Post(':id/fiscalize')
-  async fiscalize(@Param('id') id: string, @Body() body: { facility: string }, @Req() req) {
-    // Mock user for testing
-    const mockUser = req.user || {
-      userId: '68d8516738bf736b02a94809',
-      username: 'Test User',
-      tenant: '68d84e453c19bcd5edb269cd',
-      role: 'admin',
-      scopes: ['scope_pos:sales']
-    };
-    return this.salesService.fiscalize(id, body.facility, mockUser);
+  @HttpCode(HttpStatus.OK)
+  async fiscalize(
+    @Param('id') id: string,
+    @Body() body: { facility: string },
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+      if (!Types.ObjectId.isValid(body.facility)) {
+        throw new BadRequestException('Invalid facility ID format');
+      }
+
+      const result = await this.salesService.fiscalize(id, body.facility, req.user);
+      return {
+        success: true,
+        data: result,
+        message: 'Sale fiscalized successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to fiscalize sale');
+    }
   }
 
+  /**
+   * Reset pending fiscalizations for a tenant
+   * 
+   * @param req - Request object containing user information
+   * @returns Reset operation result
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sales/reset-pending-fiscalizations
+   * ```
+   */
   @Post('reset-pending-fiscalizations')
-  async resetPendingFiscalizations(@Req() req) {
-    // Mock user for testing
-    const mockUser = req.user || {
-      userId: '68d8516738bf736b02a94809',
-      username: 'Test User',
-      tenant: '68d84e453c19bcd5edb269cd',
-      role: 'admin',
-      scopes: ['scope_pos:sales']
-    };
-    return this.salesService.resetPendingFiscalizations(mockUser.tenant);
+  @HttpCode(HttpStatus.OK)
+  async resetPendingFiscalizations(
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      const result = await this.salesService.resetPendingFiscalizations(req.user.tenant);
+      return {
+        success: true,
+        data: result,
+        message: 'Pending fiscalizations reset successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to reset pending fiscalizations');
+    }
   }
 
+  /**
+   * Get detailed sale information
+   * 
+   * @param id - Sale ID
+   * @param req - Request object containing user information
+   * @returns Detailed sale information
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/sales/64a1b2c3d4e5f6789012345c/details
+   * ```
+   */
   @Get(':id/details')
-  async getSaleDetails(@Param('id') id: string, @Req() req) {
-    // Mock user for testing
-    const mockUser = req.user || {
-      userId: '68d8516738bf736b02a94809',
-      username: 'Test User',
-      tenant: '68d84e453c19bcd5edb269cd',
-      role: 'admin',
-      scopes: ['scope_pos:sales']
-    };
-    return this.salesService.findById(id, mockUser);
+  @HttpCode(HttpStatus.OK)
+  async getSaleDetails(
+    @Param('id') id: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+
+      const sale = await this.salesService.findById(id, req.user);
+      if (!sale) {
+        throw new NotFoundException('Sale not found');
+      }
+
+      return {
+        success: true,
+        data: sale,
+        message: 'Sale details retrieved successfully'
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to retrieve sale details');
+    }
   }
 
+  /**
+   * Reset fiscalization for a sale
+   * 
+   * @param id - Sale ID
+   * @param req - Request object containing user information
+   * @returns Reset operation result
+   * 
+   * @example
+   * ```typescript
+   * POST /pos/sales/64a1b2c3d4e5f6789012345c/reset-fiscalization
+   * ```
+   */
   @Post(':id/reset-fiscalization')
-  async resetFiscalization(@Param('id') id: string, @Req() req) {
-    // Mock user for testing
-    const mockUser = req.user || {
-      userId: '68d8516738bf736b02a94809',
-      username: 'Test User',
-      tenant: '68d84e453c19bcd5edb269cd',
-      role: 'admin',
-      scopes: ['scope_pos:sales']
-    };
-    return this.salesService.resetFiscalization(id, mockUser);
+  @HttpCode(HttpStatus.OK)
+  async resetFiscalization(
+    @Param('id') id: string,
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Validate ObjectId format
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException('Invalid sale ID format');
+      }
+
+      const result = await this.salesService.resetFiscalization(id, req.user);
+      return {
+        success: true,
+        data: result,
+        message: 'Fiscalization reset successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to reset fiscalization');
+    }
   }
 }

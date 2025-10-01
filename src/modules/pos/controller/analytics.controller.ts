@@ -1,7 +1,17 @@
-import { Controller, Get, Query, UseGuards, Req } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Query, 
+  UseGuards, 
+  Req, 
+  HttpCode, 
+  HttpStatus,
+  BadRequestException 
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/auth.guard';
 import { ScopesGuard } from '../../auth/scopes.guard';
 import { AnalyticsService } from '../service/analytics.service';
+import { JwtUserPayload, PosApiResponse, AnalyticsQuery, AnalyticsPeriod } from '../types';
 
 /**
  * Analytics Controller
@@ -19,12 +29,47 @@ export class AnalyticsController {
   // ============================================================================
 
   /**
-   * Dohvata generalne analytics podatke
-   * GET /pos/analytics
+   * Get general analytics data
+   * @param query - Query parameters for filtering analytics
+   * @param req - Request object containing user information
+   * @returns Analytics data
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/analytics?facility=64a1b2c3d4e5f6789012345a&period=7d&type=sales
+   * ```
    */
   @Get()
-  async getAnalytics(@Query() query: any, @Req() req) {
-    return this.analyticsService.getAnalytics(query, req.user);
+  @HttpCode(HttpStatus.OK)
+  async getAnalytics(
+    @Query() query: { 
+      facility?: string; 
+      period?: string; 
+      type?: string; 
+      dateFrom?: string; 
+      dateTo?: string 
+    }, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      // Convert string parameters to proper types
+      const analyticsQuery: AnalyticsQuery = {
+        facility: query.facility,
+        period: query.period as AnalyticsPeriod || '7d',
+        type: query.type as any || 'general',
+        dateFrom: query.dateFrom,
+        dateTo: query.dateTo
+      };
+      
+      const analytics = await this.analyticsService.getAnalytics(analyticsQuery, req.user);
+      return {
+        success: true,
+        data: analytics,
+        message: 'Analytics data retrieved successfully'
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Failed to retrieve analytics data');
+    }
   }
 
   // ============================================================================
@@ -32,12 +77,41 @@ export class AnalyticsController {
   // ============================================================================
 
   /**
-   * Dohvata cash flow analytics
-   * GET /pos/analytics/cash-flow
+   * Get cash flow analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param req - Request object
+   * @returns Cash flow analytics data
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/analytics/cash-flow?facility=64a1b2c3d4e5f6789012345a&period=30d
+   * ```
    */
   @Get('cash-flow')
-  async getCashFlowAnalytics(@Query('facility') facility: string, @Query('period') period: string, @Req() req) {
-    return this.analyticsService.getCashFlowAnalytics(facility, period, req.user);
+  @HttpCode(HttpStatus.OK)
+  async getCashFlowAnalytics(
+    @Query('facility') facility: string, 
+    @Query('period') period: string, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      if (!facility || !period) {
+        throw new BadRequestException('Facility and period parameters are required');
+      }
+      
+      const analytics = await this.analyticsService.getCashFlowAnalytics(facility, period as AnalyticsPeriod, req.user);
+      return {
+        success: true,
+        data: analytics,
+        message: 'Cash flow analytics retrieved successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to retrieve cash flow analytics');
+    }
   }
 
   // ============================================================================
@@ -45,12 +119,41 @@ export class AnalyticsController {
   // ============================================================================
 
   /**
-   * Dohvata sales analytics
-   * GET /pos/analytics/sales
+   * Get sales analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param req - Request object
+   * @returns Sales analytics data
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/analytics/sales?facility=64a1b2c3d4e5f6789012345a&period=7d
+   * ```
    */
   @Get('sales')
-  async getSalesAnalytics(@Query('facility') facility: string, @Query('period') period: string, @Req() req) {
-    return this.analyticsService.getSalesAnalytics(facility, period, req.user);
+  @HttpCode(HttpStatus.OK)
+  async getSalesAnalytics(
+    @Query('facility') facility: string, 
+    @Query('period') period: string, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      if (!facility || !period) {
+        throw new BadRequestException('Facility and period parameters are required');
+      }
+      
+      const analytics = await this.analyticsService.getSalesAnalytics(facility, period as AnalyticsPeriod, req.user);
+      return {
+        success: true,
+        data: analytics,
+        message: 'Sales analytics retrieved successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to retrieve sales analytics');
+    }
   }
 
   // ============================================================================
@@ -58,11 +161,40 @@ export class AnalyticsController {
   // ============================================================================
 
   /**
-   * Dohvata performance analytics
-   * GET /pos/analytics/performance
+   * Get performance analytics
+   * @param facility - Facility ID
+   * @param period - Analytics period
+   * @param req - Request object
+   * @returns Performance analytics data
+   * 
+   * @example
+   * ```typescript
+   * GET /pos/analytics/performance?facility=64a1b2c3d4e5f6789012345a&period=30d
+   * ```
    */
   @Get('performance')
-  async getPerformanceAnalytics(@Query('facility') facility: string, @Query('period') period: string, @Req() req) {
-    return this.analyticsService.getPerformanceAnalytics(facility, period, req.user);
+  @HttpCode(HttpStatus.OK)
+  async getPerformanceAnalytics(
+    @Query('facility') facility: string, 
+    @Query('period') period: string, 
+    @Req() req: { user: JwtUserPayload }
+  ): Promise<PosApiResponse> {
+    try {
+      if (!facility || !period) {
+        throw new BadRequestException('Facility and period parameters are required');
+      }
+      
+      const analytics = await this.analyticsService.getPerformanceAnalytics(facility, period as AnalyticsPeriod, req.user);
+      return {
+        success: true,
+        data: analytics,
+        message: 'Performance analytics retrieved successfully'
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message || 'Failed to retrieve performance analytics');
+    }
   }
 }
