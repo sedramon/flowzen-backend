@@ -14,6 +14,7 @@ import { Client } from 'src/modules/clients/schemas/client.schema';
 import { Service } from 'src/modules/services/schemas/service.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { Facility } from 'src/modules/facility/schema/facility.schema';
+import { WorkingShift } from 'src/modules/working-shifts/schemas/working-shift.schema';
 
 @Injectable()
 export class AppointmentsService {
@@ -25,6 +26,7 @@ export class AppointmentsService {
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
     @InjectModel(Tenant.name) private readonly tenantModel: Model<Tenant>,
     @InjectModel(Facility.name) private readonly facilityModel: Model<Facility>,
+    @InjectModel(WorkingShift.name) private readonly workingShiftModel: Model<WorkingShift>,
   ) {}
 
   async create(
@@ -78,6 +80,9 @@ export class AppointmentsService {
 
       if (!serviceDocument)
         throw new ConflictException(`Service with ${service} not found!`);
+
+      // Validate working hours for the employee
+      await this.validateWorkingHours(employee, facility, createAppointmentDto.date, createAppointmentDto.startHour, createAppointmentDto.endHour);
 
       const newAppoitments = new this.appointmentModel({
         ...appoitmentDetails,
@@ -281,6 +286,11 @@ export class AppointmentsService {
       if (!serviceDocument)
         throw new ConflictException(`Service with ${service} not found!`);
 
+      // Validate working hours for the employee if time is being updated
+      if (updateAppointmentDto.startHour && updateAppointmentDto.endHour && updateAppointmentDto.date) {
+        await this.validateWorkingHours(employee, facility, updateAppointmentDto.date, updateAppointmentDto.startHour, updateAppointmentDto.endHour);
+      }
+
       return await this.appointmentModel
         .findByIdAndUpdate(id, updateAppointmentDto, { new: true })
         .orFail(
@@ -294,5 +304,73 @@ export class AppointmentsService {
 
   async delete(id: string): Promise<void> {
     await this.appointmentModel.findByIdAndDelete(id).exec();
+  }
+
+  /**
+   * Validates if the employee is working during the specified time period
+   */
+  private async validateWorkingHours(
+    employeeId: string,
+    facilityId: string,
+    date: string,
+    startHour: number,
+    endHour: number
+  ): Promise<void> {
+    // Find working shift for the employee on the specified date and facility
+    const workingShift = await this.workingShiftModel
+      .findOne({
+        employee: employeeId,
+        facility: facilityId,
+        date: date
+      })
+      .lean()
+      .exec();
+
+    if (!workingShift) {
+      throw new BadRequestException(`Zaposleni nema definisanu smenu za ${date} u ovom objektu`);
+    }
+
+    // If no specific hours are defined, check shift type
+    if (!workingShift.startHour || !workingShift.endHour) {
+      // Handle predefined shift types
+      const shiftHours = this.getShiftHours(workingShift.shiftType);
+      if (!shiftHours) {
+        throw new BadRequestException(`Tip smene '${workingShift.shiftType}' nije podržan`);
+      }
+      
+      // Check if appointment time falls within shift hours
+      if (startHour < shiftHours.start || endHour > shiftHours.end) {
+        throw new BadRequestException(
+          `Termin (${startHour}-${endHour}) nije u okviru radnog vremena (${shiftHours.start}-${shiftHours.end}) za smenu '${workingShift.shiftType}'`
+        );
+      }
+    } else {
+      // Check if appointment time falls within specific working hours
+      if (startHour < workingShift.startHour || endHour > workingShift.endHour) {
+        throw new BadRequestException(
+          `Termin (${startHour}-${endHour}) nije u okviru radnog vremena (${workingShift.startHour}-${workingShift.endHour})`
+        );
+      }
+    }
+  }
+
+  /**
+   * Returns predefined shift hours based on shift type
+   */
+  private getShiftHours(shiftType: string): { start: number; end: number } | null {
+    switch (shiftType) {
+      case 'morning':
+        return { start: 8, end: 14 };
+      case 'afternoon':
+        return { start: 14, end: 20 };
+      case 'evening':
+        return { start: 18, end: 24 };
+      case 'full':
+        return { start: 8, end: 20 };
+      case 'custom':
+        return null; // Custom shifts should have specific startHour/endHour
+      default:
+        return null;
+    }
   }
 }

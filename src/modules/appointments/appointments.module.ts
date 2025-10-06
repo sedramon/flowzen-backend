@@ -9,12 +9,14 @@ import { EmployeeModule } from '../employees/employees.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { FacilityModule } from '../facility/facility.module';
 import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
+import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/working-shift.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Appointment.name, schema: AppointmentSchema },
-      { name: Facility.name, schema: FacilitySchema }
+      { name: Facility.name, schema: FacilitySchema },
+      { name: WorkingShift.name, schema: WorkingShiftSchema }
     ]),
     ClientsModule,
     ServicesModule,
