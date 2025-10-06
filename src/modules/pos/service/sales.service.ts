@@ -310,7 +310,13 @@ export class SalesService {
       .populate('appointment')
       .populate('client')
       .populate('facility')
-      .populate('session')
+      .populate({
+        path: 'session',
+        populate: [
+          { path: 'openedBy', select: 'name' },
+          { path: 'closedBy', select: 'name' }
+        ]
+      })
       .populate('cashier')
       .sort({ date: -1 })
       .lean();
@@ -319,6 +325,13 @@ export class SalesService {
     const salesWithRefunds = await Promise.all(sales.map(async (sale) => {
       const refund = await this.saleModel.findOne({ refundFor: sale._id })
         .populate('cashier')
+        .populate({
+          path: 'session',
+          populate: [
+            { path: 'openedBy', select: 'firstName lastName' },
+            { path: 'closedBy', select: 'firstName lastName' }
+          ]
+        })
         .lean();
 
       return {
@@ -335,7 +348,13 @@ export class SalesService {
       .populate('appointment')
       .populate('client')
       .populate('facility')
-      .populate('session')
+      .populate({
+        path: 'session',
+        populate: [
+          { path: 'openedBy', select: 'name' },
+          { path: 'closedBy', select: 'name' }
+        ]
+      })
       .populate('cashier')
       .lean();
     return sale;
