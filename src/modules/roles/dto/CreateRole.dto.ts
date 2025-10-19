@@ -5,15 +5,15 @@ export class CreateRoleDto {
     @ApiProperty({description: 'Role name'})
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({description: 'Available scopes'})
     @IsArray()
     @ArrayNotEmpty()
-    availableScopes: string[];
+        availableScopes: string[];
 
     @ApiProperty({description: 'Tenant ID'})
     @IsString()
     @IsNotEmpty()
-    tenant: string
+        tenant: string
 }

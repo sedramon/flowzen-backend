@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -22,66 +22,79 @@ import { LoggerModule } from 'nestjs-pino';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { PosModule } from './modules/pos/pos.module';
+import { CommonModule } from './common/common.module';
+import { RequestIdMiddleware, CsrfMiddleware } from './common/middleware';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    UsersModule,
-    AuthModule,
-    ScopeModule,
-    RolesModule,
-    TenantsModule,
-    AppointmentsModule,
-    ServicesModule,
-    EmployeeModule,
-    ClientsModule,
-    FacilityModule,
-    WorkingShiftsModule,
-    ShiftModule,
-    SuppliersModule,
-    ArticlesModule,
-    SettingsModule,
-    PosModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-      validationSchema: envSchema
-    }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.LOG_LEVEL || 'info',
-        // in dev, run logs through pino-pretty
-        transport:
+    imports: [
+        CommonModule,
+        DatabaseModule,
+        UsersModule,
+        AuthModule,
+        ScopeModule,
+        RolesModule,
+        TenantsModule,
+        AppointmentsModule,
+        ServicesModule,
+        EmployeeModule,
+        ClientsModule,
+        FacilityModule,
+        WorkingShiftsModule,
+        ShiftModule,
+        SuppliersModule,
+        ArticlesModule,
+        SettingsModule,
+        PosModule,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+            validationSchema: envSchema
+        }),
+        LoggerModule.forRoot({
+            pinoHttp: {
+                level: process.env.LOG_LEVEL || 'info',
+                // in dev, run logs through pino-pretty
+                transport:
           process.env.NODE_ENV !== 'production'
-            ? {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                translateTime: 'SYS:standard',
-              },
-            }
-            : undefined,
-        serializers: {
-          req: (req) => ({
-            id: (req as any).id,
-            method: req.method,
-            url: req.url,
-            params: req.params,
-            query: req.query,
-            headers: {
-              'x-request-id': req.headers['x-request-id'] as string,
-              host: req.headers['host'] as string,
+              ? {
+                  target: 'pino-pretty',
+                  options: {
+                      colorize: true,
+                      translateTime: 'SYS:standard',
+                  },
+              }
+              : undefined,
+                serializers: {
+                    req: (req) => ({
+                        id: (req as any).id,
+                        method: req.method,
+                        url: req.url,
+                        params: req.params,
+                        query: req.query,
+                        headers: {
+                            'x-request-id': req.headers['x-request-id'] as string,
+                            host: req.headers['host'] as string,
+                        },
+                        remoteAddress: (req as any).remoteAddress,
+                        remotePort: (req as any).remotePort,
+                    }),
+                    res: (res) => ({ statusCode: res.statusCode }),
+                    err: (err) => ({ message: err.message, stack: err.stack }),
+                },
             },
-            remoteAddress: (req as any).remoteAddress,
-            remotePort: (req as any).remotePort,
-          }),
-          res: (res) => ({ statusCode: res.statusCode }),
-          err: (err) => ({ message: err.message, stack: err.stack }),
-        },
-      },
-    })
-  ],
-  controllers: [AppController, HealthController],
-  providers: [AppService],
+        })
+    ],
+    controllers: [AppController, HealthController],
+    providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(RequestIdMiddleware)
+            .forRoutes('*'); // Apply to all routes
+
+        consumer
+            .apply(CsrfMiddleware)
+            .forRoutes('*'); // Apply CSRF middleware to all routes
+    }
+}

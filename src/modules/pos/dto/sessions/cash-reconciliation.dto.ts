@@ -2,53 +2,53 @@ import { IsString, IsOptional, IsNumber, Min, IsMongoId } from 'class-validator'
 
 export class CashReconciliationDto {
   @IsMongoId()
-  sessionId: string;
+      sessionId: string;
 
   @IsOptional()
   @IsString()
-  note?: string;
+      note?: string;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  actualCash?: number;
+      actualCash?: number;
 }
 
 export class CashCountingDto {
   @IsNumber()
   @Min(0)
-  countedCash: number;
+      countedCash: number;
 
   @IsOptional()
   @IsString()
-  note?: string;
+      note?: string;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  cashInDrawer?: number;
+      cashInDrawer?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  cashInRegister?: number;
+      cashInRegister?: number;
 }
 
 export class CashVarianceDto {
   @IsNumber()
-  expectedCash: number;
+      expectedCash: number;
 
   @IsNumber()
-  actualCash: number;
+      actualCash: number;
 
   @IsNumber()
-  variance: number;
+      variance: number;
 
   @IsOptional()
   @IsString()
-  reason?: string;
+      reason?: string;
 
   @IsOptional()
   @IsString()
-  action?: 'accept' | 'investigate' | 'adjust';
+      action?: 'accept' | 'investigate' | 'adjust';
 }

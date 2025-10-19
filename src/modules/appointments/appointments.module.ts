@@ -12,20 +12,20 @@ import { Facility, FacilitySchema } from '../facility/schema/facility.schema';
 import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/working-shift.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Appointment.name, schema: AppointmentSchema },
-      { name: Facility.name, schema: FacilitySchema },
-      { name: WorkingShift.name, schema: WorkingShiftSchema }
-    ]),
-    ClientsModule,
-    ServicesModule,
-    EmployeeModule,
-    TenantsModule,
-    FacilityModule
-  ],
-  controllers: [AppointmentsController],
-  providers: [AppointmentsService],
-  exports: [AppointmentsService],
+    imports: [
+        MongooseModule.forFeature([
+            { name: Appointment.name, schema: AppointmentSchema },
+            { name: Facility.name, schema: FacilitySchema },
+            { name: WorkingShift.name, schema: WorkingShiftSchema }
+        ]),
+        ClientsModule,
+        ServicesModule,
+        EmployeeModule,
+        TenantsModule,
+        FacilityModule
+    ],
+    controllers: [AppointmentsController],
+    providers: [AppointmentsService],
+    exports: [AppointmentsService],
 })
 export class AppointmentsModule {}

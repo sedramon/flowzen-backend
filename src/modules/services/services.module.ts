@@ -6,12 +6,12 @@ import { ServicesController } from './controller/services.controller';
 import { TenantsModule } from '../tenants/tenants.module';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: Service.name, schema: ServiceSchema }]),
-    TenantsModule
-  ],
-  controllers: [ServicesController],
-  providers: [ServicesService],
-  exports: [MongooseModule],
+    imports: [
+        MongooseModule.forFeature([{ name: Service.name, schema: ServiceSchema }]),
+        TenantsModule
+    ],
+    controllers: [ServicesController],
+    providers: [ServicesService],
+    exports: [MongooseModule],
 })
 export class ServicesModule {}

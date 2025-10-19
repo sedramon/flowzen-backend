@@ -7,68 +7,68 @@ import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { Facility } from 'src/modules/facility/schema/facility.schema';
 
 @Schema({
-  timestamps: true,
-  toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform },
+    timestamps: true,
+    toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform },
 })
 export class Appointment {
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Employee',
-    required: true,
-    autopopulate: { select: 'firstName lastName' },
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Employee',
+      required: true,
+      autopopulate: { select: 'firstName lastName' },
   })
-  employee: Employee;
+      employee: Employee;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Client',
-    required: true,
-    autopopulate: { select: 'firstName lastName' },
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Client',
+      required: true,
+      autopopulate: { select: 'firstName lastName' },
   })
-  client: Client;
+      client: Client;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
-    required: true,
-    autopopulate: { select: 'name' },
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Tenant',
+      required: true,
+      autopopulate: { select: 'name' },
   })
-  tenant: Tenant;
+      tenant: Tenant;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Facility',
-    required: true,
-    autopopulate: true,
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Facility',
+      required: true,
+      autopopulate: true,
   })
-  facility: Facility;
+      facility: Facility;
 
   @Prop({ required: true })
-  startHour: number;
+      startHour: number;
 
   @Prop({ required: true })
-  endHour: number;
+      endHour: number;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Service',
-    required: true,
-    autopopulate: true,
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Service',
+      required: true,
+      autopopulate: true,
   })
-  service: Service;
+      service: Service;
 
   @Prop({ required: true })
-  date: string;
+      date: string;
 
   @Prop({ type: Boolean, default: false })
-  paid: boolean;
+      paid: boolean;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Sale',
-    autopopulate: true,
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Sale',
+      autopopulate: true,
   })
-  sale?: any;
+      sale?: any;
 
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
@@ -80,9 +80,9 @@ const AppointmentSchema = SchemaFactory.createForClass(Appointment);
 AppointmentSchema.plugin(require('mongoose-autopopulate'));
 
 function docToJsonTransform(doc: any, ret:any) {
-  ret.id = ret._id;
-  delete ret._id;
-  return ret;
+    ret.id = ret._id;
+    delete ret._id;
+    return ret;
 }
 
 export { AppointmentSchema }

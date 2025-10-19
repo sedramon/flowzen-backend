@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  Get,
-  Query,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-  BadRequestException,
-  NotFoundException
+    Controller,
+    Post,
+    Body,
+    Param,
+    Get,
+    Query,
+    UseGuards,
+    Req,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
+    NotFoundException
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../../auth/auth.guard';
-import { ScopesGuard } from '../../auth/scopes.guard';
+import { JwtAuthGuard } from '../../../common/guards/auth.guard';
+import { ScopesGuard } from 'src/common/guards/scopes.guard';
 import { SalesService } from '../service/sales.service';
 import { CreateSaleDto } from '../dto/sales/create-sale.dto';
 import { RefundSaleDto } from '../dto/sales/refund-sale.dto';
@@ -40,11 +40,11 @@ import { JwtUserPayload, PosApiResponse } from '../types';
 @Controller('pos/sales')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class SalesController {
-  constructor(private readonly salesService: SalesService) {}
+    constructor(private readonly salesService: SalesService) {}
 
-  // ============================================================================
-  // CORE SALES MANAGEMENT
-  // ============================================================================
+    // ============================================================================
+    // CORE SALES MANAGEMENT
+    // ============================================================================
 
   /**
    * Create a new sale transaction
@@ -81,21 +81,21 @@ export class SalesController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
+    async create(
     @Body() dto: CreateSaleDto,
     @Req() req: { user: JwtUserPayload }
-  ): Promise<PosApiResponse> {
-    try {
-      const sale = await this.salesService.createSale(dto, req.user);
-      return {
-        success: true,
-        data: sale,
-        message: 'Sale created successfully'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to create sale');
+    ): Promise<PosApiResponse> {
+        try {
+            const sale = await this.salesService.createSale(dto, req.user);
+            return {
+                success: true,
+                data: sale,
+                message: 'Sale created successfully'
+            };
+        } catch (error) {
+            throw new BadRequestException(error.message || 'Failed to create sale');
+        }
     }
-  }
 
   /**
    * Retrieve all sales with optional filtering
@@ -115,16 +115,16 @@ export class SalesController {
     @Query() query: any,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      const sales = await this.salesService.findAll(query, req.user);
-      return {
-        success: true,
-        data: sales,
-        message: 'Sales retrieved successfully'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to retrieve sales');
-    }
+      try {
+          const sales = await this.salesService.findAll(query, req.user);
+          return {
+              success: true,
+              data: sales,
+              message: 'Sales retrieved successfully'
+          };
+      } catch (error) {
+          throw new BadRequestException(error.message || 'Failed to retrieve sales');
+      }
   }
 
   /**
@@ -145,28 +145,28 @@ export class SalesController {
     @Param('id') id: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
 
-      const sale = await this.salesService.findById(id, req.user);
-      if (!sale) {
-        throw new NotFoundException('Sale not found');
-      }
+          const sale = await this.salesService.findById(id, req.user);
+          if (!sale) {
+              throw new NotFoundException('Sale not found');
+          }
       
-      return {
-        success: true,
-        data: sale,
-        message: 'Sale retrieved successfully'
-      };
-    } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
-        throw error;
+          return {
+              success: true,
+              data: sale,
+              message: 'Sale retrieved successfully'
+          };
+      } catch (error) {
+          if (error instanceof NotFoundException || error instanceof BadRequestException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to retrieve sale');
       }
-      throw new BadRequestException(error.message || 'Failed to retrieve sale');
-    }
   }
 
   // ============================================================================
@@ -203,24 +203,24 @@ export class SalesController {
     @Body() dto: RefundSaleDto,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
 
-      const refund = await this.salesService.refundSale(id, dto, req.user);
-      return {
-        success: true,
-        data: refund,
-        message: 'Sale refunded successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
+          const refund = await this.salesService.refundSale(id, dto, req.user);
+          return {
+              success: true,
+              data: refund,
+              message: 'Sale refunded successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException || error instanceof NotFoundException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to refund sale');
       }
-      throw new BadRequestException(error.message || 'Failed to refund sale');
-    }
   }
 
   // ============================================================================
@@ -245,24 +245,24 @@ export class SalesController {
     @Param('id') id: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
 
-      const receipt = await this.salesService.getReceipt(id, req.user);
-      return {
-        success: true,
-        data: receipt,
-        message: 'Receipt generated successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
+          const receipt = await this.salesService.getReceipt(id, req.user);
+          return {
+              success: true,
+              data: receipt,
+              message: 'Receipt generated successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to generate receipt');
       }
-      throw new BadRequestException(error.message || 'Failed to generate receipt');
-    }
   }
 
   /**
@@ -288,27 +288,27 @@ export class SalesController {
     @Body() body: { facility: string },
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
-      if (!Types.ObjectId.isValid(body.facility)) {
-        throw new BadRequestException('Invalid facility ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
+          if (!Types.ObjectId.isValid(body.facility)) {
+              throw new BadRequestException('Invalid facility ID format');
+          }
 
-      const result = await this.salesService.fiscalize(id, body.facility, req.user);
-      return {
-        success: true,
-        data: result,
-        message: 'Sale fiscalized successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
+          const result = await this.salesService.fiscalize(id, body.facility, req.user);
+          return {
+              success: true,
+              data: result,
+              message: 'Sale fiscalized successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException || error instanceof NotFoundException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to fiscalize sale');
       }
-      throw new BadRequestException(error.message || 'Failed to fiscalize sale');
-    }
   }
 
   /**
@@ -327,16 +327,16 @@ export class SalesController {
   async resetPendingFiscalizations(
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      const result = await this.salesService.resetPendingFiscalizations(req.user.tenant);
-      return {
-        success: true,
-        data: result,
-        message: 'Pending fiscalizations reset successfully'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to reset pending fiscalizations');
-    }
+      try {
+          const result = await this.salesService.resetPendingFiscalizations(req.user.tenant);
+          return {
+              success: true,
+              data: result,
+              message: 'Pending fiscalizations reset successfully'
+          };
+      } catch (error) {
+          throw new BadRequestException(error.message || 'Failed to reset pending fiscalizations');
+      }
   }
 
   /**
@@ -357,28 +357,28 @@ export class SalesController {
     @Param('id') id: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
 
-      const sale = await this.salesService.findById(id, req.user);
-      if (!sale) {
-        throw new NotFoundException('Sale not found');
-      }
+          const sale = await this.salesService.findById(id, req.user);
+          if (!sale) {
+              throw new NotFoundException('Sale not found');
+          }
 
-      return {
-        success: true,
-        data: sale,
-        message: 'Sale details retrieved successfully'
-      };
-    } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
-        throw error;
+          return {
+              success: true,
+              data: sale,
+              message: 'Sale details retrieved successfully'
+          };
+      } catch (error) {
+          if (error instanceof NotFoundException || error instanceof BadRequestException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to retrieve sale details');
       }
-      throw new BadRequestException(error.message || 'Failed to retrieve sale details');
-    }
   }
 
   /**
@@ -399,23 +399,23 @@ export class SalesController {
     @Param('id') id: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid sale ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid sale ID format');
+          }
 
-      const result = await this.salesService.resetFiscalization(id, req.user);
-      return {
-        success: true,
-        data: result,
-        message: 'Fiscalization reset successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
+          const result = await this.salesService.resetFiscalization(id, req.user);
+          return {
+              success: true,
+              data: result,
+              message: 'Fiscalization reset successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException || error instanceof NotFoundException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to reset fiscalization');
       }
-      throw new BadRequestException(error.message || 'Failed to reset fiscalization');
-    }
   }
 }

@@ -1,10 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ApiBearerAuth } from "@nestjs/swagger";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
-import { ScopesGuard } from "src/modules/auth/scopes.guard";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
+import { ScopesGuard } from "src/common/guards/scopes.guard";
 import { ArticleService } from "../service/article.service";
-import { Scopes } from "src/modules/auth/scopes.decorator";
+import { Scopes } from "src/common/decorators";
 import { Article } from "../schema/article.schema";
 import { UpdateArticleDto } from "../dto/UpdateArticle.dto";
 import { CreateArticleDto } from "../dto/CreateArticle.dto";

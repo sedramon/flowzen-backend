@@ -5,19 +5,19 @@ import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 @Schema({timestamps: true})
 export class Client extends Document {
     @Prop({ required: true })
-    firstName: string;
+        firstName: string;
 
     @Prop({ required: true })
-    lastName: string;
+        lastName: string;
 
     @Prop({ required: true })
-    contactPhone: string;
+        contactPhone: string;
 
     @Prop()
-    contactEmail: string;
+        contactEmail: string;
 
     @Prop()
-    address: string;
+        address: string;
 
     @Prop({
         type: MongooseSchema.Types.ObjectId,
@@ -25,7 +25,7 @@ export class Client extends Document {
         required: true,
         autopopulate: { select: 'name' }
     })
-    tenant: Tenant;
+        tenant: Tenant;
     
     readonly createdAt?: Date;
     readonly updatedAt?: Date

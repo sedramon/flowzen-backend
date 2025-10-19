@@ -2,50 +2,50 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    versionKey: false,
-    transform: (_doc, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      return ret;
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        versionKey: false,
+        transform: (_doc, ret) => {
+            ret.id = ret._id;
+            delete ret._id;
+            return ret;
+        },
     },
-  },
 })
 export class FiscalLog extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
-  tenant: string;
+      tenant: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Sale', required: true })
-  sale: string;
+      sale: string;
 
   @Prop({ type: String, required: true })
-  correlationId: string;
+      correlationId: string;
 
   @Prop({ type: String, enum: ['pending', 'success', 'error', 'retry'], required: true })
-  status: 'pending' | 'success' | 'error' | 'retry';
+      status: 'pending' | 'success' | 'error' | 'retry';
 
   @Prop({ type: String })
-  fiscalNumber?: string;
+      fiscalNumber?: string;
 
   @Prop({ type: String })
-  error?: string;
+      error?: string;
 
   @Prop({ type: Object })
-  requestPayload?: any;
+      requestPayload?: any;
 
   @Prop({ type: Object })
-  responsePayload?: any;
+      responsePayload?: any;
 
   @Prop({ type: String, enum: ['none', 'device', 'cloud'] })
-  provider: 'none' | 'device' | 'cloud';
+      provider: 'none' | 'device' | 'cloud';
 
   @Prop({ type: Number, default: 0 })
-  retryCount: number;
+      retryCount: number;
 
   @Prop({ type: Date })
-  processedAt?: Date;
+      processedAt?: Date;
 }
 
 export const FiscalLogSchema = SchemaFactory.createForClass(FiscalLog);

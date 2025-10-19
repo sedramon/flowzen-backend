@@ -4,10 +4,10 @@ import { Document } from 'mongoose';
 @Schema({timestamps: true})
 export class Scope extends Document {
     @Prop({unique: true, required: true})
-    name: string;
+        name: string;
 
     @Prop({required: true})
-    description: string;
+        description: string;
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

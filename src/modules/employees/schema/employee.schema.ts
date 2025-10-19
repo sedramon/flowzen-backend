@@ -6,28 +6,28 @@ import { Facility } from "src/modules/facility/schema/facility.schema";
 @Schema({ timestamps: true })
 export class Employee extends Document {
     @Prop({ required: true })
-    firstName: string;
+        firstName: string;
 
     @Prop({ required: true })
-    lastName: string;
+        lastName: string;
 
     @Prop({ required: true })
-    contactEmail: string;
+        contactEmail: string;
 
     @Prop({ required: true })
-    contactPhone: string;
+        contactPhone: string;
 
     @Prop({ required: true })
-    dateOfBirth: Date;
+        dateOfBirth: Date;
 
     @Prop({ required: true })
-    jobRole: string;
+        jobRole: string;
 
     @Prop({ required: true, default: true })
-    isActive: boolean;
+        isActive: boolean;
 
     @Prop({ required: true, default: false })
-    includeInAppoitments: boolean;
+        includeInAppoitments: boolean;
 
     @Prop({
         type: MongooseSchema.Types.ObjectId,
@@ -35,7 +35,7 @@ export class Employee extends Document {
         required: true,
         autopopulate: { select: 'name' }
     })
-    tenant: Tenant;
+        tenant: Tenant;
 
     @Prop({
         type: [MongooseSchema.Types.ObjectId],
@@ -44,10 +44,10 @@ export class Employee extends Document {
         default: [],
         autopopulate: { select: 'name' }
     })
-    facilities?: Facility[];
+        facilities?: Facility[];
 
     @Prop()
-    avatarUrl?: string;
+        avatarUrl?: string;
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date

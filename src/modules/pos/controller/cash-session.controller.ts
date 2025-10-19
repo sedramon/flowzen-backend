@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Param,
-  Get,
-  Query,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-  BadRequestException,
-  NotFoundException
+    Controller,
+    Post,
+    Body,
+    Param,
+    Get,
+    Query,
+    UseGuards,
+    Req,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
+    NotFoundException
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../../auth/auth.guard';
-import { ScopesGuard } from '../../auth/scopes.guard';
+import { JwtAuthGuard } from '../../../common/guards/auth.guard';
+import { ScopesGuard } from 'src/common/guards/scopes.guard';
 import { CashSessionService } from '../service/cash-session.service';
 import { OpenSessionDto } from '../dto/sessions/open-session.dto';
 import { CloseSessionDto } from '../dto/sessions/close-session.dto';
@@ -34,7 +34,7 @@ import { JwtUserPayload, PosApiResponse } from '../types';
 @Controller('pos/sessions')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class CashSessionController {
-  constructor(
+    constructor(
     private readonly cashSessionService: CashSessionService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Facility.name) private readonly facilityModel: Model<Facility>,
@@ -44,11 +44,11 @@ export class CashSessionController {
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
     @InjectModel(Appointment.name) private readonly appointmentModel: Model<Appointment>,
     @InjectModel(CashSession.name) private readonly cashSessionModel: Model<CashSession>,
-  ) {}
+    ) {}
 
-  // ============================================================================
-  // CORE SESSION MANAGEMENT ENDPOINTS
-  // ============================================================================
+    // ============================================================================
+    // CORE SESSION MANAGEMENT ENDPOINTS
+    // ============================================================================
 
   /**
    * Open a new cash session
@@ -69,21 +69,21 @@ export class CashSessionController {
    */
   @Post('open')
   @HttpCode(HttpStatus.CREATED)
-  async open(
+    async open(
     @Body() dto: OpenSessionDto,
     @Req() req: { user: JwtUserPayload }
-  ): Promise<PosApiResponse> {
-    try {
-      const session = await this.cashSessionService.openSession(dto, req.user);
-      return {
-        success: true,
-        data: session,
-        message: 'Cash session opened successfully'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to open cash session');
+    ): Promise<PosApiResponse> {
+        try {
+            const session = await this.cashSessionService.openSession(dto, req.user);
+            return {
+                success: true,
+                data: session,
+                message: 'Cash session opened successfully'
+            };
+        } catch (error) {
+            throw new BadRequestException(error.message || 'Failed to open cash session');
+        }
     }
-  }
 
   /**
    * Close a cash session
@@ -109,24 +109,24 @@ export class CashSessionController {
     @Body() dto: CloseSessionDto,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
+      try {
       // Validate ObjectId format
-      if (!Types.ObjectId.isValid(id)) {
-        throw new BadRequestException('Invalid session ID format');
-      }
+          if (!Types.ObjectId.isValid(id)) {
+              throw new BadRequestException('Invalid session ID format');
+          }
 
-      const result = await this.cashSessionService.closeSession(id, dto, req.user);
-      return {
-        success: true,
-        data: result,
-        message: 'Cash session closed successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
+          const result = await this.cashSessionService.closeSession(id, dto, req.user);
+          return {
+              success: true,
+              data: result,
+              message: 'Cash session closed successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to close cash session');
       }
-      throw new BadRequestException(error.message || 'Failed to close cash session');
-    }
   }
 
   /**
@@ -147,16 +147,16 @@ export class CashSessionController {
     @Query() query: { status?: string; facility?: string; employee?: string; limit?: string },
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      const sessions = await this.cashSessionService.findAll(query, req.user);
-      return {
-        success: true,
-        data: sessions,
-        message: 'Cash sessions retrieved successfully'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to retrieve cash sessions');
-    }
+      try {
+          const sessions = await this.cashSessionService.findAll(query, req.user);
+          return {
+              success: true,
+              data: sessions,
+              message: 'Cash sessions retrieved successfully'
+          };
+      } catch (error) {
+          throw new BadRequestException(error.message || 'Failed to retrieve cash sessions');
+      }
   }
 
   /**
@@ -177,16 +177,16 @@ export class CashSessionController {
     @Query() query: { facility?: string },
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      const session = await this.cashSessionService.getCurrentSession(req.user, query.facility);
-      return {
-        success: true,
-        data: session,
-        message: session ? 'Current session found' : 'No active session found'
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message || 'Failed to get current session');
-    }
+      try {
+          const session = await this.cashSessionService.getCurrentSession(req.user, query.facility);
+          return {
+              success: true,
+              data: session,
+              message: session ? 'Current session found' : 'No active session found'
+          };
+      } catch (error) {
+          throw new BadRequestException(error.message || 'Failed to get current session');
+      }
   }
 
   // ============================================================================
@@ -211,7 +211,7 @@ export class CashSessionController {
     @Query('dateTo') dateTo: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    return this.cashSessionService.getReports(tenant, facility, dateFrom, dateTo, req.user);
+      return this.cashSessionService.getReports(tenant, facility, dateFrom, dateTo, req.user);
   }
 
   /**
@@ -233,390 +233,390 @@ export class CashSessionController {
     };
     error?: string;
   }> {
-    const tenant = req.user.tenant;
-    const facilityId = '68d855f9f07f767dc2582ba2'; // Test Facility ID
+      const tenant = req.user.tenant;
+      const facilityId = '68d855f9f07f767dc2582ba2'; // Test Facility ID
     
-    try {
+      try {
       // 1. Kreiranje artikala
-      const articles = [
-        {
-          tenant,
-          name: 'Šampon za kose',
-          description: 'Profesionalni šampon za sve tipove kose',
-          price: 1500,
-          category: 'Kozmetika',
-          sku: 'SH-001',
-          stock: 50,
-          minStock: 10,
-          active: true,
-          unitOfMeasure: 'kom',
-          taxRates: 20,
-          isOnSale: false,
-          salePrice: 0,
-          code: 'SH-001',
-          supplier: null,
-          remark: ''
-        },
-        {
-          tenant,
-          name: 'Krema za lice',
-          description: 'Regenerišuća krema za lice',
-          price: 2500,
-          category: 'Kozmetika',
-          sku: 'KL-002',
-          stock: 30,
-          minStock: 5,
-          active: true,
-          unitOfMeasure: 'kom',
-          taxRates: 20,
-          isOnSale: false,
-          salePrice: 0,
-          code: 'KL-002',
-          supplier: null,
-          remark: ''
-        },
-        {
-          tenant,
-          name: 'Maske za lice',
-          description: 'Hidratantne maske za lice',
-          price: 1800,
-          category: 'Kozmetika',
-          sku: 'ML-003',
-          stock: 25,
-          minStock: 8,
-          active: true,
-          unitOfMeasure: 'kom',
-          taxRates: 20,
-          isOnSale: false,
-          salePrice: 0,
-          code: 'ML-003',
-          supplier: null,
-          remark: ''
-        },
-        {
-          tenant,
-          name: 'Sapun za ruke',
-          description: 'Antibakterijski sapun',
-          price: 800,
-          category: 'Higijena',
-          sku: 'SR-004',
-          stock: 100,
-          minStock: 20,
-          active: true,
-          unitOfMeasure: 'kom',
-          taxRates: 20,
-          isOnSale: false,
-          salePrice: 0,
-          code: 'SR-004',
-          supplier: null,
-          remark: ''
-        },
-        {
-          tenant,
-          name: 'Krema za ruke',
-          description: 'Hidratantna krema za ruke',
-          price: 1200,
-          category: 'Higijena',
-          sku: 'KR-005',
-          stock: 40,
-          minStock: 10,
-          active: true,
-          unitOfMeasure: 'kom',
-          taxRates: 20,
-          isOnSale: false,
-          salePrice: 0,
-          code: 'KR-005',
-          supplier: null,
-          remark: ''
-        }
-      ];
+          const articles = [
+              {
+                  tenant,
+                  name: 'Šampon za kose',
+                  description: 'Profesionalni šampon za sve tipove kose',
+                  price: 1500,
+                  category: 'Kozmetika',
+                  sku: 'SH-001',
+                  stock: 50,
+                  minStock: 10,
+                  active: true,
+                  unitOfMeasure: 'kom',
+                  taxRates: 20,
+                  isOnSale: false,
+                  salePrice: 0,
+                  code: 'SH-001',
+                  supplier: null,
+                  remark: ''
+              },
+              {
+                  tenant,
+                  name: 'Krema za lice',
+                  description: 'Regenerišuća krema za lice',
+                  price: 2500,
+                  category: 'Kozmetika',
+                  sku: 'KL-002',
+                  stock: 30,
+                  minStock: 5,
+                  active: true,
+                  unitOfMeasure: 'kom',
+                  taxRates: 20,
+                  isOnSale: false,
+                  salePrice: 0,
+                  code: 'KL-002',
+                  supplier: null,
+                  remark: ''
+              },
+              {
+                  tenant,
+                  name: 'Maske za lice',
+                  description: 'Hidratantne maske za lice',
+                  price: 1800,
+                  category: 'Kozmetika',
+                  sku: 'ML-003',
+                  stock: 25,
+                  minStock: 8,
+                  active: true,
+                  unitOfMeasure: 'kom',
+                  taxRates: 20,
+                  isOnSale: false,
+                  salePrice: 0,
+                  code: 'ML-003',
+                  supplier: null,
+                  remark: ''
+              },
+              {
+                  tenant,
+                  name: 'Sapun za ruke',
+                  description: 'Antibakterijski sapun',
+                  price: 800,
+                  category: 'Higijena',
+                  sku: 'SR-004',
+                  stock: 100,
+                  minStock: 20,
+                  active: true,
+                  unitOfMeasure: 'kom',
+                  taxRates: 20,
+                  isOnSale: false,
+                  salePrice: 0,
+                  code: 'SR-004',
+                  supplier: null,
+                  remark: ''
+              },
+              {
+                  tenant,
+                  name: 'Krema za ruke',
+                  description: 'Hidratantna krema za ruke',
+                  price: 1200,
+                  category: 'Higijena',
+                  sku: 'KR-005',
+                  stock: 40,
+                  minStock: 10,
+                  active: true,
+                  unitOfMeasure: 'kom',
+                  taxRates: 20,
+                  isOnSale: false,
+                  salePrice: 0,
+                  code: 'KR-005',
+                  supplier: null,
+                  remark: ''
+              }
+          ];
 
-      // 2. Kreiranje usluga
-      const services = [
-        {
-          tenant,
-          name: 'Šišanje muško',
-          description: 'Profesionalno šišanje muške kose',
-          price: 2000,
-          durationMinutes: 30,
-          category: 'Šišanje',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Šišanje žensko',
-          description: 'Profesionalno šišanje ženske kose',
-          price: 3000,
-          durationMinutes: 45,
-          category: 'Šišanje',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Pranje kose',
-          description: 'Pranje i kondicioniranje kose',
-          price: 1500,
-          durationMinutes: 20,
-          category: 'Pranje',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Feniranje',
-          description: 'Profesionalno feniranje kose',
-          price: 2500,
-          durationMinutes: 30,
-          category: 'Feniranje',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Farbanje kose',
-          description: 'Profesionalno farbanje kose',
-          price: 5000,
-          durationMinutes: 120,
-          category: 'Farbanje',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Manikir',
-          description: 'Kompletni manikir',
-          price: 3500,
-          durationMinutes: 60,
-          category: 'Manikir',
-          active: true
-        },
-        {
-          tenant,
-          name: 'Pedikir',
-          description: 'Kompletni pedikir',
-          price: 4000,
-          durationMinutes: 90,
-          category: 'Pedikir',
-          active: true
-        }
-      ];
+          // 2. Kreiranje usluga
+          const services = [
+              {
+                  tenant,
+                  name: 'Šišanje muško',
+                  description: 'Profesionalno šišanje muške kose',
+                  price: 2000,
+                  durationMinutes: 30,
+                  category: 'Šišanje',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Šišanje žensko',
+                  description: 'Profesionalno šišanje ženske kose',
+                  price: 3000,
+                  durationMinutes: 45,
+                  category: 'Šišanje',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Pranje kose',
+                  description: 'Pranje i kondicioniranje kose',
+                  price: 1500,
+                  durationMinutes: 20,
+                  category: 'Pranje',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Feniranje',
+                  description: 'Profesionalno feniranje kose',
+                  price: 2500,
+                  durationMinutes: 30,
+                  category: 'Feniranje',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Farbanje kose',
+                  description: 'Profesionalno farbanje kose',
+                  price: 5000,
+                  durationMinutes: 120,
+                  category: 'Farbanje',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Manikir',
+                  description: 'Kompletni manikir',
+                  price: 3500,
+                  durationMinutes: 60,
+                  category: 'Manikir',
+                  active: true
+              },
+              {
+                  tenant,
+                  name: 'Pedikir',
+                  description: 'Kompletni pedikir',
+                  price: 4000,
+                  durationMinutes: 90,
+                  category: 'Pedikir',
+                  active: true
+              }
+          ];
 
-      // 3. Kreiranje zaposlenih
-      const employees = [
-        {
-          tenant,
-          firstName: 'Ana',
-          lastName: 'Petrović',
-          contactEmail: 'ana.petrovic@flowzen.com',
-          contactPhone: '+381 11 123 4567',
-          jobRole: 'Frizer',
-          dateOfBirth: new Date('1990-05-15'),
-          isActive: true,
-          includeInAppoitments: true,
-          facilities: [facilityId],
-          avatarUrl: ''
-        },
-        {
-          tenant,
-          firstName: 'Marko',
-          lastName: 'Nikolić',
-          contactEmail: 'marko.nikolic@flowzen.com',
-          contactPhone: '+381 11 234 5678',
-          jobRole: 'Frizer',
-          dateOfBirth: new Date('1988-03-20'),
-          isActive: true,
-          includeInAppoitments: true,
-          facilities: [facilityId],
-          avatarUrl: ''
-        },
-        {
-          tenant,
-          firstName: 'Jovana',
-          lastName: 'Stojanović',
-          contactEmail: 'jovana.stojanovic@flowzen.com',
-          contactPhone: '+381 11 345 6789',
-          jobRole: 'Manikirista',
-          dateOfBirth: new Date('1992-02-10'),
-          isActive: true,
-          includeInAppoitments: true,
-          facilities: [facilityId],
-          avatarUrl: ''
-        },
-        {
-          tenant,
-          firstName: 'Stefan',
-          lastName: 'Jovanović',
-          contactEmail: 'stefan.jovanovic@flowzen.com',
-          contactPhone: '+381 11 456 7890',
-          jobRole: 'Recepcioner',
-          dateOfBirth: new Date('1985-04-01'),
-          isActive: true,
-          includeInAppoitments: false,
-          facilities: [facilityId],
-          avatarUrl: ''
-        }
-      ];
+          // 3. Kreiranje zaposlenih
+          const employees = [
+              {
+                  tenant,
+                  firstName: 'Ana',
+                  lastName: 'Petrović',
+                  contactEmail: 'ana.petrovic@flowzen.com',
+                  contactPhone: '+381 11 123 4567',
+                  jobRole: 'Frizer',
+                  dateOfBirth: new Date('1990-05-15'),
+                  isActive: true,
+                  includeInAppoitments: true,
+                  facilities: [facilityId],
+                  avatarUrl: ''
+              },
+              {
+                  tenant,
+                  firstName: 'Marko',
+                  lastName: 'Nikolić',
+                  contactEmail: 'marko.nikolic@flowzen.com',
+                  contactPhone: '+381 11 234 5678',
+                  jobRole: 'Frizer',
+                  dateOfBirth: new Date('1988-03-20'),
+                  isActive: true,
+                  includeInAppoitments: true,
+                  facilities: [facilityId],
+                  avatarUrl: ''
+              },
+              {
+                  tenant,
+                  firstName: 'Jovana',
+                  lastName: 'Stojanović',
+                  contactEmail: 'jovana.stojanovic@flowzen.com',
+                  contactPhone: '+381 11 345 6789',
+                  jobRole: 'Manikirista',
+                  dateOfBirth: new Date('1992-02-10'),
+                  isActive: true,
+                  includeInAppoitments: true,
+                  facilities: [facilityId],
+                  avatarUrl: ''
+              },
+              {
+                  tenant,
+                  firstName: 'Stefan',
+                  lastName: 'Jovanović',
+                  contactEmail: 'stefan.jovanovic@flowzen.com',
+                  contactPhone: '+381 11 456 7890',
+                  jobRole: 'Recepcioner',
+                  dateOfBirth: new Date('1985-04-01'),
+                  isActive: true,
+                  includeInAppoitments: false,
+                  facilities: [facilityId],
+                  avatarUrl: ''
+              }
+          ];
 
-      // 4. Kreiranje klijenata
-      const clients = [
-        {
-          tenant,
-          firstName: 'Milica',
-          lastName: 'Đorđević',
-          contactEmail: 'milica.djordjevic@email.com',
-          contactPhone: '+381 11 567 8901',
-          address: 'Knez Mihailova 15, Beograd',
-          dateOfBirth: new Date('1990-05-15'),
-          notes: 'Redovni klijent, preferira kratku kosu',
-          isActive: true
-        },
-        {
-          tenant,
-          firstName: 'Nikola',
-          lastName: 'Milošević',
-          contactEmail: 'nikola.milosevic@email.com',
-          contactPhone: '+381 11 678 9012',
-          address: 'Terazije 8, Beograd',
-          dateOfBirth: new Date('1985-08-22'),
-          notes: 'Koristi usluge šišanja i manikira',
-          isActive: true
-        },
-        {
-          tenant,
-          firstName: 'Sara',
-          lastName: 'Popović',
-          contactEmail: 'sara.popovic@email.com',
-          contactPhone: '+381 11 789 0123',
-          address: 'Vračar, Beograd',
-          dateOfBirth: new Date('1992-12-03'),
-          notes: 'Specijalizovana za farbanje kose',
-          isActive: true
-        },
-        {
-          tenant,
-          firstName: 'Aleksandar',
-          lastName: 'Radić',
-          contactEmail: 'aleksandar.radic@email.com',
-          contactPhone: '+381 11 890 1234',
-          address: 'Zvezdara, Beograd',
-          dateOfBirth: new Date('1988-07-18'),
-          notes: 'Muški klijent, redovno šišanje',
-          isActive: true
-        },
-        {
-          tenant,
-          firstName: 'Jelena',
-          lastName: 'Tomić',
-          contactEmail: 'jelena.tomic@email.com',
-          contactPhone: '+381 11 901 2345',
-          address: 'Novi Beograd',
-          dateOfBirth: new Date('1995-03-25'),
-          notes: 'Mlada klijentkinja, eksperimentiše sa bojama',
-          isActive: true
-        }
-      ];
+          // 4. Kreiranje klijenata
+          const clients = [
+              {
+                  tenant,
+                  firstName: 'Milica',
+                  lastName: 'Đorđević',
+                  contactEmail: 'milica.djordjevic@email.com',
+                  contactPhone: '+381 11 567 8901',
+                  address: 'Knez Mihailova 15, Beograd',
+                  dateOfBirth: new Date('1990-05-15'),
+                  notes: 'Redovni klijent, preferira kratku kosu',
+                  isActive: true
+              },
+              {
+                  tenant,
+                  firstName: 'Nikola',
+                  lastName: 'Milošević',
+                  contactEmail: 'nikola.milosevic@email.com',
+                  contactPhone: '+381 11 678 9012',
+                  address: 'Terazije 8, Beograd',
+                  dateOfBirth: new Date('1985-08-22'),
+                  notes: 'Koristi usluge šišanja i manikira',
+                  isActive: true
+              },
+              {
+                  tenant,
+                  firstName: 'Sara',
+                  lastName: 'Popović',
+                  contactEmail: 'sara.popovic@email.com',
+                  contactPhone: '+381 11 789 0123',
+                  address: 'Vračar, Beograd',
+                  dateOfBirth: new Date('1992-12-03'),
+                  notes: 'Specijalizovana za farbanje kose',
+                  isActive: true
+              },
+              {
+                  tenant,
+                  firstName: 'Aleksandar',
+                  lastName: 'Radić',
+                  contactEmail: 'aleksandar.radic@email.com',
+                  contactPhone: '+381 11 890 1234',
+                  address: 'Zvezdara, Beograd',
+                  dateOfBirth: new Date('1988-07-18'),
+                  notes: 'Muški klijent, redovno šišanje',
+                  isActive: true
+              },
+              {
+                  tenant,
+                  firstName: 'Jelena',
+                  lastName: 'Tomić',
+                  contactEmail: 'jelena.tomic@email.com',
+                  contactPhone: '+381 11 901 2345',
+                  address: 'Novi Beograd',
+                  dateOfBirth: new Date('1995-03-25'),
+                  notes: 'Mlada klijentkinja, eksperimentiše sa bojama',
+                  isActive: true
+              }
+          ];
 
-      // 5. Ubacivanje podataka u bazu
-      // Obriši postojeće testne podatke
-      await this.articleModel.deleteMany({ tenant });
-      await this.serviceModel.deleteMany({ tenant });
-      await this.employeeModel.deleteMany({ tenant });
-      await this.clientModel.deleteMany({ tenant });
-      await this.appointmentModel.deleteMany({ tenant });
-      await this.cashSessionModel.deleteMany({ tenant });
+          // 5. Ubacivanje podataka u bazu
+          // Obriši postojeće testne podatke
+          await this.articleModel.deleteMany({ tenant });
+          await this.serviceModel.deleteMany({ tenant });
+          await this.employeeModel.deleteMany({ tenant });
+          await this.clientModel.deleteMany({ tenant });
+          await this.appointmentModel.deleteMany({ tenant });
+          await this.cashSessionModel.deleteMany({ tenant });
 
-      // Ubaci nove podatke
-      const insertedArticles = await this.articleModel.insertMany(articles);
-      const insertedServices = await this.serviceModel.insertMany(services);
-      const insertedEmployees = await this.employeeModel.insertMany(employees);
-      const insertedClients = await this.clientModel.insertMany(clients);
+          // Ubaci nove podatke
+          const insertedArticles = await this.articleModel.insertMany(articles);
+          const insertedServices = await this.serviceModel.insertMany(services);
+          const insertedEmployees = await this.employeeModel.insertMany(employees);
+          const insertedClients = await this.clientModel.insertMany(clients);
 
-      // 6. Kreiranje termina sa stvarnim ID-jima
-      const today = new Date();
-      const appointments = [];
-      const clientIds = insertedClients.map(c => c._id);
-      const employeeIds = insertedEmployees.map(e => e._id);
-      const serviceIds = insertedServices.map(s => s._id);
+          // 6. Kreiranje termina sa stvarnim ID-jima
+          const today = new Date();
+          const appointments = [];
+          const clientIds = insertedClients.map(c => c._id);
+          const employeeIds = insertedEmployees.map(e => e._id);
+          const serviceIds = insertedServices.map(s => s._id);
       
-      for (let i = 0; i < 20; i++) {
-        const appointmentDate = new Date(today);
-        appointmentDate.setDate(today.getDate() + i);
-        appointmentDate.setHours(9 + (i % 8), (i % 2) * 30, 0, 0);
+          for (let i = 0; i < 20; i++) {
+              const appointmentDate = new Date(today);
+              appointmentDate.setDate(today.getDate() + i);
+              appointmentDate.setHours(9 + (i % 8), (i % 2) * 30, 0, 0);
         
-        const endTime = new Date(appointmentDate.getTime() + (30 + (i % 60)) * 60000);
-        appointments.push({
-          tenant,
-          facility: facilityId,
-          client: clientIds[i % clientIds.length],
-          employee: employeeIds[i % employeeIds.length],
-          service: serviceIds[i % serviceIds.length],
-          date: appointmentDate.toISOString().split('T')[0],
-          startHour: appointmentDate.getHours(),
-          endHour: endTime.getHours(),
-          status: i < 15 ? 'confirmed' : 'pending',
-          notes: `Termin ${i + 1} - ${services[i % services.length].name}`,
-          totalPrice: services[i % services.length].price,
-          paid: i < 10
-        });
-      }
-
-      // 7. Kreiranje cash sesija sa realnim podacima
-      const cashSessions = [];
-      for (let i = 0; i < 10; i++) {
-        const sessionDate = new Date(today);
-        sessionDate.setDate(today.getDate() - i);
-        
-        const openingFloat = 3000 + (i * 500);
-        const totalSales = 15000 + (i * 2000);
-        const variance = (i % 3 === 0) ? 100 : (i % 3 === 1) ? -50 : 0;
-        
-        cashSessions.push({
-          tenant,
-          facility: facilityId,
-          openedBy: req.user.userId,
-          openedAt: new Date(sessionDate.getTime() - 8 * 60 * 60 * 1000), // 8h ranije
-          closedAt: new Date(sessionDate.getTime() - 1 * 60 * 60 * 1000), // 1h ranije
-          openingFloat,
-          closingCount: openingFloat + totalSales + variance,
-          totalSales,
-          totalRefunds: i % 4 === 0 ? 500 : 0,
-          variance,
-          variancePercentage: (variance / (openingFloat + totalSales)) * 100,
-          status: 'closed',
-          notes: `Dnevna sesija ${i + 1}`,
-          totalsByMethod: {
-            cash: Math.floor(totalSales * 0.6),
-            card: Math.floor(totalSales * 0.3),
-            voucher: Math.floor(totalSales * 0.05),
-            gift: Math.floor(totalSales * 0.03),
-            bank: Math.floor(totalSales * 0.02),
-            other: 0
+              const endTime = new Date(appointmentDate.getTime() + (30 + (i % 60)) * 60000);
+              appointments.push({
+                  tenant,
+                  facility: facilityId,
+                  client: clientIds[i % clientIds.length],
+                  employee: employeeIds[i % employeeIds.length],
+                  service: serviceIds[i % serviceIds.length],
+                  date: appointmentDate.toISOString().split('T')[0],
+                  startHour: appointmentDate.getHours(),
+                  endHour: endTime.getHours(),
+                  status: i < 15 ? 'confirmed' : 'pending',
+                  notes: `Termin ${i + 1} - ${services[i % services.length].name}`,
+                  totalPrice: services[i % services.length].price,
+                  paid: i < 10
+              });
           }
-        });
+
+          // 7. Kreiranje cash sesija sa realnim podacima
+          const cashSessions = [];
+          for (let i = 0; i < 10; i++) {
+              const sessionDate = new Date(today);
+              sessionDate.setDate(today.getDate() - i);
+        
+              const openingFloat = 3000 + (i * 500);
+              const totalSales = 15000 + (i * 2000);
+              const variance = (i % 3 === 0) ? 100 : (i % 3 === 1) ? -50 : 0;
+        
+              cashSessions.push({
+                  tenant,
+                  facility: facilityId,
+                  openedBy: req.user.userId,
+                  openedAt: new Date(sessionDate.getTime() - 8 * 60 * 60 * 1000), // 8h ranije
+                  closedAt: new Date(sessionDate.getTime() - 1 * 60 * 60 * 1000), // 1h ranije
+                  openingFloat,
+                  closingCount: openingFloat + totalSales + variance,
+                  totalSales,
+                  totalRefunds: i % 4 === 0 ? 500 : 0,
+                  variance,
+                  variancePercentage: (variance / (openingFloat + totalSales)) * 100,
+                  status: 'closed',
+                  notes: `Dnevna sesija ${i + 1}`,
+                  totalsByMethod: {
+                      cash: Math.floor(totalSales * 0.6),
+                      card: Math.floor(totalSales * 0.3),
+                      voucher: Math.floor(totalSales * 0.05),
+                      gift: Math.floor(totalSales * 0.03),
+                      bank: Math.floor(totalSales * 0.02),
+                      other: 0
+                  }
+              });
+          }
+
+          // Ubaci termine i sesije
+          const insertedAppointments = await this.appointmentModel.insertMany(appointments);
+          const insertedSessions = await this.cashSessionModel.insertMany(cashSessions);
+
+          return {
+              success: true,
+              message: 'Realni testni podaci uspešno kreirani',
+              counts: {
+                  articles: insertedArticles.length,
+                  services: insertedServices.length,
+                  employees: insertedEmployees.length,
+                  clients: insertedClients.length,
+                  appointments: insertedAppointments.length,
+                  cashSessions: insertedSessions.length
+              }
+          };
+
+      } catch (error) {
+          console.error('Error seeding real data:', error);
+          return {
+              success: false,
+              message: 'Greška pri kreiranju testnih podataka',
+              error: error.message
+          };
       }
-
-      // Ubaci termine i sesije
-      const insertedAppointments = await this.appointmentModel.insertMany(appointments);
-      const insertedSessions = await this.cashSessionModel.insertMany(cashSessions);
-
-      return {
-        success: true,
-        message: 'Realni testni podaci uspešno kreirani',
-        counts: {
-          articles: insertedArticles.length,
-          services: insertedServices.length,
-          employees: insertedEmployees.length,
-          clients: insertedClients.length,
-          appointments: insertedAppointments.length,
-          cashSessions: insertedSessions.length
-        }
-      };
-
-    } catch (error) {
-      console.error('Error seeding real data:', error);
-      return {
-        success: false,
-        message: 'Greška pri kreiranju testnih podataka',
-        error: error.message
-      };
-    }
   }
 
   /**
@@ -632,61 +632,61 @@ export class CashSessionController {
     detailedInfo?: any;
     message?: string;
   }> {
-    if (secret !== 'flowzen-setup-2025') {
-      return { error: 'Unauthorized' };
-    }
-
-    try {
-      // Uzmi sve kolekcije iz baze
-      const db = this.userModel.db;
-      const collections = await db.listCollections();
-      
-      const overview = {
-        collections: {},
-        totalRecords: 0,
-        timestamp: new Date().toISOString()
-      };
-
-      // Prođi kroz sve kolekcije i prebroj zapise
-      for (const collection of collections) {
-        const collectionName = collection.name;
-        const count = await db.collection(collectionName).countDocuments();
-        overview.collections[collectionName] = count;
-        overview.totalRecords += count;
+      if (secret !== 'flowzen-setup-2025') {
+          return { error: 'Unauthorized' };
       }
 
-      // Dodaj detaljne informacije za ključne kolekcije
-      const detailedInfo = {
-        users: await db.collection('users').find({}).limit(5).toArray(),
-        facilities: await db.collection('facilities').find({}).limit(5).toArray(),
-        tenants: await db.collection('tenants').find({}).limit(5).toArray(),
-        roles: await db.collection('roles').find({}).limit(5).toArray(),
-        scopes: await db.collection('scopes').find({}).limit(5).toArray(),
-        clients: await db.collection('clients').find({}).limit(5).toArray(),
-        employees: await db.collection('employees').find({}).limit(5).toArray(),
-        services: await db.collection('services').find({}).limit(5).toArray(),
-        articles: await db.collection('articles').find({}).limit(5).toArray(),
-        appointments: await db.collection('appointments').find({}).limit(5).toArray(),
-        cashSessions: await db.collection('cashsessions').find({}).limit(5).toArray(),
-        suppliers: await db.collection('suppliers').find({}).limit(5).toArray(),
-        workingShifts: await db.collection('workingshifts').find({}).limit(5).toArray()
-      };
+      try {
+      // Uzmi sve kolekcije iz baze
+          const db = this.userModel.db;
+          const collections = await db.listCollections();
+      
+          const overview = {
+              collections: {},
+              totalRecords: 0,
+              timestamp: new Date().toISOString()
+          };
 
-      return {
-        success: true,
-        overview,
-        detailedInfo,
-        message: 'Database overview retrieved successfully'
-      };
+          // Prođi kroz sve kolekcije i prebroj zapise
+          for (const collection of collections) {
+              const collectionName = collection.name;
+              const count = await db.collection(collectionName).countDocuments();
+              overview.collections[collectionName] = count;
+              overview.totalRecords += count;
+          }
 
-    } catch (error) {
-      console.error('Error getting database overview:', error);
-      return {
-        success: false,
-        error: error.message,
-        message: 'Failed to get database overview'
-      };
-    }
+          // Dodaj detaljne informacije za ključne kolekcije
+          const detailedInfo = {
+              users: await db.collection('users').find({}).limit(5).toArray(),
+              facilities: await db.collection('facilities').find({}).limit(5).toArray(),
+              tenants: await db.collection('tenants').find({}).limit(5).toArray(),
+              roles: await db.collection('roles').find({}).limit(5).toArray(),
+              scopes: await db.collection('scopes').find({}).limit(5).toArray(),
+              clients: await db.collection('clients').find({}).limit(5).toArray(),
+              employees: await db.collection('employees').find({}).limit(5).toArray(),
+              services: await db.collection('services').find({}).limit(5).toArray(),
+              articles: await db.collection('articles').find({}).limit(5).toArray(),
+              appointments: await db.collection('appointments').find({}).limit(5).toArray(),
+              cashSessions: await db.collection('cashsessions').find({}).limit(5).toArray(),
+              suppliers: await db.collection('suppliers').find({}).limit(5).toArray(),
+              workingShifts: await db.collection('workingshifts').find({}).limit(5).toArray()
+          };
+
+          return {
+              success: true,
+              overview,
+              detailedInfo,
+              message: 'Database overview retrieved successfully'
+          };
+
+      } catch (error) {
+          console.error('Error getting database overview:', error);
+          return {
+              success: false,
+              error: error.message,
+              message: 'Failed to get database overview'
+          };
+      }
   }
 
   /**
@@ -697,10 +697,10 @@ export class CashSessionController {
    */
   @Get(':id')
   async findById(@Param('id') id: string, @Req() req: { user: JwtUserPayload }): Promise<CashSession> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
-    }
-    return this.cashSessionService.findById(id, req.user);
+      if (!Types.ObjectId.isValid(id)) {
+          throw new BadRequestException('Invalid session ID format');
+      }
+      return this.cashSessionService.findById(id, req.user);
   }
 
   // ============================================================================
@@ -728,10 +728,10 @@ export class CashSessionController {
     status: string;
     recommendations: string[];
   }> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
-    }
-    return this.cashSessionService.countCash(id, dto, req.user);
+      if (!Types.ObjectId.isValid(id)) {
+          throw new BadRequestException('Invalid session ID format');
+      }
+      return this.cashSessionService.countCash(id, dto, req.user);
   }
 
   /**
@@ -755,10 +755,10 @@ export class CashSessionController {
     variancePercentage: number;
     timestamp: Date;
   }> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
-    }
-    return this.cashSessionService.verifyCashCount(id, dto, req.user);
+      if (!Types.ObjectId.isValid(id)) {
+          throw new BadRequestException('Invalid session ID format');
+      }
+      return this.cashSessionService.verifyCashCount(id, dto, req.user);
   }
 
   /**
@@ -781,10 +781,10 @@ export class CashSessionController {
     timestamp: Date;
     handledBy: string;
   }> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
-    }
-    return this.cashSessionService.handleCashVariance(id, dto, req.user);
+      if (!Types.ObjectId.isValid(id)) {
+          throw new BadRequestException('Invalid session ID format');
+      }
+      return this.cashSessionService.handleCashVariance(id, dto, req.user);
   }
 
   // ============================================================================
@@ -799,10 +799,10 @@ export class CashSessionController {
    */
   @Get(':id/reconcile')
   async reconcileSession(@Param('id') id: string, @Req() req: { user: JwtUserPayload }): Promise<any> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid session ID format');
-    }
-    return this.cashSessionService.reconcileSession(id, req.user);
+      if (!Types.ObjectId.isValid(id)) {
+          throw new BadRequestException('Invalid session ID format');
+      }
+      return this.cashSessionService.reconcileSession(id, req.user);
   }
 
   /**
@@ -818,10 +818,10 @@ export class CashSessionController {
     @Query('date') date: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<any> {
-    if (!Types.ObjectId.isValid(facility)) {
-      throw new BadRequestException('Invalid facility ID format');
-    }
-    return this.cashSessionService.getDailyCashReport(facility, date, req.user);
+      if (!Types.ObjectId.isValid(facility)) {
+          throw new BadRequestException('Invalid facility ID format');
+      }
+      return this.cashSessionService.getDailyCashReport(facility, date, req.user);
   }
 
   /**
@@ -837,11 +837,11 @@ export class CashSessionController {
     @Query('week') week: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<{ message: string }> {
-    if (!Types.ObjectId.isValid(facility)) {
-      throw new BadRequestException('Invalid facility ID format');
-    }
-    // TODO: Implement weekly report
-    return { message: 'Weekly report not implemented yet' };
+      if (!Types.ObjectId.isValid(facility)) {
+          throw new BadRequestException('Invalid facility ID format');
+      }
+      // TODO: Implement weekly report
+      return { message: 'Weekly report not implemented yet' };
   }
 
   /**
@@ -857,11 +857,11 @@ export class CashSessionController {
     @Query('month') month: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<{ message: string }> {
-    if (!Types.ObjectId.isValid(facility)) {
-      throw new BadRequestException('Invalid facility ID format');
-    }
-    // TODO: Implement monthly report
-    return { message: 'Monthly report not implemented yet' };
+      if (!Types.ObjectId.isValid(facility)) {
+          throw new BadRequestException('Invalid facility ID format');
+      }
+      // TODO: Implement monthly report
+      return { message: 'Monthly report not implemented yet' };
   }
 
   // ============================================================================
@@ -879,11 +879,11 @@ export class CashSessionController {
     @Query('secret') secret: string, 
     @Body() body: { facility: string; userId: string }
   ): Promise<{ error?: string; closed?: number }> {
-    if (secret !== 'flowzen-setup-2025') {
-      return { error: 'Unauthorized' };
-    }
-    const result = await this.cashSessionService.closeAllTestSessions(body.facility, body.userId);
-    return { closed: result };
+      if (secret !== 'flowzen-setup-2025') {
+          return { error: 'Unauthorized' };
+      }
+      const result = await this.cashSessionService.closeAllTestSessions(body.facility, body.userId);
+      return { closed: result };
   }
 
   /**
@@ -897,16 +897,16 @@ export class CashSessionController {
     users?: any[]; 
     facilities?: any[] 
   }> {
-    if (secret !== 'flowzen-setup-2025') {
-      return { error: 'Unauthorized' };
-    }
+      if (secret !== 'flowzen-setup-2025') {
+          return { error: 'Unauthorized' };
+      }
 
-    // Pronađi sve test user-e (npr. email sadrži 'test')
-    const users = await this.userModel.find({ email: /test/i }).select('_id email name').lean();
-    // Pronađi sve facility-je (npr. ime sadrži 'test' ili sve)
-    const facilities = await this.facilityModel.find({ name: /test/i }).select('_id name').lean();
+      // Pronađi sve test user-e (npr. email sadrži 'test')
+      const users = await this.userModel.find({ email: /test/i }).select('_id email name').lean();
+      // Pronađi sve facility-je (npr. ime sadrži 'test' ili sve)
+      const facilities = await this.facilityModel.find({ name: /test/i }).select('_id name').lean();
     
-    return { users, facilities };
+      return { users, facilities };
   }
 
   /**
@@ -920,14 +920,14 @@ export class CashSessionController {
     roles?: any[]; 
     scopes?: any[] 
   }> {
-    if (secret !== 'flowzen-setup-2025') {
-      return { error: 'Unauthorized' };
-    }
+      if (secret !== 'flowzen-setup-2025') {
+          return { error: 'Unauthorized' };
+      }
 
-    const roles = await this.userModel.db.collection('roles').find({}).toArray();
-    const scopes = await this.userModel.db.collection('scopes').find({}).toArray();
+      const roles = await this.userModel.db.collection('roles').find({}).toArray();
+      const scopes = await this.userModel.db.collection('scopes').find({}).toArray();
     
-    return { roles, scopes };
+      return { roles, scopes };
   }
 
 }

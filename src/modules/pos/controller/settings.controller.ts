@@ -1,19 +1,19 @@
 import {
-  Controller,
-  Get,
-  Put,
-  Body,
-  Query,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-  BadRequestException,
-  NotFoundException
+    Controller,
+    Get,
+    Put,
+    Body,
+    Query,
+    UseGuards,
+    Req,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
+    NotFoundException
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../../auth/auth.guard';
-import { ScopesGuard } from '../../auth/scopes.guard';
+import { JwtAuthGuard } from '../../../common/guards/auth.guard';
+import { ScopesGuard } from 'src/common/guards/scopes.guard';
 import { SettingsService } from '../service/settings.service';
 import { UpdateSettingsDto } from '../dto/settings/update-settings.dto';
 import { JwtUserPayload, PosApiResponse } from '../types';
@@ -41,11 +41,11 @@ import { JwtUserPayload, PosApiResponse } from '../types';
 @Controller('pos/settings')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+    constructor(private readonly settingsService: SettingsService) {}
 
-  // ============================================================================
-  // SETTINGS MANAGEMENT
-  // ============================================================================
+    // ============================================================================
+    // SETTINGS MANAGEMENT
+    // ============================================================================
 
   /**
    * Get POS settings for facility
@@ -61,28 +61,28 @@ export class SettingsController {
    */
   @Get()
   @HttpCode(HttpStatus.OK)
-  async get(
+    async get(
     @Query('facility') facility: string,
     @Req() req: { user: JwtUserPayload }
-  ): Promise<PosApiResponse> {
-    try {
-      if (!Types.ObjectId.isValid(facility)) {
-        throw new BadRequestException('Invalid facility ID format');
-      }
+    ): Promise<PosApiResponse> {
+        try {
+            if (!Types.ObjectId.isValid(facility)) {
+                throw new BadRequestException('Invalid facility ID format');
+            }
 
-      const settings = await this.settingsService.getSettings(facility, req.user);
-      return {
-        success: true,
-        data: settings,
-        message: 'Settings retrieved successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new BadRequestException(error.message || 'Failed to retrieve settings');
+            const settings = await this.settingsService.getSettings(facility, req.user);
+            return {
+                success: true,
+                data: settings,
+                message: 'Settings retrieved successfully'
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException || error instanceof NotFoundException) {
+                throw error;
+            }
+            throw new BadRequestException(error.message || 'Failed to retrieve settings');
+        }
     }
-  }
 
   /**
    * Update POS settings
@@ -109,18 +109,18 @@ export class SettingsController {
     @Body() dto: UpdateSettingsDto,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      const settings = await this.settingsService.updateSettings(dto, req.user);
-      return {
-        success: true,
-        data: settings,
-        message: 'Settings updated successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
+      try {
+          const settings = await this.settingsService.updateSettings(dto, req.user);
+          return {
+              success: true,
+              data: settings,
+              message: 'Settings updated successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException || error instanceof NotFoundException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to update settings');
       }
-      throw new BadRequestException(error.message || 'Failed to update settings');
-    }
   }
 }

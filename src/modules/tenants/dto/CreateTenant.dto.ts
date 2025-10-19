@@ -5,45 +5,45 @@ export class CreateTenantDto {
     @ApiProperty({ description: 'Tenant name' })
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({ description: 'Tenant company type' })
     @IsString()
     @IsNotEmpty()
-    companyType: string;
+        companyType: string;
 
     @ApiProperty({ description: 'Tenant address' })
     @IsString()
     @IsNotEmpty()
-    street: string;
+        street: string;
 
     @ApiProperty({ description: 'Tenant city' })
     @IsString()
     @IsNotEmpty()
-    city: string;
+        city: string;
 
     @ApiProperty({ description: 'Tenant country' })
     @IsString()
     @IsNotEmpty()
-    country: string;
+        country: string;
 
     @ApiProperty({ description: 'Tenant contact email' })
     @IsString()
     @IsNotEmpty()
-    contactEmail: string;
+        contactEmail: string;
 
     @ApiProperty({ description: 'Tenant contact phone' })
     @IsString()
     @IsNotEmpty()
-    contactPhone: string;
+        contactPhone: string;
 
     @ApiProperty({ description: 'Tenant MIB' })
     @IsString()
     @IsNotEmpty()
-    MIB: string;
+        MIB: string;
 
     @ApiProperty({ description: 'Tenant PIB' })
     @IsString()
     @IsNotEmpty()
-    PIB: string;
+        PIB: string;
 }

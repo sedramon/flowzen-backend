@@ -5,9 +5,9 @@ import { ShiftController } from './controller/shifts.controller';
 import { ShiftService } from './service/shifts.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Shift.name, schema: ShiftSchema }])],
-  providers: [ShiftService],
-  controllers: [ShiftController],
-  exports: [ShiftService]
+    imports: [MongooseModule.forFeature([{ name: Shift.name, schema: ShiftSchema }])],
+    providers: [ShiftService],
+    controllers: [ShiftController],
+    exports: [ShiftService]
 })
 export class ShiftModule {}

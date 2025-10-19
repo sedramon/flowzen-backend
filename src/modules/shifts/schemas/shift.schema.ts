@@ -6,35 +6,35 @@ import { Facility } from 'src/modules/facility/schema/facility.schema';
 @Schema({ timestamps: true, toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform } })
 export class Shift {
   @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Tenant', 
-    required: true,
-    autopopulate: { select: 'name' }
+      type: MongooseSchema.Types.ObjectId, 
+      ref: 'Tenant', 
+      required: true,
+      autopopulate: { select: 'name' }
   })
-  tenant: Tenant;
+      tenant: Tenant;
 
   @Prop({ 
-    type: MongooseSchema.Types.ObjectId, 
-    ref: 'Facility', 
-    required: true,
-    autopopulate: { select: 'name' }
+      type: MongooseSchema.Types.ObjectId, 
+      ref: 'Facility', 
+      required: true,
+      autopopulate: { select: 'name' }
   })
-  facility: Facility;
+      facility: Facility;
 
   @Prop({ type: String, enum: ['morning', 'afternoon', 'evening', 'full', 'custom'], required: true })
-  value: string; // enum
+      value: string; // enum
 
   @Prop({ required: true })
-  label: string;
+      label: string;
 
   @Prop({ required: true })
-  color: string;
+      color: string;
 
   @Prop()
-  startHour?: number; // broj
+      startHour?: number; // broj
 
   @Prop()
-  endHour?: number; // broj
+      endHour?: number; // broj
 
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
@@ -47,9 +47,9 @@ const ShiftSchema = SchemaFactory.createForClass(Shift);
 ShiftSchema.plugin(require('mongoose-autopopulate'));
 
 function docToJsonTransform(doc: any, ret: any) {
-  ret.id = ret._id;
-  delete ret._id;
-  return ret;
+    ret.id = ret._id;
+    delete ret._id;
+    return ret;
 }
 
 export { ShiftSchema }

@@ -446,15 +446,15 @@ export interface PosQueryParams {
  * Sale number prefixes
  */
 export const SALE_PREFIXES = {
-  SALE: 'POS-',
-  REFUND: 'REF-',
-  FISCAL_REFUND: 'REF-FISC-'
+    SALE: 'POS-',
+    REFUND: 'REF-',
+    FISCAL_REFUND: 'REF-FISC-'
 } as const;
 
 /**
  * Default fiscal configuration
  */
 export const DEFAULT_FISCAL_CONFIG = {
-  status: 'pending' as FiscalStatus,
-  correlationId: ''
+    status: 'pending' as FiscalStatus,
+    correlationId: ''
 } as const;

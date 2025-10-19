@@ -5,60 +5,60 @@ export class CreateArticleDto {
     @ApiProperty({ description: 'Article name' })
     @IsNotEmpty()
     @IsString()
-    name: string;
+        name: string;
 
     @ApiProperty({ description: 'Article unit of measure' })
     @IsNotEmpty()
     @IsString()
-    unitOfMeasure: string;
+        unitOfMeasure: string;
 
     @ApiProperty({ description: 'Article price' })
     @IsNotEmpty()
     @IsNumber()
     @Min(0)
-    price: number;
+        price: number;
 
     @ApiProperty({ description: 'Article sale price', nullable: true, required: false })
     @IsOptional()
     @IsNumber()
     @Min(0)
-    salePrice?: number;
+        salePrice?: number;
 
     @ApiProperty({ description: 'Article sale price is ative', required: false })
     @IsOptional()
     @IsBoolean()
-    isOnSale?: boolean;
+        isOnSale?: boolean;
 
     @ApiProperty({ description: 'Article code', required: false, example: '' })
     @IsOptional()
     @IsString()
-    code?: string;
+        code?: string;
 
     @ApiProperty({ description: 'Article tax rate', required: false })
     @IsOptional()
     @IsNumber()
     @Min(0)
-    taxRates?: number;
+        taxRates?: number;
 
     @ApiProperty({ description: 'Article Supplier', required: false, nullable: true, example: null })
     @IsMongoId()
     @IsOptional()
-    supplier?: string | null;
+        supplier?: string | null;
 
     @ApiProperty({description: 'Article Tenant'})
     @IsNotEmpty()
     @IsMongoId()
-    tenant: string;
+        tenant: string;
 
     @ApiProperty({ description: 'Article activity', required: false })
     @IsBoolean()
     @IsOptional()
-    isActive?: boolean;
+        isActive?: boolean;
 
     @ApiProperty({ description: 'Article remark', required: false, example: '' })
     @IsString()
     @IsOptional()
-    remark?: string;
+        remark?: string;
 
 
 }

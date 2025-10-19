@@ -5,23 +5,23 @@ export class CreateSupplierDto {
     @ApiProperty({ description: 'Supplier name' })
     @IsNotEmpty()
     @IsString()
-    name: string;
+        name: string;
 
     @ApiProperty({ description: 'Supplier address' })
     @IsNotEmpty()
     @IsString()
-    address: string;
+        address: string;
 
     @ApiProperty({ description: 'Supplier city' })
     @IsNotEmpty()
     @IsString()
-    city: string;
+        city: string;
 
 
     @ApiProperty({ description: 'Supplier contact phone' })
     @IsNotEmpty()
     @IsString()
-    contactPhone: string;
+        contactPhone: string;
 
     @ApiProperty({
         description: 'Supplier contact landline',
@@ -30,12 +30,12 @@ export class CreateSupplierDto {
     })
     @IsString()
     @IsOptional()
-    contactLandline?: string;
+        contactLandline?: string;
 
     @ApiProperty({ description: 'Supplier contact email' })
     @IsNotEmpty()
     @IsString()
-    contactEmail: string;
+        contactEmail: string;
 
     @ApiProperty({
         description: 'Supplier contact person',
@@ -44,7 +44,7 @@ export class CreateSupplierDto {
     })
     @IsString()
     @IsOptional()
-    contactPerson?: string;
+        contactPerson?: string;
 
     @ApiProperty({
         description: 'Supplier PIB',
@@ -53,7 +53,7 @@ export class CreateSupplierDto {
     })
     @IsString()
     @IsOptional()
-    pib?: string;
+        pib?: string;
 
     @ApiProperty({
         description: 'Supplier remark',
@@ -62,7 +62,7 @@ export class CreateSupplierDto {
     })
     @IsString()
     @IsOptional()
-    remark?: string;
+        remark?: string;
 
     @ApiProperty({
         description: 'Supplier remark',
@@ -70,10 +70,10 @@ export class CreateSupplierDto {
     })
     @IsBoolean()
     @IsOptional()
-    isActive?: boolean;
+        isActive?: boolean;
 
     @ApiProperty({ description: 'Tenant ID' })
     @IsNotEmpty()
     @IsMongoId()
-    tenant: string
+        tenant: string
 }

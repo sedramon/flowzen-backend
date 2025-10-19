@@ -6,43 +6,43 @@ import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 @Schema({ timestamps: true })
 export class Article {
     @Prop({ type: String, required: true, trim: true })
-    name: string;
+        name: string;
 
     @Prop({ type: String, required: true, trim: true })
-    unitOfMeasure: string;
+        unitOfMeasure: string;
 
     @Prop({ type: Number, required: true, min: 0 })
-    price: number;
+        price: number;
 
     @Prop({ type: Number, default: null, min: 0 })
-    salePrice: number | null;
+        salePrice: number | null;
 
     @Prop({ type: Boolean, default: false })
-    isOnSale: boolean;
+        isOnSale: boolean;
 
     @Prop({ type: String, default: '', trim: true })
-    code: string;
+        code: string;
 
     @Prop({ type: Number, default: 0, min: 0 })
-    taxRates: number;
+        taxRates: number;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Supplier', autopopulate: { maxDepth: 1}, default: null })
-    supplier: Types.ObjectId | Supplier | null;
+        supplier: Types.ObjectId | Supplier | null;
 
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', autopopulate: true, required: true, index: true })
-    tenant: Types.ObjectId | Tenant;
+        tenant: Types.ObjectId | Tenant;
 
     @Prop({ type: Boolean, default: true })
-    isActive: boolean;
+        isActive: boolean;
 
     @Prop({ type: Number, default: 0 })
-    stock: number;
+        stock: number;
 
     @Prop({ type: Number, default: 0 })
-    minStock: number;
+        minStock: number;
 
     @Prop({ type: String, default: '', trim: true })
-    remark: string;
+        remark: string;
 }
 
 const ArticleSchema = SchemaFactory.createForClass(Article);

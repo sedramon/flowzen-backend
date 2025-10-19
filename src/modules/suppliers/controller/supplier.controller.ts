@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { SuppliersService } from "../service/supplier.service";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
-import { ScopesGuard } from "src/modules/auth/scopes.guard";
-import { Scopes } from "src/modules/auth/scopes.decorator";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
+import { ScopesGuard } from "src/common/guards/scopes.guard";
+import { Scopes } from "src/common/decorators";
 import { CreateSupplierDto } from "../dto/CreateSupplier.dto";
 import { Supplier } from "../schema/supplier.schema";
 import { Scope } from "src/modules/scopes/schemas/scope.schema";

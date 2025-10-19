@@ -5,30 +5,30 @@ import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 @Schema({ timestamps: true })
 export class Service extends Document {
   @Prop({ required: true })
-  name: string;
+      name: string;
 
   @Prop({ required: true })
-  price: number;
+      price: number;
 
   @Prop({ required: true })
-  durationMinutes: number;
+      durationMinutes: number;
 
   @Prop({ required: true, default: true })
-  isActive: boolean;
+      isActive: boolean;
 
   @Prop()
-  discountPrice?: number;
+      discountPrice?: number;
 
   @Prop()
-  description?: string;
+      description?: string;
 
   @Prop({
-        type: MongooseSchema.Types.ObjectId,
-        ref: 'Tenant',
-        required: true,
-        autopopulate: { select: 'name' }
-    })
-    tenant: Tenant;
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Tenant',
+      required: true,
+      autopopulate: { select: 'name' }
+  })
+      tenant: Tenant;
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);

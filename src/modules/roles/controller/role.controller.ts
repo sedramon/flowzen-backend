@@ -3,9 +3,9 @@ import { CreateRoleDto } from "../dto/CreateRole.dto";
 import { Role } from "../schemas/role.schema";
 import { UpdateRoleDto } from "../dto/UpdateRole.dto";
 import { RoleService } from "../service/role.service";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
-import { ScopesGuard } from "src/modules/auth/scopes.guard";
-import { Scopes } from "src/modules/auth/scopes.decorator";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
+import { ScopesGuard } from "src/common/guards/scopes.guard";
+import { Scopes } from "src/common/decorators";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('roles')
@@ -43,8 +43,8 @@ export class RolesController {
 
     @Scopes('scope_user_administration:delete')
      @Delete(':id')
-      async delete(@Param('id') id: string) {
+    async delete(@Param('id') id: string) {
         const deletedRole = await this.roleService.delete(id);
         return deletedRole;
-      }
+    }
 }

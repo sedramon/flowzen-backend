@@ -5,24 +5,24 @@ import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 @Schema({ timestamps: true })
 export class Facility extends Document {
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
-    required: true,
-    autopopulate: { select: 'name' }
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Tenant',
+      required: true,
+      autopopulate: { select: 'name' }
   })
-  tenant: Tenant;
+      tenant: Tenant;
 
   @Prop({ required: true })
-  name: string;
+      name: string;
 
   @Prop({ required: true })
-  address: string;
+      address: string;
 
   @Prop({ required: true })
-  openingHour: string;
+      openingHour: string;
 
   @Prop({ required: true })
-  closingHour: string;
+      closingHour: string;
 
   readonly createdAt?: Date;
   readonly updatedAt?: Date;

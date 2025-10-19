@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { 
-  SaleItemDetails, 
-  SaleSummary, 
-  PaymentDetails, 
-  FiscalInfo,
-  SaleStatus,
-  SaleItemType,
-  PaymentMethod,
-  FiscalStatus
+    SaleItemDetails, 
+    SaleSummary, 
+    PaymentDetails, 
+    FiscalInfo,
+    SaleStatus,
+    SaleItemType,
+    PaymentMethod,
+    FiscalStatus
 } from '../types';
 
 /**
@@ -18,32 +18,32 @@ import {
 @Schema({ _id: false })
 export class SaleItemSchema {
   @Prop({ type: String, required: true })
-  refId: string;
+      refId: string;
 
   @Prop({
-    type: String,
-    enum: ['service', 'product'],
-    required: true
+      type: String,
+      enum: ['service', 'product'],
+      required: true
   })
-  type: SaleItemType;
+      type: SaleItemType;
 
   @Prop({ type: String, required: true, maxlength: 200 })
-  name: string;
+      name: string;
 
   @Prop({ type: Number, required: true, min: 0.01 })
-  qty: number;
+      qty: number;
 
   @Prop({ type: Number, required: true, min: 0 })
-  unitPrice: number;
+      unitPrice: number;
 
   @Prop({ type: Number, required: true, min: 0 })
-  discount: number;
+      discount: number;
 
   @Prop({ type: Number, required: true, min: 0, max: 100 })
-  taxRate: number;
+      taxRate: number;
 
   @Prop({ type: Number, required: true, min: 0 })
-  total: number;
+      total: number;
 }
 
 /**
@@ -53,20 +53,20 @@ export class SaleItemSchema {
 @Schema({ _id: false })
 export class PaymentSchema {
   @Prop({
-    type: String,
-    enum: ['cash', 'card', 'voucher', 'gift', 'bank', 'other'],
-    required: true
+      type: String,
+      enum: ['cash', 'card', 'voucher', 'gift', 'bank', 'other'],
+      required: true
   })
-  method: PaymentMethod;
+      method: PaymentMethod;
 
   @Prop({ type: Number, required: true, min: 0.01 })
-  amount: number;
+      amount: number;
 
   @Prop({ type: Number, min: 0 })
-  change?: number;
+      change?: number;
 
   @Prop({ type: String, maxlength: 100 })
-  externalRef?: string;
+      externalRef?: string;
 }
 
 /**
@@ -76,23 +76,23 @@ export class PaymentSchema {
 @Schema({ _id: false })
 export class FiscalInfoSchema {
   @Prop({
-    type: String,
-    enum: ['pending', 'success', 'error', 'retry'],
-    default: 'pending'
+      type: String,
+      enum: ['pending', 'success', 'error', 'retry'],
+      default: 'pending'
   })
-  status: FiscalStatus;
+      status: FiscalStatus;
 
   @Prop({ type: String, required: true })
-  correlationId: string;
+      correlationId: string;
 
   @Prop({ type: String })
-  fiscalNumber?: string;
+      fiscalNumber?: string;
 
   @Prop({ type: String })
-  error?: string;
+      error?: string;
 
   @Prop({ type: Date })
-  processedAt?: Date;
+      processedAt?: Date;
 }
 
 /**
@@ -102,122 +102,122 @@ export class FiscalInfoSchema {
  * Supports refunds, multiple payment methods, and integration with fiscal systems.
  */
 @Schema({
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    versionKey: false,
-    transform: (_doc, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      return ret;
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        versionKey: false,
+        transform: (_doc, ret) => {
+            ret.id = ret._id;
+            delete ret._id;
+            return ret;
+        },
     },
-  },
 })
 export class Sale extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
-  tenant: string;
+      tenant: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility', required: true })
-  facility: string;
+      facility: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'CashSession', required: true })
-  session: string;
+      session: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Employee', required: true })
-  cashier: string;
+      cashier: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Appointment' })
-  appointment?: string;
+      appointment?: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Client' })
-  client?: string;
+      client?: string;
 
   @Prop({ type: String, required: true, unique: true })
-  number: string;
+      number: string;
 
   @Prop({ type: Date, required: true })
-  date: Date;
+      date: Date;
 
   /** Current status of the sale */
   @Prop({
-    type: String,
-    enum: ['final', 'refunded', 'partial_refund'],
-    default: 'final'
+      type: String,
+      enum: ['final', 'refunded', 'partial_refund'],
+      default: 'final'
   })
-  status: SaleStatus;
+      status: SaleStatus;
 
   /** Array of items in the sale */
   @Prop({
-    type: [SaleItemSchema],
-    default: [],
-    validate: {
-      validator: function(items: SaleItemDetails[]) {
-        return items && items.length > 0;
-      },
-      message: 'Sale must have at least one item'
-    }
+      type: [SaleItemSchema],
+      default: [],
+      validate: {
+          validator: function(items: SaleItemDetails[]) {
+              return items && items.length > 0;
+          },
+          message: 'Sale must have at least one item'
+      }
   })
-  items: SaleItemDetails[];
+      items: SaleItemDetails[];
 
   /** Calculated summary totals */
   @Prop({
-    type: Object,
-    default: { subtotal: 0, discountTotal: 0, taxTotal: 0, tip: 0, grandTotal: 0 },
-    validate: {
-      validator: function(summary: SaleSummary) {
-        return summary && typeof summary.grandTotal === 'number' && summary.grandTotal >= 0;
-      },
-      message: 'Summary must have valid grand total'
-    }
+      type: Object,
+      default: { subtotal: 0, discountTotal: 0, taxTotal: 0, tip: 0, grandTotal: 0 },
+      validate: {
+          validator: function(summary: SaleSummary) {
+              return summary && typeof summary.grandTotal === 'number' && summary.grandTotal >= 0;
+          },
+          message: 'Summary must have valid grand total'
+      }
   })
-  summary: SaleSummary;
+      summary: SaleSummary;
 
   /** Payment methods and amounts */
   @Prop({
-    type: [PaymentSchema],
-    default: [],
-    validate: {
-      validator: function(payments: PaymentDetails[]) {
-        return payments && payments.length > 0;
-      },
-      message: 'Sale must have at least one payment'
-    }
+      type: [PaymentSchema],
+      default: [],
+      validate: {
+          validator: function(payments: PaymentDetails[]) {
+              return payments && payments.length > 0;
+          },
+          message: 'Sale must have at least one payment'
+      }
   })
-  payments: PaymentDetails[];
+      payments: PaymentDetails[];
 
   /** Fiscal information for tax compliance */
   @Prop({
-    type: FiscalInfoSchema,
-    required: false
+      type: FiscalInfoSchema,
+      required: false
   })
-  fiscal?: FiscalInfoSchema;
+      fiscal?: FiscalInfoSchema;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Sale' })
-  refundFor?: string;
+      refundFor?: string;
 
   /** Optional note for the sale */
   @Prop({ type: String, maxlength: 500 })
-  note?: string;
+      note?: string;
 
   // Virtual fields
   /** Total number of items in the sale */
   get itemCount(): number {
-    return this.items.reduce((count, item) => count + item.qty, 0);
+      return this.items.reduce((count, item) => count + item.qty, 0);
   }
 
   /** Total payment amount */
   get paymentTotal(): number {
-    return this.payments.reduce((total, payment) => total + payment.amount, 0);
+      return this.payments.reduce((total, payment) => total + payment.amount, 0);
   }
 
   /** Whether the sale is fully paid */
   get isFullyPaid(): boolean {
-    return this.paymentTotal >= this.summary.grandTotal;
+      return this.paymentTotal >= this.summary.grandTotal;
   }
 
   /** Change amount (if overpaid) */
   get changeAmount(): number {
-    return Math.max(0, this.paymentTotal - this.summary.grandTotal);
+      return Math.max(0, this.paymentTotal - this.summary.grandTotal);
   }
 }
 
@@ -225,19 +225,19 @@ export const SaleSchema = SchemaFactory.createForClass(Sale);
 
 // Add virtual fields
 SaleSchema.virtual('itemCount').get(function() {
-  return this.items.reduce((count: number, item: SaleItemDetails) => count + item.qty, 0);
+    return this.items.reduce((count: number, item: SaleItemDetails) => count + item.qty, 0);
 });
 
 SaleSchema.virtual('paymentTotal').get(function() {
-  return this.payments.reduce((total: number, payment: PaymentDetails) => total + payment.amount, 0);
+    return this.payments.reduce((total: number, payment: PaymentDetails) => total + payment.amount, 0);
 });
 
 SaleSchema.virtual('isFullyPaid').get(function() {
-  return this.paymentTotal >= this.summary.grandTotal;
+    return this.paymentTotal >= this.summary.grandTotal;
 });
 
 SaleSchema.virtual('changeAmount').get(function() {
-  return Math.max(0, this.paymentTotal - this.summary.grandTotal);
+    return Math.max(0, this.paymentTotal - this.summary.grandTotal);
 });
 
 // Add plugins

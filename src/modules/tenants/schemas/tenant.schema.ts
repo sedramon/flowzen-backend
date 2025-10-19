@@ -4,40 +4,40 @@ import { Document } from "mongoose";
 @Schema({timestamps: true})
 export class Tenant extends Document {
     @Prop({required: true})
-    name: string
+        name: string
 
     @Prop({required: true})
-    companyType: string;
+        companyType: string;
 
     @Prop({required: true})
-    street: string
+        street: string
 
     @Prop({required: true})
-    city: string
+        city: string
 
     @Prop({required: true})
-    country: string
+        country: string
 
     @Prop({})
-    contactEmail: string
+        contactEmail: string
 
     @Prop({})
-    contactPhone: string
+        contactPhone: string
 
     @Prop({required: true, unique: true})
-    MIB: string
+        MIB: string
 
     @Prop({required: true, unique: true})
-    PIB: string
+        PIB: string
 
     @Prop({required: true, default: false})
-    hasActiveLicense: boolean
+        hasActiveLicense: boolean
 
     @Prop({required: true, default: new Date()})
-    licenseStartDate: Date
+        licenseStartDate: Date
 
     @Prop({required: true, default: new Date()})
-    licenseExpiryDate: Date
+        licenseExpiryDate: Date
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

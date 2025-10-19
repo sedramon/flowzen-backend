@@ -6,57 +6,57 @@ export class CreateEmployeeDto {
     @ApiProperty({description: 'Employee first name'})
     @IsNotEmpty()
     @IsString()
-    firstName: string;
+        firstName: string;
 
     @ApiProperty({description: 'Employee last name'})
     @IsNotEmpty()
     @IsString()
-    lastName: string;
+        lastName: string;
 
     @ApiProperty({description: 'Employee contact email'})
     @IsNotEmpty()
     @IsString()
-    contactEmail: string;
+        contactEmail: string;
 
     @ApiProperty({description: 'Employee contact phone'})
     @IsNotEmpty()
     @IsString()
-    contactPhone: string;
+        contactPhone: string;
 
     @ApiProperty({description: 'Employee date of birth (ISO string)'})
     @IsNotEmpty()
     @IsDate()
     @Type(() => Date)
-    dateOfBirth: Date;
+        dateOfBirth: Date;
 
     @ApiProperty({description: 'Employee job role'})
     @IsNotEmpty()
     @IsString()
-    jobRole: string;
+        jobRole: string;
 
     @ApiProperty({description: 'Employee active status'})
     @IsNotEmpty()
     @IsBoolean()
-    isActive: boolean;
+        isActive: boolean;
 
     @ApiProperty({description: 'Employee include in appointments'})
     @IsNotEmpty()
     @IsBoolean()
-    includeInAppoitments: boolean;
+        includeInAppoitments: boolean;
 
     @ApiProperty({description: 'Tenant ID'})
     @IsString()
     @IsNotEmpty()
-    tenant: string;
+        tenant: string;
 
     @ApiProperty({description: 'Array of Facility IDs where employee works', required: false, type: [String]})
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    facilities?: string[];
+        facilities?: string[];
 
     @ApiProperty({description: 'Employee avatar URL', required: false})
     @IsOptional()
     @IsString()
-    avatarUrl?: string;
+        avatarUrl?: string;
 }

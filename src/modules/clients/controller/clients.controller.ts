@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } fro
 import { CreateClientDto } from "../dto/CreateClient.dto";
 import { Client } from "../schemas/client.schema";
 import { ClientsService } from "../service/clients.service";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
-import { ScopesGuard } from "src/modules/auth/scopes.guard";
-import { Scopes } from "src/modules/auth/scopes.decorator";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
+import { ScopesGuard } from "src/common/guards/scopes.guard";
+import { Scopes } from "src/common/decorators";
 import { FilterClientsDto } from "../dto/filter-clients.dto";
 import { ApiBearerAuth } from "@nestjs/swagger";
 

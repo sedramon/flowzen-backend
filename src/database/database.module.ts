@@ -5,13 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 @Module({
-  imports: [
-    MongooseModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI'),
-      }),
-    }),
+    imports: [
+        MongooseModule.forRootAsync({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                uri: config.get<string>('MONGODB_URI'),
+            }),
+        }),
     // TypeOrmModule.forRootAsync({
     //   useFactory: () => ({
     //     type: 'postgres',
@@ -25,8 +25,8 @@ import { DataSource } from 'typeorm';
     //     ssl: { rejectUnauthorized: false }, // RDS quick setup
     //   }),
     // }),
-  ],
-  exports: [MongooseModule],
+    ],
+    exports: [MongooseModule],
 })
 // export class DatabaseModule implements OnModuleInit {
 //   constructor(private dataSource: DataSource) { }

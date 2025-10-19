@@ -9,20 +9,20 @@ export class ScopesService {
 
     async create(createScopeDto: any): Promise<Scope> {
         try {
-          const existingScope = await this.scopeModel.findOne({ name: createScopeDto.name }).exec();
+            const existingScope = await this.scopeModel.findOne({ name: createScopeDto.name }).exec();
     
-          if (existingScope) {
-            throw new ConflictException(`Scope with name ${createScopeDto.name} already exists`);
-          }
-          const newScope = new this.scopeModel(createScopeDto);
-          return await newScope.save();
+            if (existingScope) {
+                throw new ConflictException(`Scope with name ${createScopeDto.name} already exists`);
+            }
+            const newScope = new this.scopeModel(createScopeDto);
+            return await newScope.save();
         } catch (error) {
-          throw error;
+            throw error;
         }
-      }
+    }
 
     async findAll(): Promise<Scope[]> {
-      return this.scopeModel.find().exec();
+        return this.scopeModel.find().exec();
     }
 
 }

@@ -5,25 +5,25 @@ export class CreateFacilityDto {
     @ApiProperty({description: 'Facility name'})
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({description: 'Facility address'})
     @IsString()
     @IsNotEmpty()
-    address: string;
+        address: string;
 
     @ApiProperty({description: 'Facility opening hour'})
     @IsString()
     @IsNotEmpty()
-    openingHour: string;
+        openingHour: string;
 
     @ApiProperty({description: 'Facility closing hour'})
     @IsString()
     @IsNotEmpty()
-    closingHour: string;
+        closingHour: string;
     
     @ApiProperty({description: 'Tenant ID'})
     @IsString()
     @IsNotEmpty()
-    tenant: string
+        tenant: string
 }

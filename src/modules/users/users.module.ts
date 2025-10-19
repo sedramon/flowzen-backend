@@ -8,13 +8,13 @@ import { TenantsModule } from '../tenants/tenants.module';
 import { UsersService } from './service/users.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    RolesModule,
-    TenantsModule
-  ],
-  controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService,MongooseModule]
+    imports: [
+        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+        RolesModule,
+        TenantsModule
+    ],
+    controllers: [UsersController],
+    providers: [UsersService],
+    exports: [UsersService,MongooseModule]
 })
 export class UsersModule {}

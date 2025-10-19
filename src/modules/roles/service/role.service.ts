@@ -83,54 +83,54 @@ export class RoleService {
         const { name, availableScopes, tenant } = updateRoleDto;
       
         if (tenant && !isValidObjectId(tenant)) {
-          throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+            throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
         }
       
         if (roleId && !isValidObjectId(roleId)) {
-          throw new BadRequestException(`Invalid role ID: ${roleId}`);
+            throw new BadRequestException(`Invalid role ID: ${roleId}`);
         }
       
         if (tenant) {
-          const tenantDocument = await this.tenantModel.findById(tenant).exec();
-          if (!tenantDocument) {
-            throw new NotFoundException(`Tenant with ID ${tenant} not found`);
-          }
+            const tenantDocument = await this.tenantModel.findById(tenant).exec();
+            if (!tenantDocument) {
+                throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+            }
         }
       
         if (roleId) {
-          const role = await this.roleModel.findById(roleId).exec();
-          if (!role) {
-            throw new NotFoundException(`Role with ID ${roleId} not found`);
-          }
+            const role = await this.roleModel.findById(roleId).exec();
+            if (!role) {
+                throw new NotFoundException(`Role with ID ${roleId} not found`);
+            }
         }
       
         if (availableScopes) {
-          // Validate each scope ID before querying
-          for (const scopeId of availableScopes) {
-            if (!isValidObjectId(scopeId)) {
-              throw new BadRequestException(`Invalid scope ID: ${scopeId}`);
+            // Validate each scope ID before querying
+            for (const scopeId of availableScopes) {
+                if (!isValidObjectId(scopeId)) {
+                    throw new BadRequestException(`Invalid scope ID: ${scopeId}`);
+                }
             }
-          }
           
-          const validScopes = await this.scopeModel.find({ _id: { $in: availableScopes } }).exec();
-          if (validScopes.length !== availableScopes.length) {
-            throw new BadRequestException('One or more provided scope IDs are invalid.');
-          }
+            const validScopes = await this.scopeModel.find({ _id: { $in: availableScopes } }).exec();
+            if (validScopes.length !== availableScopes.length) {
+                throw new BadRequestException('One or more provided scope IDs are invalid.');
+            }
         }
       
         const roleUpdate = await this.roleModel.findByIdAndUpdate(
-          roleId,
-          { $set: { name, availableScopes } },
-          { new: true }
+            roleId,
+            { $set: { name, availableScopes } },
+            { new: true }
         );
       
         const populatedRole = await this.roleModel
-          .findById(roleUpdate._id)
-          .populate('availableScopes') // Populate scopes
-          .exec();
+            .findById(roleUpdate._id)
+            .populate('availableScopes') // Populate scopes
+            .exec();
       
         return populatedRole;
-      }
+    }
 
 
 
@@ -144,5 +144,5 @@ export class RoleService {
 
     async delete(id: string): Promise<Role> {
         return this.roleModel.findByIdAndDelete(id).exec();
-      }
+    }
 }

@@ -6,20 +6,20 @@ import { Scope } from "src/modules/scopes/schemas/scope.schema"; // Correct impo
 @Schema({ timestamps: true })
 export class Role extends Document {
     @Prop({ unique: true, required: true })
-    name: string; // Role name, e.g., admin, manager, employee
+        name: string; // Role name, e.g., admin, manager, employee
 
     @Prop({
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Scope' }], // Reference to Scope model
         required: true,
     })
-    availableScopes: Scope[]; // Use Scope type for populated data
+        availableScopes: Scope[]; // Use Scope type for populated data
 
     @Prop({
         type: MongooseSchema.Types.ObjectId, // Reference to Tenant model
         ref: 'Tenant',
         required: true,
     })
-    tenant: Tenant; // Use Tenant type for populated data
+        tenant: Tenant; // Use Tenant type for populated data
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

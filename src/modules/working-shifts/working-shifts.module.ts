@@ -5,12 +5,12 @@ import { WorkingShiftsController } from './controller/working-shifts.controller'
 import { WorkingShift, WorkingShiftSchema } from './schemas/working-shift.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: WorkingShift.name, schema: WorkingShiftSchema }
-    ])
-  ],
-  controllers: [WorkingShiftsController],
-  providers: [WorkingShiftService]
+    imports: [
+        MongooseModule.forFeature([
+            { name: WorkingShift.name, schema: WorkingShiftSchema }
+        ])
+    ],
+    controllers: [WorkingShiftsController],
+    providers: [WorkingShiftService]
 })
 export class WorkingShiftsModule {}

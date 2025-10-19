@@ -26,7 +26,7 @@ export class EmployeeService {
             }
 
             // Validate facilities array
-            let facilitiesArray = facilities || [];
+            const facilitiesArray = facilities || [];
             if (facilitiesArray.length > 0) {
                 for (const facilityId of facilitiesArray) {
                     if (!isValidObjectId(facilityId)) {
@@ -58,7 +58,7 @@ export class EmployeeService {
             }
 
             // Handle facilities array
-            let facilitiesArray = updateEmployeeDto.facilities || [];
+            const facilitiesArray = updateEmployeeDto.facilities || [];
             if (facilitiesArray.length > 0) {
                 for (const facilityId of facilitiesArray) {
                     if (!isValidObjectId(facilityId)) {

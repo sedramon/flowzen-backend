@@ -5,15 +5,15 @@ export class UpdateUserDtoNameAndRole {
     @ApiProperty({ description: 'User name' })
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({ description: 'User role' })
     @IsString()
     @IsNotEmpty()
-    role: string;
+        role: string;
 
     @ApiProperty({ description: 'Tenant ID' })
     @IsNotEmpty()
     @IsString()
-    tenant: string
+        tenant: string
 }

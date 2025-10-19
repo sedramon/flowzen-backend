@@ -11,9 +11,9 @@ import { EmployeeService } from "../service/employees.service";
 import { InjectModel } from "@nestjs/mongoose";
 import { WorkingShift } from "src/modules/working-shifts/schemas/working-shift.schema";
 import { Model, Types } from "mongoose";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
-import { ScopesGuard } from "src/modules/auth/scopes.guard";
-import { Scopes } from "src/modules/auth/scopes.decorator";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
+import { ScopesGuard } from "src/common/guards/scopes.guard";
+import { Scopes } from "src/common/decorators";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 @Controller('employees')
@@ -44,36 +44,36 @@ export class EmployeesController {
       @Query('date') date: string,
       @Query('facility') facility: string
     ) {
-      const employees = await this.employeeService.findAll(tenant, facility).then(list =>
-        list.map(e => (e.toObject ? e.toObject() : e))
-      );
+        const employees = await this.employeeService.findAll(tenant, facility).then(list =>
+            list.map(e => (e.toObject ? e.toObject() : e))
+        );
 
-      const results = await Promise.all(
-        employees.map(async emp => {
-          const wsQuery: any = {
-            employee: Types.ObjectId.createFromHexString(emp._id.toString()),
-            tenant: Types.ObjectId.createFromHexString(tenant.toString()),
-            facility: Types.ObjectId.createFromHexString(facility),
-            date
-          };
+        const results = await Promise.all(
+            employees.map(async emp => {
+                const wsQuery: any = {
+                    employee: Types.ObjectId.createFromHexString(emp._id.toString()),
+                    tenant: Types.ObjectId.createFromHexString(tenant.toString()),
+                    facility: Types.ObjectId.createFromHexString(facility),
+                    date
+                };
 
-          const ws = await this.workingShiftModel.findOne(wsQuery).lean();
-          return {
-            ...emp,
-            workingShift: ws
-              ? {
-                  date: ws.date,
-                  shiftType: ws.shiftType,
-                  startHour: ws.startHour,
-                  endHour: ws.endHour,
-                  note: ws.note
-                }
-              : null
-          };
-        })
-      );
+                const ws = await this.workingShiftModel.findOne(wsQuery).lean();
+                return {
+                    ...emp,
+                    workingShift: ws
+                        ? {
+                            date: ws.date,
+                            shiftType: ws.shiftType,
+                            startHour: ws.startHour,
+                            endHour: ws.endHour,
+                            note: ws.note
+                        }
+                        : null
+                };
+            })
+        );
 
-      return results;
+        return results;
     }
 
     @Scopes('scope_employees:read')
@@ -94,25 +94,25 @@ export class EmployeesController {
     @Scopes('scope_employees:update')
     @Post('upload')
     @UseInterceptors(
-      FileInterceptor('file', {
-        storage: diskStorage({
-          destination: './uploads/avatars',
-          filename: (req, file, cb) => {
-            const ext = path.extname(file.originalname);
-            cb(null, uuidv4() + ext);
-          },
+        FileInterceptor('file', {
+            storage: diskStorage({
+                destination: './uploads/avatars',
+                filename: (req, file, cb) => {
+                    const ext = path.extname(file.originalname);
+                    cb(null, uuidv4() + ext);
+                },
+            }),
+            fileFilter: (req, file, cb) => {
+                if (!file.mimetype.startsWith('image/')) {
+                    return cb(new Error('Only image files are allowed!'), false);
+                }
+                cb(null, true);
+            },
+            limits: { fileSize: 5 * 1024 * 1024 },
         }),
-        fileFilter: (req, file, cb) => {
-          if (!file.mimetype.startsWith('image/')) {
-            return cb(new Error('Only image files are allowed!'), false);
-          }
-          cb(null, true);
-        },
-        limits: { fileSize: 5 * 1024 * 1024 },
-      }),
     )
     uploadAvatar(@UploadedFile() file: Express.Multer.File) {
-      return { url: `/uploads/avatars/${file.filename}` };
+        return { url: `/uploads/avatars/${file.filename}` };
     }
 
     @Delete(':id')

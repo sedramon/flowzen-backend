@@ -1,18 +1,18 @@
 import {
-  Controller,
-  Get,
-  Query,
-  Param,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-  BadRequestException,
-  NotFoundException
+    Controller,
+    Get,
+    Query,
+    Param,
+    UseGuards,
+    Req,
+    HttpCode,
+    HttpStatus,
+    BadRequestException,
+    NotFoundException
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { JwtAuthGuard } from '../../auth/auth.guard';
-import { ScopesGuard } from '../../auth/scopes.guard';
+import { JwtAuthGuard } from '../../../common/guards/auth.guard';
+import { ScopesGuard } from 'src/common/guards/scopes.guard';
 import { ReportsService } from '../service/reports.service';
 import { JwtUserPayload, PosApiResponse } from '../types';
 
@@ -31,11 +31,11 @@ import { JwtUserPayload, PosApiResponse } from '../types';
 @Controller('pos/reports')
 @UseGuards(JwtAuthGuard, ScopesGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+    constructor(private readonly reportsService: ReportsService) {}
 
-  // ============================================================================
-  // DAILY REPORTS
-  // ============================================================================
+    // ============================================================================
+    // DAILY REPORTS
+    // ============================================================================
 
   /**
    * Generate daily report for facility
@@ -52,33 +52,33 @@ export class ReportsController {
    */
   @Get('daily')
   @HttpCode(HttpStatus.OK)
-  async daily(
+    async daily(
     @Query('facility') facility: string,
     @Query('date') date: string,
     @Req() req: { user: JwtUserPayload }
-  ): Promise<PosApiResponse> {
-    try {
-      if (!Types.ObjectId.isValid(facility)) {
-        throw new BadRequestException('Invalid facility ID format');
-      }
+    ): Promise<PosApiResponse> {
+        try {
+            if (!Types.ObjectId.isValid(facility)) {
+                throw new BadRequestException('Invalid facility ID format');
+            }
 
-      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-        throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
-      }
+            if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
+            }
 
-      const report = await this.reportsService.dailyReport(facility, date, req.user);
-      return {
-        success: true,
-        data: report,
-        message: 'Daily report generated successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      throw new BadRequestException(error.message || 'Failed to generate daily report');
+            const report = await this.reportsService.dailyReport(facility, date, req.user);
+            return {
+                success: true,
+                data: report,
+                message: 'Daily report generated successfully'
+            };
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException(error.message || 'Failed to generate daily report');
+        }
     }
-  }
 
   // ============================================================================
   // Z REPORTS
@@ -102,22 +102,22 @@ export class ReportsController {
     @Param('sessionId') sessionId: string,
     @Req() req: { user: JwtUserPayload }
   ): Promise<PosApiResponse> {
-    try {
-      if (!Types.ObjectId.isValid(sessionId)) {
-        throw new BadRequestException('Invalid session ID format');
-      }
+      try {
+          if (!Types.ObjectId.isValid(sessionId)) {
+              throw new BadRequestException('Invalid session ID format');
+          }
 
-      const report = await this.reportsService.zReport(sessionId, req.user);
-      return {
-        success: true,
-        data: report,
-        message: 'Z report generated successfully'
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
+          const report = await this.reportsService.zReport(sessionId, req.user);
+          return {
+              success: true,
+              data: report,
+              message: 'Z report generated successfully'
+          };
+      } catch (error) {
+          if (error instanceof BadRequestException || error instanceof NotFoundException) {
+              throw error;
+          }
+          throw new BadRequestException(error.message || 'Failed to generate Z report');
       }
-      throw new BadRequestException(error.message || 'Failed to generate Z report');
-    }
   }
 }

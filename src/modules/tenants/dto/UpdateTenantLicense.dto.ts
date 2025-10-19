@@ -6,17 +6,17 @@ export class UpdateTenantLicenseDto{
     @ApiProperty({ description: 'Tenant has active license' })
     @IsBoolean()
     @IsNotEmpty()
-    hasActiveLicense: boolean;
+        hasActiveLicense: boolean;
 
     @ApiProperty({ description: 'Tenant license start date' })
     @IsDate()
     @IsNotEmpty()
     @Type(() => Date) // Converts incoming string to Date
-    licenseStartDate: Date;
+        licenseStartDate: Date;
 
     @ApiProperty({ description: 'Tenant license expiry date' })
     @IsDate()
     @IsNotEmpty()
     @Type(() => Date) // Converts incoming string to Date
-    licenseExpiryDate: Date;
+        licenseExpiryDate: Date;
 }

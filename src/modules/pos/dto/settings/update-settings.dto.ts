@@ -3,37 +3,37 @@ import { IsOptional, IsString, IsNumber, IsBoolean, IsObject, IsMongoId } from '
 export class UpdateSettingsDto {
   @IsOptional()
   @IsMongoId()
-  facility?: string;
+      facility?: string;
 
   @IsOptional()
   @IsObject()
-  paymentMethods?: Record<string, any>;
+      paymentMethods?: Record<string, any>;
 
   @IsOptional()
   @IsNumber()
-  defaultTaxRate?: number;
+      defaultTaxRate?: number;
 
   @IsOptional()
   @IsNumber()
-  maxDiscountPercent?: number;
+      maxDiscountPercent?: number;
 
   @IsOptional()
   @IsBoolean()
-  allowNegativePrice?: boolean;
+      allowNegativePrice?: boolean;
 
   @IsOptional()
   @IsString()
-  receiptNumberFormat?: string;
+      receiptNumberFormat?: string;
 
   @IsOptional()
   @IsObject()
-  fiscalization?: Record<string, any>;
+      fiscalization?: Record<string, any>;
 
   @IsOptional()
   @IsObject()
-  receiptTemplate?: Record<string, any>;
+      receiptTemplate?: Record<string, any>;
 
   @IsOptional()
   @IsMongoId()
-  tenant?: string;
+      tenant?: string;
 }

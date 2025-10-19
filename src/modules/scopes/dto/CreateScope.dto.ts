@@ -5,10 +5,10 @@ export class CreateScopeDto{
     @ApiProperty({description: 'Scope name'})
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({description: 'Scope description'})
     @IsString()
     @IsNotEmpty()
-    description: string;
+        description: string;
 }

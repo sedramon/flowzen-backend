@@ -5,15 +5,15 @@ export class UpdateRoleDto {
     @ApiProperty({description: 'Role name'})
     @IsString()
     @IsNotEmpty()
-    name: string;
+        name: string;
 
     @ApiProperty({description: 'Tenant ID'})
     @IsNotEmpty()
     @IsString()
-    tenant: string
+        tenant: string
 
     @ApiProperty({description: 'Available scopes'})
     @IsArray()
     @ArrayNotEmpty()
-    availableScopes: string[];
+        availableScopes: string[];
 }

@@ -3,37 +3,37 @@ import { Type } from 'class-transformer';
 
 class RefundItemDto {
   @IsString()
-  refId: string;
+      refId: string;
   @IsNumber()
-  qty: number;
+      qty: number;
   @IsNumber()
-  amount: number;
+      amount: number;
 }
 
 class RefundSummaryDto {
   @IsNumber()
-  subtotal: number;
+      subtotal: number;
   @IsNumber()
-  discountTotal: number;
+      discountTotal: number;
   @IsNumber()
-  taxTotal: number;
+      taxTotal: number;
   @IsNumber()
-  tip: number;
+      tip: number;
   @IsNumber()
-  grandTotal: number;
+      grandTotal: number;
 }
 
 class RefundPaymentDto {
   @IsString()
-  method: 'cash' | 'card' | 'voucher' | 'gift' | 'bank' | 'other';
+      method: 'cash' | 'card' | 'voucher' | 'gift' | 'bank' | 'other';
   @IsNumber()
-  amount: number;
+      amount: number;
   @IsOptional()
   @IsNumber()
-  change?: number;
+      change?: number;
   @IsOptional()
   @IsString()
-  externalRef?: string;
+      externalRef?: string;
 }
 
 export class RefundSaleDto {
@@ -41,24 +41,24 @@ export class RefundSaleDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RefundItemDto)
-  items?: RefundItemDto[];
+      items?: RefundItemDto[];
 
   @IsOptional()
   @IsNumber()
-  amount?: number;
+      amount?: number;
 
   @IsOptional()
   @IsString()
-  reason?: string;
+      reason?: string;
 
   @IsOptional()
   @IsObject()
   @Type(() => RefundSummaryDto)
-  summary?: RefundSummaryDto;
+      summary?: RefundSummaryDto;
 
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RefundPaymentDto)
-  payments?: RefundPaymentDto[];
+      payments?: RefundPaymentDto[];
 }

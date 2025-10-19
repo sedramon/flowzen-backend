@@ -2,47 +2,47 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({
-  timestamps: true,
-  toJSON: {
-    virtuals: true,
-    versionKey: false,
-    transform: (_doc, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      return ret;
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        versionKey: false,
+        transform: (_doc, ret) => {
+            ret.id = ret._id;
+            delete ret._id;
+            return ret;
+        },
     },
-  },
 })
 export class InventoryMovement extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Tenant', required: true })
-  tenant: string;
+      tenant: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Facility', required: true })
-  facility: string;
+      facility: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Sale' })
-  sale?: string;
+      sale?: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Employee', required: true })
-  employee: string;
+      employee: string;
 
   @Prop({ type: String, required: true })
-  articleId: string;
+      articleId: string;
 
   @Prop({ type: String, required: true })
-  articleName: string;
+      articleName: string;
 
   @Prop({ type: Number, required: true })
-  quantity: number;
+      quantity: number;
 
   @Prop({ type: String, enum: ['sale', 'refund', 'adjustment', 'return'], required: true })
-  type: 'sale' | 'refund' | 'adjustment' | 'return';
+      type: 'sale' | 'refund' | 'adjustment' | 'return';
 
   @Prop({ type: String, required: true })
-  reason: string;
+      reason: string;
 
   @Prop({ type: String })
-  note?: string;
+      note?: string;
 }
 
 export const InventoryMovementSchema = SchemaFactory.createForClass(InventoryMovement);

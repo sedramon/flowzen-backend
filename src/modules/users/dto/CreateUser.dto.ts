@@ -5,25 +5,25 @@ export class CreateUserDto{
     @ApiProperty({ description: 'User name' })
     @IsString()
     @IsOptional()
-    name: string;
+        name: string;
 
     @ApiProperty({ description: 'User email' })
     @IsNotEmpty()
     @IsString()
-    email: string;
+        email: string;
 
     @ApiProperty({ description: 'User password' })
     @IsNotEmpty()
     @IsString()
-    password: string;
+        password: string;
 
     @ApiProperty({ description: 'User role' })
     @IsNotEmpty()
     @IsString()
-    role: string;
+        role: string;
 
     @ApiProperty({ description: 'Tenant ID' })
     @IsNotEmpty()
     @IsString()
-    tenant: string
+        tenant: string
 }

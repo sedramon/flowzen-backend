@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { Scope } from "../schemas/scope.schema";
 import { ScopesService } from "../service/scopes.service";
 import { CreateScopeDto } from "../dto/CreateScope.dto";
-import { JwtAuthGuard } from "src/modules/auth/auth.guard";
+import { JwtAuthGuard } from "src/common/guards/auth.guard";
 import { ApiBearerAuth } from "@nestjs/swagger";
 
 

@@ -9,7 +9,7 @@ export class OpenSessionDto {
    * @example "64a1b2c3d4e5f6789012345a"
    */
   @IsMongoId({ message: 'Facility must be a valid MongoDB ObjectId' })
-  facility: string;
+      facility: string;
 
   /**
    * Opening cash float amount
@@ -17,7 +17,7 @@ export class OpenSessionDto {
    */
   @IsNumber({}, { message: 'Opening float must be a number' })
   @Min(0, { message: 'Opening float cannot be negative' })
-  openingFloat: number;
+      openingFloat: number;
 
   /**
    * Optional note about the session
@@ -25,5 +25,5 @@ export class OpenSessionDto {
    */
   @IsOptional()
   @IsString({ message: 'Note must be a string' })
-  note?: string;
+      note?: string;
 }

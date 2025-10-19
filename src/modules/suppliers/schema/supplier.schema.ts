@@ -5,68 +5,68 @@ import { Tenant } from "src/modules/tenants/schemas/tenant.schema";
 @Schema({ timestamps: true })
 export class Supplier {
   @Prop({ type: String, required: true, trim: true })
-  name: string
+      name: string
 
   @Prop({ type: String, required: true, trim: true })
-  address: string;
+      address: string;
 
   @Prop({ type: String, required: true, trim: true })
-  city: string;
+      city: string;
 
   @Prop({ type: String, required: true, trim: true })
-  contactPhone: string;
+      contactPhone: string;
 
   @Prop({
-    type: String,
-    trim: true,
-    default: ''
+      type: String,
+      trim: true,
+      default: ''
   })
-  contactLandline: string;
+      contactLandline: string;
 
   @Prop({
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    index: true
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      index: true
   })
-  contactEmail: string;
+      contactEmail: string;
 
   @Prop({
-    type: String,
-    trim: true,
-    default: ''
+      type: String,
+      trim: true,
+      default: ''
   })
-  contactPerson: string;
+      contactPerson: string;
 
   @Prop({
-    type: String,
-    trim: true,
-    default: ''
+      type: String,
+      trim: true,
+      default: ''
   })
-  pib: string;
+      pib: string;
 
   @Prop({
-    type: String,
-    trim: true,
-    default: ''
+      type: String,
+      trim: true,
+      default: ''
   })
-  remark: string;
+      remark: string;
 
   @Prop({
-    type: Boolean,
-    default: true
+      type: Boolean,
+      default: true
   })
-  isActive: boolean;
+      isActive: boolean;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
-    required: true,
-    index: true,
-    autopopulate: true
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'Tenant',
+      required: true,
+      index: true,
+      autopopulate: true
   })
-  tenant: Types.ObjectId | Tenant;
+      tenant: Types.ObjectId | Tenant;
 
 }
 

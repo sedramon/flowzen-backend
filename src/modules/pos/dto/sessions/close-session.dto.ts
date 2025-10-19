@@ -10,7 +10,7 @@ export class CloseSessionDto {
    */
   @IsNumber({}, { message: 'Closing count must be a number' })
   @Min(0, { message: 'Closing count cannot be negative' })
-  closingCount: number;
+      closingCount: number;
 
   /**
    * Optional note about the session closure
@@ -18,5 +18,5 @@ export class CloseSessionDto {
    */
   @IsOptional()
   @IsString({ message: 'Note must be a string' })
-  note?: string;
+      note?: string;
 }

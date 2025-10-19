@@ -7,42 +7,42 @@ import { Shift, ShiftDocument } from '../schemas/shift.schema';
 
 @Injectable()
 export class ShiftService {
-  constructor(
+    constructor(
     @InjectModel(Shift.name) private shiftModel: Model<ShiftDocument>,
-  ) {}
+    ) {}
 
-  async create(dto: CreateShiftDto) {
-    return this.shiftModel.create({
-      ...dto,
-      tenant: new Types.ObjectId(dto.tenant),
-      facility: new Types.ObjectId(dto.facility)
-    });
-  }
-
-  async findAll(tenant: string, facility?: string) {
-    const filter: any = { tenant: new Types.ObjectId(tenant) };
-    if (facility) {
-      filter.facility = new Types.ObjectId(facility);
+    async create(dto: CreateShiftDto) {
+        return this.shiftModel.create({
+            ...dto,
+            tenant: new Types.ObjectId(dto.tenant),
+            facility: new Types.ObjectId(dto.facility)
+        });
     }
-    return this.shiftModel.find(filter).exec();
-  }
 
-  async findOne(id: string) {
-    return this.shiftModel.findById(id).exec();
-  }
-
-  async update(id: string, dto: UpdateShiftDto) {
-    const updateData = { ...dto } as any;
-    if (updateData.tenant) {
-      updateData.tenant = new Types.ObjectId(updateData.tenant);
+    async findAll(tenant: string, facility?: string) {
+        const filter: any = { tenant: new Types.ObjectId(tenant) };
+        if (facility) {
+            filter.facility = new Types.ObjectId(facility);
+        }
+        return this.shiftModel.find(filter).exec();
     }
-    if (updateData.facility) {
-      updateData.facility = new Types.ObjectId(updateData.facility);
-    }
-    return this.shiftModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
-  }
 
-  async remove(id: string) {
-    return this.shiftModel.findByIdAndDelete(id).exec();
-  }
+    async findOne(id: string) {
+        return this.shiftModel.findById(id).exec();
+    }
+
+    async update(id: string, dto: UpdateShiftDto) {
+        const updateData = { ...dto } as any;
+        if (updateData.tenant) {
+            updateData.tenant = new Types.ObjectId(updateData.tenant);
+        }
+        if (updateData.facility) {
+            updateData.facility = new Types.ObjectId(updateData.facility);
+        }
+        return this.shiftModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    }
+
+    async remove(id: string) {
+        return this.shiftModel.findByIdAndDelete(id).exec();
+    }
 }
