@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: flowzen-postgres
+    environment:
+      POSTGRES_DB: flowzen
+      POSTGRES_USER: flowzen_user
+      POSTGRES_PASSWORD: flowzen_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - flowzen-network
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: flowzen-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: flowzen_user
+      MONGO_INITDB_ROOT_PASSWORD: flowzen_password
+      MONGO_INITDB_DATABASE: flowzen
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - flowzen-network
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flowzen-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=${MONGODB_URI}
+      - POSTGRES_URI=${POSTGRES_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=http://localhost:4200
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - mongodb
+    networks:
+      - flowzen-network
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+
+  # Frontend (Development)
+  frontend:
+    build:
+      context: ../flowzen-frontend
+      dockerfile: Dockerfile
+    container_name: flowzen-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    networks:
+      - flowzen-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  flowzen-network:
+    driver: bridge
