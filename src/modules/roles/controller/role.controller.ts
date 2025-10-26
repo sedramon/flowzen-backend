@@ -36,8 +36,14 @@ export class RolesController {
 
     @Scopes('scope_user_administration:read')
     @Get()
-    async findAll(@Query('tenant') tenantId?: string): Promise<Role[]> {
-        return this.roleService.findAll(tenantId);
+    async findAll(): Promise<Role[]> {
+        return this.roleService.findAll();
+    }
+
+    @Scopes('scope_user_administration:read')
+    @Get('tenant/:tenantId')
+    async findAllByTenant(@Param('tenantId') tenantId: string): Promise<Role[]> {
+        return this.roleService.findAllByTenant(tenantId);
     }
 
 

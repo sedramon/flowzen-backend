@@ -25,4 +25,8 @@ export class ScopesService {
         return this.scopeModel.find().exec();
     }
 
+    async remove(id: string): Promise<Scope> {
+        return this.scopeModel.findByIdAndDelete(id).exec();
+    }
+
 }

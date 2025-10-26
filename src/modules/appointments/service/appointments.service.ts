@@ -186,7 +186,7 @@ export class AppointmentsService {
         return this.appointmentModel.findById(id).exec();
     }
 
-    async findAllWithFilters(tenant: string, facility?: string, date?: string): Promise<Appointment[]> {
+    async findAllWithFilters(tenant: string, facility?: string, date?: string, clientId?: string): Promise<Appointment[]> {
         const filter: any = { tenant: new Types.ObjectId(tenant) };
     
         if (facility) {
@@ -201,6 +201,10 @@ export class AppointmentsService {
             }
       
             filter.facility = new Types.ObjectId(facility);
+        }
+
+        if (clientId) {
+            filter.client = new Types.ObjectId(clientId);
         }
     
         if (date) {

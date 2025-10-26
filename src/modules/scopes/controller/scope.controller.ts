@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Delete, Param, UseGuards } from "@nestjs/common";
 import { Scope } from "../schemas/scope.schema";
 import { ScopesService } from "../service/scopes.service";
 import { CreateScopeDto } from "../dto/CreateScope.dto";
@@ -24,5 +24,10 @@ export class ScopesController {
     @Get()
     async findAll(): Promise<Scope[]> {
         return this.scopeService.findAll();
+    }
+
+    @Delete(':id')
+    async remove(@Param('id') id: string): Promise<Scope> {
+        return this.scopeService.remove(id);
     }
 }

@@ -34,6 +34,12 @@ export class UsersController {
       return this.usersService.create(createUserDto);
   }
 
+  @Scopes('scope_admin_panel:read')
+  @Get()
+  async findAll() {
+      return this.usersService.findAll();
+  }
+
   @Scopes('scope_user_administration:read')
   @Get('tenant/:tenantId')
   async findAllByTenant(@Param('tenantId') tenantId: string) {

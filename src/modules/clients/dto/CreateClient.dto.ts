@@ -31,4 +31,9 @@ export class CreateClientDto {
     @IsNotEmpty()
     @IsString()
         tenant: string;
+
+    @ApiProperty({description: 'User ID', required: false})
+    @IsOptional()
+    @IsString()
+        user?: string;
 }

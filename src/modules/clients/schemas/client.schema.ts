@@ -26,6 +26,13 @@ export class Client extends Document {
         autopopulate: { select: 'name' }
     })
         tenant: Tenant;
+
+    @Prop({
+        type: MongooseSchema.Types.ObjectId,
+        ref: 'User',
+        required: false,
+    })
+        user?: any;
     
     readonly createdAt?: Date;
     readonly updatedAt?: Date

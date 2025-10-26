@@ -134,7 +134,11 @@ export class RoleService {
 
 
 
-    async findAll(tenantId: string): Promise<Role[]> {
+    async findAll(): Promise<Role[]> {
+        return this.roleModel.find().populate('availableScopes').populate('tenant').exec();
+    }
+
+    async findAllByTenant(tenantId: string): Promise<Role[]> {
         if (!isValidObjectId(tenantId)) {
             throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
         }

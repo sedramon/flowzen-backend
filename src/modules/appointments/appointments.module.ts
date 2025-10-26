@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppointmentsController } from './controller/appointments.controller';
 import { Appointment, AppointmentSchema } from './schemas/appointment.schema';
+import { WaitlistEntry, WaitlistEntrySchema } from './schemas/waitlist.schema';
 import { AppointmentsService } from './service/appointments.service';
+import { WaitlistService } from './service/waitlist.service';
 import { ClientsModule } from '../clients/clients.module';
 import { ServicesModule } from '../services/services.module';
 import { EmployeeModule } from '../employees/employees.module';
@@ -15,6 +17,7 @@ import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/work
     imports: [
         MongooseModule.forFeature([
             { name: Appointment.name, schema: AppointmentSchema },
+            { name: WaitlistEntry.name, schema: WaitlistEntrySchema },
             { name: Facility.name, schema: FacilitySchema },
             { name: WorkingShift.name, schema: WorkingShiftSchema }
         ]),
@@ -25,7 +28,7 @@ import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/work
         FacilityModule
     ],
     controllers: [AppointmentsController],
-    providers: [AppointmentsService],
-    exports: [AppointmentsService],
+    providers: [AppointmentsService, WaitlistService],
+    exports: [AppointmentsService, WaitlistService],
 })
 export class AppointmentsModule {}

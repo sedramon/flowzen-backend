@@ -47,4 +47,11 @@ export class TenantsService {
 
         return tenant;
     }
+
+    async delete(id: string): Promise<void> {
+        const result = await this.tenantModel.findByIdAndDelete(id).exec();
+        if (!result) {
+            throw new NotFoundException(`Tenant with ID ${id} not found`);
+        }
+    }
 }

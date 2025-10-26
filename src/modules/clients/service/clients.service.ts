@@ -9,12 +9,14 @@ import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { CreateClientDto } from '../dto/CreateClient.dto';
 import { Client } from '../schemas/client.schema';
 import { FilterClientsDto } from '../dto/filter-clients.dto';
+import { User } from 'src/modules/users/schemas/user.schema';
 
 @Injectable()
 export class ClientsService {
     constructor(
         @InjectModel(Client.name) private clientModel: Model<Client>,
         @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
+        @InjectModel('User') private userModel: Model<User>,
     ) { }
 
     async create(createClientDto: CreateClientDto): Promise<Client> {
@@ -142,6 +144,63 @@ export class ClientsService {
                 .exec();
         } catch (error) {
             throw new Error(error);
+        }
+    }
+
+    /**
+     * Povezuje klijenta sa User nalogom.
+     * Ovo omogućava User entitetu da bude povezan sa Client entitetom.
+     * Koristi se za self-service funkcionalnost gde User može da pristupi klijent podacima.
+     */
+    async updateUserReference(clientId: string, userId: string): Promise<Client> {
+        try {
+            if (!isValidObjectId(userId)) {
+                throw new BadRequestException(`Invalid user ID: ${userId}`);
+            }
+            
+            return await this.clientModel
+                .findByIdAndUpdate(clientId, { user: userId }, { new: true })
+                .exec();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Pronalazi Client entitet povezan sa User nalogom.
+     * Pretražuje po 'user' referenci ili po email adresi.
+     * Koristi se prilikom logina da se pronađe klijent profil za User nalog.
+     */
+    async findClientByUserId(userId: string): Promise<Client | null> {
+        try {
+            // First find the user by userId
+            const user = await this.userModel.findById(userId).exec();
+            if (!user) {
+                return null;
+            }
+
+            // Find client that has this user reference or matches email
+            const client = await this.clientModel
+                .findOne({ $or: [{ user: userId }, { contactEmail: user.email }] })
+                .exec();
+
+            return client;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Diskonektuje User nalog od klijenta.
+     * Uklanja 'user' referencu iz Client entiteta.
+     */
+    async disconnectUserFromClient(clientId: string): Promise<Client> {
+        try {
+            return await this.clientModel
+                .findByIdAndUpdate(clientId, { $unset: { user: "" } }, { new: true })
+                .exec();
+        } catch (error) {
+            throw error;
         }
     }
 }

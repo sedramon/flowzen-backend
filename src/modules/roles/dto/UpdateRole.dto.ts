@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsString } from "class-validator";
 
 export class UpdateRoleDto {
     @ApiProperty({description: 'Role name'})
@@ -14,6 +14,5 @@ export class UpdateRoleDto {
 
     @ApiProperty({description: 'Available scopes'})
     @IsArray()
-    @ArrayNotEmpty()
         availableScopes: string[];
 }
