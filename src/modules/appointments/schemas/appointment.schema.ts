@@ -63,6 +63,9 @@ export class Appointment {
   @Prop({ type: Boolean, default: false })
       paid: boolean;
 
+  @Prop({ type: Boolean, default: false })
+      cancelled: boolean;
+
   @Prop({
       type: MongooseSchema.Types.ObjectId,
       ref: 'Sale',
@@ -78,6 +81,29 @@ const AppointmentSchema = SchemaFactory.createForClass(Appointment);
 
 // Apply mongoose-autopopulate plugin
 AppointmentSchema.plugin(require('mongoose-autopopulate'));
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATABASE INDEXES - Performance Optimization
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compound index za konflikt proveru (najkritičniji query u waitlist sistemu).
+ * Koristi se u findConflictingAppointment() za brzu proveru da li slot već postoji.
+ * Ovaj query se izvršava MNOGO puta (pri svakom claim-u, notifikaciji, itd.)
+ */
+AppointmentSchema.index({ employee: 1, facility: 1, date: 1, cancelled: 1 });
+
+/**
+ * Compound index za tenant + date queries.
+ * Koristi se za dohvatanje svih appointmenta za određeni dan (admin calendar view).
+ */
+AppointmentSchema.index({ tenant: 1, date: 1 });
+
+/**
+ * Simple index za client queries.
+ * Koristi se u client dashboard-u za dohvatanje svih appointmenta jednog klijenta.
+ */
+AppointmentSchema.index({ client: 1 });
 
 function docToJsonTransform(doc: any, ret:any) {
     ret.id = ret._id;

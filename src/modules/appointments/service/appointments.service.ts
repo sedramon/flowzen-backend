@@ -15,6 +15,7 @@ import { Service } from 'src/modules/services/schemas/service.schema';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { Facility } from 'src/modules/facility/schema/facility.schema';
 import { WorkingShift } from 'src/modules/working-shifts/schemas/working-shift.schema';
+import { WaitlistService } from './waitlist.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -27,6 +28,7 @@ export class AppointmentsService {
     @InjectModel(Tenant.name) private readonly tenantModel: Model<Tenant>,
     @InjectModel(Facility.name) private readonly facilityModel: Model<Facility>,
     @InjectModel(WorkingShift.name) private readonly workingShiftModel: Model<WorkingShift>,
+    private readonly waitlistService: WaitlistService
     ) {}
 
     async create(
@@ -186,6 +188,10 @@ export class AppointmentsService {
         return this.appointmentModel.findById(id).exec();
     }
 
+    /**
+     * Vraća sve appointmente sa filterima.
+     * NE excludeuje cancelled appointmente - prikazuju se u rasporedu.
+     */
     async findAllWithFilters(tenant: string, facility?: string, date?: string, clientId?: string): Promise<Appointment[]> {
         const filter: any = { tenant: new Types.ObjectId(tenant) };
     
@@ -207,8 +213,12 @@ export class AppointmentsService {
             filter.client = new Types.ObjectId(clientId);
         }
     
+        // Handle date filtering - support both YYYY-MM-DD and ISO formats
         if (date) {
-            filter.date = date;
+            // Support multiple date formats (YYYY-MM-DD and ISO with timezone)
+            filter.date = {
+                $in: [date, `${date}T00:00:00.000Z`, `${date}T23:00:00.000Z`]
+            };
         }
     
         return this.appointmentModel
@@ -306,8 +316,99 @@ export class AppointmentsService {
         }
     }
 
+    /**
+     * Hard delete - briše appointment iz baze.
+     * Koristi samo admin za potpuno uklanjanje.
+     * Automatski notifikuje waitlist kada se slot oslobodi.
+     */
     async delete(id: string): Promise<void> {
+        // Get appointment data BEFORE deleting (need it for waitlist notification)
+        const appointment = await this.appointmentModel
+            .findById(id)
+            .populate('employee')
+            .populate('facility')
+            .exec();
+
+        if (!appointment) {
+            throw new NotFoundException('Appointment not found');
+        }
+
+        // Delete appointment from database
         await this.appointmentModel.findByIdAndDelete(id).exec();
+
+        // Automatically notify waitlist when slot becomes available
+        if (appointment?.employee && appointment?.facility) {
+            const employeeId = (appointment.employee as any)._id.toString();
+            const facilityId = (appointment.facility as any)._id.toString();
+            
+            // Run notification in background (non-blocking)
+            this.waitlistService.notifyWaitlistForAvailableSlot(
+                employeeId,
+                facilityId,
+                appointment.date,
+                appointment.startHour,
+                appointment.endHour
+            ).catch(error => {
+                console.error('[AppointmentsService] Error notifying waitlist after delete:', error);
+            });
+        }
+    }
+
+    /**
+     * Soft delete - označava appointment kao 'cancelled' bez brisanja.
+     * Koristi klijent da otkaže svoj termin.
+     */
+    async cancelAppointment(id: string): Promise<Appointment> {
+        const appointment = await this.appointmentModel.findById(id).exec();
+
+        if (!appointment) {
+            throw new NotFoundException('Appointment not found');
+        }
+
+        // Prevent cancellation if appointment is paid or fiscalized
+        if (appointment.paid) {
+            throw new BadRequestException('Cannot cancel appointment that is already paid');
+        }
+
+        if (appointment.sale?.fiscal?.status === 'success') {
+            throw new BadRequestException('Cannot cancel appointment that is fiscalized');
+        }
+
+        const updated = await this.appointmentModel
+            .findByIdAndUpdate(
+                id,
+                { cancelled: true },
+                { new: true }
+            )
+            .exec();
+
+        // Notify waitlist when appointment is cancelled
+        if (updated) {
+            // Get populated appointment to extract IDs
+            const populatedAppointment = await this.appointmentModel
+                .findById(id)
+                .populate('employee')
+                .populate('facility')
+                .exec();
+
+            if (populatedAppointment?.employee && populatedAppointment?.facility) {
+                const employeeId = (populatedAppointment.employee as any)._id.toString();
+                const facilityId = (populatedAppointment.facility as any)._id.toString();
+
+                // Notify waitlist in background (don't wait for it)
+                this.waitlistService.notifyWaitlistForAvailableSlot(
+                    employeeId,
+                    facilityId,
+                    populatedAppointment.date,
+                    populatedAppointment.startHour,
+                    populatedAppointment.endHour
+                ).catch(error => {
+                    console.error('[AppointmentsService] Error notifying waitlist after cancel:', error);
+                });
+            }
+        }
+
+        return updated!;
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { CreateRoleDto } from "../dto/CreateRole.dto";
 import { Role } from "../schemas/role.schema";
 import { UpdateRoleDto } from "../dto/UpdateRole.dto";
@@ -36,8 +36,12 @@ export class RolesController {
 
     @Scopes('scope_user_administration:read')
     @Get()
-    async findAll(): Promise<Role[]> {
-        return this.roleService.findAll();
+    async findAll(@Query('tenant') tenantId?: string): Promise<Role[]> {
+        // Tenant ID is REQUIRED - roles must be filtered by tenant
+        if (!tenantId) {
+            throw new BadRequestException('Tenant ID is required. Use query parameter: ?tenant=tenantId');
+        }
+        return this.roleService.findAllByTenant(tenantId);
     }
 
     @Scopes('scope_user_administration:read')

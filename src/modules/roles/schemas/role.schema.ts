@@ -5,7 +5,7 @@ import { Scope } from "src/modules/scopes/schemas/scope.schema"; // Correct impo
 
 @Schema({ timestamps: true })
 export class Role extends Document {
-    @Prop({ unique: true, required: true })
+    @Prop({ required: true })
         name: string; // Role name, e.g., admin, manager, employee
 
     @Prop({
@@ -26,6 +26,17 @@ export class Role extends Document {
 }
 
 const RoleSchema = SchemaFactory.createForClass(Role);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATABASE INDEXES - Performance & Data Integrity
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compound unique index: name + tenant
+ * Dozvoljava da ista rola (npr. "admin") postoji za različite tenant-e,
+ * ali sprečava duplikate unutar istog tenant-a.
+ */
+RoleSchema.index({ name: 1, tenant: 1 }, { unique: true });
 
 // Automatically populate the availableScopes field for all queries
 RoleSchema.pre(/^find/, function (next) {

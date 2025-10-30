@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model, Types } from 'mongoose';
 import { Tenant } from 'src/modules/tenants/schemas/tenant.schema';
 import { CreateClientDto } from '../dto/CreateClient.dto';
+import { UpdateClientDto } from '../dto/UpdateClient.dto';
 import { Client } from '../schemas/client.schema';
 import { FilterClientsDto } from '../dto/filter-clients.dto';
 import { User } from 'src/modules/users/schemas/user.schema';
@@ -83,6 +84,9 @@ export class ClientsService {
             }
         }
 
+        // CRITICAL: Always filter by tenant for security and data isolation
+        filter.tenant = tenant;
+
         const skip = (page - 1) * limit;
         const sortObj: any = {};
         if (sortBy) {
@@ -129,21 +133,67 @@ export class ClientsService {
         await this.clientModel.findByIdAndDelete(id).exec();
     }
 
-    async update(id: string, createClientDto: CreateClientDto): Promise<Client> {
+    async update(id: string, updateClientDto: any): Promise<Client> {
         try {
-            const { tenant, ...clientDetails } = createClientDto;
-            if (!isValidObjectId(tenant)) {
-                throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+            // Only allow specific fields for update and handle nested objects
+            const updateData: any = {};
+            
+            // Helper function to extract ID from nested objects
+            const extractId = (value: any): string | null => {
+                if (!value) return null;
+                if (typeof value === 'string') return value;
+                if (typeof value === 'object' && value._id) return value._id.toString();
+                return null;
+            };
+            
+            // Process each allowed field
+            if (updateClientDto.firstName !== undefined) {
+                updateData.firstName = updateClientDto.firstName;
             }
-            const tenantDocument = await this.tenantModel.findById(tenant).exec();
-            if (!tenantDocument) {
-                throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+            if (updateClientDto.lastName !== undefined) {
+                updateData.lastName = updateClientDto.lastName;
             }
+            if (updateClientDto.contactPhone !== undefined) {
+                updateData.contactPhone = updateClientDto.contactPhone;
+            }
+            if (updateClientDto.contactEmail !== undefined) {
+                updateData.contactEmail = updateClientDto.contactEmail;
+            }
+            if (updateClientDto.address !== undefined) {
+                updateData.address = updateClientDto.address;
+            }
+            
+            // Handle tenant
+            if (updateClientDto.tenant !== undefined) {
+                const tenantId = extractId(updateClientDto.tenant);
+                if (tenantId) {
+                    if (!isValidObjectId(tenantId)) {
+                        throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
+                    }
+                    const tenantDocument = await this.tenantModel.findById(tenantId).exec();
+                    if (!tenantDocument) {
+                        throw new NotFoundException(`Tenant with ID ${tenantId} not found`);
+                    }
+                    updateData.tenant = tenantId;
+                }
+            }
+            
+            // Handle user
+            if (updateClientDto.user !== undefined) {
+                const userId = extractId(updateClientDto.user);
+                if (userId) {
+                    if (!isValidObjectId(userId)) {
+                        throw new BadRequestException(`Invalid user ID: ${userId}`);
+                    }
+                    updateData.user = userId;
+                }
+            }
+            
             return await this.clientModel
-                .findByIdAndUpdate(id, createClientDto, { new: true })
+                .findByIdAndUpdate(id, updateData, { new: true })
                 .exec();
         } catch (error) {
-            throw new Error(error);
+            throw error;
         }
     }
 

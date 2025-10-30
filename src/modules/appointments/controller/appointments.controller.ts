@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, Query, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Put, Delete, Query, UseGuards, BadRequestException, SetMetadata } from '@nestjs/common';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { CreateWaitlistDto } from '../dto/create-waitlist.dto';
@@ -38,16 +38,6 @@ export class AppointmentsController {
   }
 
   @Scopes('scope_appointments:read')
-  @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Query('tenant') tenant: string
-  ): Promise<Appointment> {
-      if (!tenant) throw new BadRequestException('tenant is required');
-      return this.appointmentsService.findOneByTenant(id, tenant);
-  }
-
-  @Scopes('scope_appointments:read')
   @Get()
   async findAll(
     @Query('tenant') tenant: string,
@@ -69,6 +59,18 @@ export class AppointmentsController {
       return this.appointmentsService.update(id, updateAppointmentDto);
   }
 
+  /**
+   * PUT /appointments/:id/cancel
+   * Soft delete - označava appointment kao 'cancelled'.
+   * Koristi klijent da otkaže svoj termin.
+   */
+  @Scopes('scope_appointments:cancel')
+  @Put(':id/cancel')
+  async cancelAppointment(@Param('id') id: string): Promise<{ message: string }> {
+      await this.appointmentsService.cancelAppointment(id);
+      return { message: 'Appointment cancelled successfully' };
+  }
+
   @Scopes('scope_appointments:delete')
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<{ message: string }> {
@@ -76,8 +78,18 @@ export class AppointmentsController {
       return { message: 'Appointment deleted successfully' };
   }
 
-  // Waitlist endpoints
-  @Scopes('scope_appointments:create')
+  @Scopes('scope_appointments:read')
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+    @Query('tenant') tenant: string
+  ): Promise<Appointment> {
+      if (!tenant) throw new BadRequestException('tenant is required');
+      return this.appointmentsService.findOneByTenant(id, tenant);
+  }
+
+  // Waitlist endpoints - clients can join waitlist with just 'read' scope
+  @Scopes('scope_appointments:read')
   @Post('waitlist')
   async addToWaitlist(@Body() createWaitlistDto: CreateWaitlistDto) {
       return this.waitlistService.addToWaitlist(createWaitlistDto);
@@ -103,7 +115,7 @@ export class AppointmentsController {
       return this.waitlistService.getAllWaitlistEntries(tenant, facility);
   }
 
-  @Scopes('scope_appointments:delete')
+  @Scopes('scope_appointments:read')
   @Delete('waitlist/:id')
   async removeFromWaitlist(
     @Param('id') id: string,
@@ -115,7 +127,7 @@ export class AppointmentsController {
       return { message: 'Removed from waitlist successfully' };
   }
 
-  @Scopes('scope_appointments:create')
+  @Scopes('scope_appointments:read')
   @Post('waitlist/notify')
   async notifyWaitlistForSlot(
     @Body() body: { employeeId: string; facilityId: string; date: string; startHour: number; endHour: number }
@@ -129,11 +141,32 @@ export class AppointmentsController {
       );
   }
 
-  @Scopes('scope_appointments:create')
+  @Scopes('scope_appointments:read')
+  @Post('waitlist/notify-day')
+  async notifyWaitlistForDay(
+    @Body() body: { date: string; tenantId: string }
+  ) {
+      return this.waitlistService.notifyAvailableSlotsForDay(body.date, body.tenantId);
+  }
+
+  @Scopes('scope_appointments:read')
   @Post('waitlist/claim')
   async claimAppointmentFromWaitlist(
     @Body() body: { claimToken: string; clientId: string }
   ) {
       return this.waitlistService.claimAppointmentFromWaitlist(body.claimToken, body.clientId);
+  }
+
+  /**
+   * PUBLIC ROUTE - No authentication required
+   * Prihvata termin sa liste čekanja samo sa claimToken.
+   * Koristi se kada klijent klikne na link iz emaila.
+   */
+  @Post('waitlist/claim-public')
+  @SetMetadata('isPublic', true)
+  async claimAppointmentWithToken(
+    @Body() body: { claimToken: string }
+  ) {
+      return this.waitlistService.claimAppointmentWithToken(body.claimToken);
   }
 }

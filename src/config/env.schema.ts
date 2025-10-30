@@ -7,5 +7,6 @@ export const envSchema = Joi.object({
     POSTGRES_URI: Joi.string().required(),
     FRONTEND_URL: Joi.string().uri().default('http://localhost:4200'),
     PORT: Joi.number().default(3000),
-    COOKIE_DOMAIN: Joi.string().optional() // e.g., '.yourdomain.com' for production
+    COOKIE_DOMAIN: Joi.string().optional(), // e.g., '.yourdomain.com' for production
+    WEBHOOK_URL: Joi.string().uri().required() // Make.com webhook URL for email notifications
 })

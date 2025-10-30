@@ -33,7 +33,7 @@ export class WaitlistEntry {
       type: MongooseSchema.Types.ObjectId,
       ref: 'Client',
       required: true,
-      autopopulate: { select: 'firstName lastName email' },
+      autopopulate: { select: 'firstName lastName contactEmail' },
   })
       client: Client;
 
@@ -112,6 +112,14 @@ export class WaitlistEntry {
   @Prop({ type: String, default: null })
       claimToken: string;
 
+  /**
+   * Timestamp kada claimToken ističe.
+   * Token je validan 24 sata od trenutka slanja notifikacije.
+   * Nakon isteka, klijent ne može više da prihvati termin sa tim tokenom.
+   */
+  @Prop({ type: Date, default: null })
+      claimTokenExpiresAt: Date;
+
   readonly createdAt?: Date;
   readonly updatedAt?: Date;
 }
@@ -121,10 +129,48 @@ const WaitlistEntrySchema = SchemaFactory.createForClass(WaitlistEntry);
 // Apply mongoose-autopopulate plugin
 WaitlistEntrySchema.plugin(require('mongoose-autopopulate'));
 
-// Index for efficient queries
+// ═══════════════════════════════════════════════════════════════════════════
+// DATABASE INDEXES - Performance Optimization
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compound index za tenant + facility + date queries.
+ * Koristi se za dohvatanje svih waitlist entries za određeni dan u notifyAvailableSlotsForDay().
+ */
 WaitlistEntrySchema.index({ tenant: 1, facility: 1, preferredDate: 1 });
+
+/**
+ * Compound index za employee + facility + date queries.
+ * Kritičan za getWaitlistForTimeSlot() koji se izvršava pri svakoj notifikaciji.
+ * Ovaj query traži sve waitlist entries za specifičan time slot.
+ */
+WaitlistEntrySchema.index({ employee: 1, facility: 1, preferredDate: 1 });
+
+/**
+ * Compound index za client + tenant queries.
+ * Koristi se u getClientWaitlist() za client dashboard view.
+ */
 WaitlistEntrySchema.index({ client: 1, tenant: 1 });
+
+/**
+ * Unique sparse index za claimToken.
+ * Sparse = samo non-null vrednosti se indexiraju (štedi memoriju).
+ * Unique = svaki token je jedinstven, ne može biti duplikata.
+ * Koristi se u claimAppointmentFromWaitlist() za brzo pronalaženje entry-ja po tokenu.
+ */
 WaitlistEntrySchema.index({ claimToken: 1 }, { unique: true, sparse: true });
+
+/**
+ * Compound index za isNotified + isClaimed status queries.
+ * Koristi se za brzo filtriranje pending waitlist entries (isNotified=false, isClaimed=false).
+ */
+WaitlistEntrySchema.index({ isNotified: 1, isClaimed: 1 });
+
+/**
+ * Index za claimTokenExpiresAt.
+ * Korisno za background job koji bi automatski čistio expired tokens (buduća funkcionalnost).
+ */
+WaitlistEntrySchema.index({ claimTokenExpiresAt: 1 });
 
 function docToJsonTransform(doc: any, ret: any) {
     ret.id = ret._id;

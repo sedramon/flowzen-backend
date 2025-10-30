@@ -143,7 +143,11 @@ export class RoleService {
             throw new BadRequestException(`Invalid tenant ID: ${tenantId}`);
         }
 
-        return this.roleModel.find({tenant: tenantId}).exec();
+        // Explicitly filter by tenant to ensure only roles for this tenant are returned
+        return this.roleModel
+            .find({ tenant: new Types.ObjectId(tenantId) })
+            .populate('availableScopes')
+            .exec();
     }
 
     async delete(id: string): Promise<Role> {

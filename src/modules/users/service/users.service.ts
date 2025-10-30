@@ -88,22 +88,43 @@ export class UsersService {
             if (!isValidObjectId(id)) {
                 throw new BadRequestException(`Invalid user ID: ${id}`);
             }
+
+            // Check if user exists first
+            const existingUser = await this.userModel.findById(id).exec();
+            if (!existingUser) {
+                throw new NotFoundException(`User with ID ${id} not found`);
+            }
   
             const tenantDocument = await this.tenantModel.findById(tenant).exec();
             if (!tenantDocument) {
                 throw new NotFoundException(`Tenant with ID ${tenant} not found`);
             }
-  
-            const roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
+
+            // Find role - try by ObjectId first, then by name
+            let roleDocument;
+            if (isValidObjectId(role)) {
+                roleDocument = await this.roleModel.findOne({ _id: role, tenant: tenant }).exec();
+            }
+            
             if (!roleDocument) {
-                throw new NotFoundException(`Role with name ${role} not found for tenant with ID ${tenant}`);
+                roleDocument = await this.roleModel.findOne({ name: role, tenant: tenant }).exec();
+            }
+
+            if (!roleDocument) {
+                // Get all available roles for this tenant to show in error message
+                const availableRoles = await this.roleModel.find({ tenant: tenant }).select('name').lean().exec();
+                const roleNames = availableRoles.map(r => r.name).join(', ');
+                throw new NotFoundException(
+                    `Role "${role}" not found for tenant "${tenantDocument.name}". ` +
+                    `Available roles: ${roleNames || 'none'}`
+                );
             }
   
             const userUpdate = await this.userModel.findByIdAndUpdate(
                 id,
                 { $set: { name, role: roleDocument._id } },
                 { new: true }
-            );
+            ).exec();
       
             if (!userUpdate) {
                 throw new NotFoundException(`User with ID ${id} not found`);
@@ -112,6 +133,7 @@ export class UsersService {
             const populatedUser = await this.userModel
                 .findById(userUpdate._id)
                 .populate('role')
+                .populate('tenant')
                 .exec();
   
             return populatedUser;

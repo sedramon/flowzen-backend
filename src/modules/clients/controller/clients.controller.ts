@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { CreateClientDto } from "../dto/CreateClient.dto";
+import { UpdateClientDto } from "../dto/UpdateClient.dto";
 import { Client } from "../schemas/client.schema";
 import { ClientsService } from "../service/clients.service";
 import { JwtAuthGuard } from "src/common/guards/auth.guard";
@@ -84,7 +85,10 @@ export class ClientsController {
 
     @Scopes('scope_clients:update')
     @Put(':id')
-    async update(@Param('id') id: string, @Body() createClientDto: CreateClientDto): Promise<Client> {
-        return await this.clientsService.update(id, createClientDto);
+    async update(
+        @Param('id') id: string, 
+        @Body() updateClientDto: any
+    ): Promise<Client> {
+        return await this.clientsService.update(id, updateClientDto);
     }
 }
