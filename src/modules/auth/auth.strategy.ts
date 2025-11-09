@@ -26,8 +26,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             userId: payload.sub,
             username: payload.username,
             tenant: payload.tenant,
-            role: payload.role, // This is now just the role ID
-            scopes: payload.scopes, // Flat array of scope names
+            role: payload.role,
+            scopes: payload.scopes,
+            isGlobalAdmin: payload.isGlobalAdmin === true,
         };
     }
 }

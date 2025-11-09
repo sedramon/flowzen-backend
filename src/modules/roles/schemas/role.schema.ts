@@ -12,14 +12,17 @@ export class Role extends Document {
         type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Scope' }], // Reference to Scope model
         required: true,
     })
-        availableScopes: Scope[]; // Use Scope type for populated data
+        availableScopes: (Scope | MongooseSchema.Types.ObjectId)[]; // Use Scope type for populated data
 
     @Prop({
         type: MongooseSchema.Types.ObjectId, // Reference to Tenant model
         ref: 'Tenant',
-        required: true,
+        required: false,
     })
-        tenant: Tenant; // Use Tenant type for populated data
+        tenant: Tenant | MongooseSchema.Types.ObjectId | null; // Use Tenant type for populated data
+
+    @Prop({ enum: ['tenant', 'global'], default: 'tenant' })
+        type: 'tenant' | 'global';
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

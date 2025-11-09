@@ -27,7 +27,7 @@ import { Facility } from 'src/modules/facility/schema/facility.schema';
     toJSON: { virtuals: true, versionKey: false, transform: docToJsonTransform },
 })
 export class WaitlistEntry {
-  _id?: MongooseSchema.Types.ObjectId;
+    _id?: MongooseSchema.Types.ObjectId;
 
   @Prop({
       type: MongooseSchema.Types.ObjectId,

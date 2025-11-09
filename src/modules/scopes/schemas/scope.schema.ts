@@ -11,6 +11,9 @@ export class Scope extends Document {
     @Prop({required: true})
         description: string;
 
+    @Prop({ enum: ['tenant', 'global'], default: 'tenant' })
+        category: 'tenant' | 'global';
+
     readonly createdAt?: Date;
     readonly updatedAt?: Date;
 }

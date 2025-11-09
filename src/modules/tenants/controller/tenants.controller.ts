@@ -15,19 +15,20 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 export class TenantsController {
     constructor(private readonly tenantsService: TenantsService){}
 
-    @Scopes('scope_admin_panel:create')
+    // TODO(superadmin): restore with new global scopes
+    // @Scopes('scope_admin_panel:create')
     @Post()
     async create(@Body() createTenantDto: CreateTenantDto): Promise<CreateTenantDto> {
         return await this.tenantsService.create(createTenantDto);
     }
 
-    @Scopes('scope_admin_panel:read')
+    // @Scopes('scope_admin_panel:read')
     @Get()
     async findAll(): Promise<Tenant[]> {
         return await this.tenantsService.findAll();
     }
 
-    @Scopes('scope_admin_panel:update')
+    // @Scopes('scope_admin_panel:update')
     @Patch(':id/license')
     async updateLicense(
         @Param('id') id: string,
@@ -36,7 +37,7 @@ export class TenantsController {
         return await this.tenantsService.updateTenantLicense(id, updateTenantLicenseDto);
     }
 
-    @Scopes('scope_admin_panel:delete')
+    // @Scopes('scope_admin_panel:delete')
     @Delete(':id')
     async delete(@Param('id') id: string): Promise<{ message: string }> {
         await this.tenantsService.delete(id);

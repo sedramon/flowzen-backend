@@ -126,78 +126,78 @@ export class WaitlistService {
     private async validateWaitlistEntities(dto: CreateWaitlistDto): Promise<void> {
         const { client, employee, service, tenant, facility } = dto;
 
-            // Validate tenant
-            if (!isValidObjectId(tenant)) {
-                throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
-            }
+        // Validate tenant
+        if (!isValidObjectId(tenant)) {
+            throw new BadRequestException(`Invalid tenant ID: ${tenant}`);
+        }
 
-            const tenantDocument = await this.tenantModel.findById(tenant).exec();
-            if (!tenantDocument) {
-                throw new NotFoundException(`Tenant with ID ${tenant} not found`);
-            }
+        const tenantDocument = await this.tenantModel.findById(tenant).exec();
+        if (!tenantDocument) {
+            throw new NotFoundException(`Tenant with ID ${tenant} not found`);
+        }
 
-            // Validate client
-            // First check if client exists at all
-            const clientExists = await this.clientModel.findById(client).lean().exec();
-            if (!clientExists) {
-                throw new NotFoundException(`Client with ID ${client} does not exist!`);
-            }
+        // Validate client
+        // First check if client exists at all
+        const clientExists = await this.clientModel.findById(client).lean().exec();
+        if (!clientExists) {
+            throw new NotFoundException(`Client with ID ${client} does not exist!`);
+        }
             
-            // Then check if client belongs to the specified tenant
-            const clientDocument = await this.clientModel.findOne({ _id: client, tenant }).lean().exec();
-            if (!clientDocument) {
-                throw new NotFoundException(
-                    `Client with ID ${client} not found for tenant ${tenant}. ` +
+        // Then check if client belongs to the specified tenant
+        const clientDocument = await this.clientModel.findOne({ _id: client, tenant }).lean().exec();
+        if (!clientDocument) {
+            throw new NotFoundException(
+                `Client with ID ${client} not found for tenant ${tenant}. ` +
                     `The client may belong to a different tenant.`
-                );
-            }
+            );
+        }
 
-            // Validate employee
-            const employeeExists = await this.employeeModel.findById(employee).lean().exec();
-            if (!employeeExists) {
-                throw new NotFoundException(`Employee with ID ${employee} does not exist!`);
-            }
+        // Validate employee
+        const employeeExists = await this.employeeModel.findById(employee).lean().exec();
+        if (!employeeExists) {
+            throw new NotFoundException(`Employee with ID ${employee} does not exist!`);
+        }
             
-            const employeeDocument = await this.employeeModel.findOne({ _id: employee, tenant }).lean().exec();
-            if (!employeeDocument) {
-                throw new NotFoundException(
-                    `Employee with ID ${employee} not found for tenant ${tenant}. ` +
+        const employeeDocument = await this.employeeModel.findOne({ _id: employee, tenant }).lean().exec();
+        if (!employeeDocument) {
+            throw new NotFoundException(
+                `Employee with ID ${employee} not found for tenant ${tenant}. ` +
                     `The employee may belong to a different tenant.`
-                );
-            }
+            );
+        }
 
-            // Check if employee works in the specified facility
-            if (!employeeDocument.facilities || !employeeDocument.facilities.some(f => f.toString() === facility)) {
-                throw new ConflictException(`Employee ${employee} does not work in facility ${facility}!`);
-            }
+        // Check if employee works in the specified facility
+        if (!employeeDocument.facilities || !employeeDocument.facilities.some(f => f.toString() === facility)) {
+            throw new ConflictException(`Employee ${employee} does not work in facility ${facility}!`);
+        }
 
-            // Validate service
-            const serviceExists = await this.serviceModel.findById(service).lean().exec();
-            if (!serviceExists) {
-                throw new NotFoundException(`Service with ID ${service} does not exist!`);
-            }
+        // Validate service
+        const serviceExists = await this.serviceModel.findById(service).lean().exec();
+        if (!serviceExists) {
+            throw new NotFoundException(`Service with ID ${service} does not exist!`);
+        }
             
-            const serviceDocument = await this.serviceModel.findOne({ _id: service, tenant }).lean().exec();
-            if (!serviceDocument) {
-                throw new NotFoundException(
-                    `Service with ID ${service} not found for tenant ${tenant}. ` +
+        const serviceDocument = await this.serviceModel.findOne({ _id: service, tenant }).lean().exec();
+        if (!serviceDocument) {
+            throw new NotFoundException(
+                `Service with ID ${service} not found for tenant ${tenant}. ` +
                     `The service may belong to a different tenant.`
-                );
-            }
+            );
+        }
 
-            // Validate facility
-            const facilityExists = await this.facilityModel.findById(facility).lean().exec();
-            if (!facilityExists) {
-                throw new NotFoundException(`Facility with ID ${facility} does not exist!`);
-            }
+        // Validate facility
+        const facilityExists = await this.facilityModel.findById(facility).lean().exec();
+        if (!facilityExists) {
+            throw new NotFoundException(`Facility with ID ${facility} does not exist!`);
+        }
             
-            const facilityDocument = await this.facilityModel.findOne({ _id: facility, tenant }).lean().exec();
-            if (!facilityDocument) {
-                throw new NotFoundException(
-                    `Facility with ID ${facility} not found for tenant ${tenant}. ` +
+        const facilityDocument = await this.facilityModel.findOne({ _id: facility, tenant }).lean().exec();
+        if (!facilityDocument) {
+            throw new NotFoundException(
+                `Facility with ID ${facility} not found for tenant ${tenant}. ` +
                     `The facility may belong to a different tenant.`
-                );
-            }
+            );
+        }
     }
 
     /**
@@ -341,8 +341,8 @@ export class WaitlistService {
             employee: (entry.employee as any)._id || entry.employee,
             facility: (entry.facility as any)._id || entry.facility,
             date: entry.preferredDate,
-                    $or: [
-                        {
+            $or: [
+                {
                     startHour: { $lt: entry.preferredEndHour },
                     endHour: { $gt: entry.preferredStartHour }
                 }
@@ -354,8 +354,8 @@ export class WaitlistService {
             .find({
                 $or: appointmentQueries
             })
-                .lean()
-                .exec();
+            .lean()
+            .exec();
 
         return entries.map(entry => {
             const employeeId = (entry.employee as any)._id || entry.employee;
@@ -452,8 +452,8 @@ export class WaitlistService {
             } as any;
         } catch (error) {
             if (error instanceof ConflictException || error instanceof BadRequestException || error instanceof NotFoundException) {
-            throw error;
-        }
+                throw error;
+            }
             throw new Error(`Failed to add client to waitlist: ${error.message}`);
         }
     }
@@ -721,8 +721,8 @@ export class WaitlistService {
     async claimAppointmentFromWaitlist(claimToken: string, clientId?: string): Promise<{ success: boolean; appointment?: any; message: string }> {
         // Find waitlist entry (with or without clientId verification)
         const query: any = { 
-                claimToken: claimToken, 
-                isClaimed: false 
+            claimToken: claimToken, 
+            isClaimed: false 
         };
 
         if (clientId) {
@@ -775,50 +775,50 @@ export class WaitlistService {
                 cancelled: true
             }, { session });
 
-        // Initial check if time slot is available
-        const existingAppointment = await this.findConflictingAppointment(
-            waitlistEntry.employee._id.toString(),
-            waitlistEntry.facility._id.toString(),
-            waitlistEntry.preferredDate,
-            waitlistEntry.preferredStartHour,
-            waitlistEntry.preferredEndHour
-        );
+            // Initial check if time slot is available
+            const existingAppointment = await this.findConflictingAppointment(
+                waitlistEntry.employee._id.toString(),
+                waitlistEntry.facility._id.toString(),
+                waitlistEntry.preferredDate,
+                waitlistEntry.preferredStartHour,
+                waitlistEntry.preferredEndHour
+            );
 
-        if (existingAppointment) {
-            throw new ConflictException('Termin nije više dostupan. Neko je već zauzeo ovaj slot.');
-        }
+            if (existingAppointment) {
+                throw new ConflictException('Termin nije više dostupan. Neko je već zauzeo ovaj slot.');
+            }
 
-        // Create appointment data
-        const appointmentData = {
-            employee: waitlistEntry.employee._id,
-            client: waitlistEntry.client._id,
-            service: waitlistEntry.service._id,
-            tenant: waitlistEntry.tenant._id,
-            facility: waitlistEntry.facility._id,
-            date: waitlistEntry.preferredDate,
-            startHour: waitlistEntry.preferredStartHour,
-            endHour: waitlistEntry.preferredEndHour,
-            paid: false
-        };
+            // Create appointment data
+            const appointmentData = {
+                employee: waitlistEntry.employee._id,
+                client: waitlistEntry.client._id,
+                service: waitlistEntry.service._id,
+                tenant: waitlistEntry.tenant._id,
+                facility: waitlistEntry.facility._id,
+                date: waitlistEntry.preferredDate,
+                startHour: waitlistEntry.preferredStartHour,
+                endHour: waitlistEntry.preferredEndHour,
+                paid: false
+            };
 
-        // RACE CONDITION PROTECTION:
-        // Last-minute check NEPOSREDNO pre save() operacije.
-        // Ako dva klijenta istovremeno kliknu "Prihvati termin", oba mogu proći kroz gornju proveru.
-        // Ova dodatna provera minimizuje window za race condition.
-        const lastMinuteCheck = await this.findConflictingAppointment(
-            waitlistEntry.employee._id.toString(),
-            waitlistEntry.facility._id.toString(),
-            waitlistEntry.preferredDate,
-            waitlistEntry.preferredStartHour,
-            waitlistEntry.preferredEndHour
-        );
+            // RACE CONDITION PROTECTION:
+            // Last-minute check NEPOSREDNO pre save() operacije.
+            // Ako dva klijenta istovremeno kliknu "Prihvati termin", oba mogu proći kroz gornju proveru.
+            // Ova dodatna provera minimizuje window za race condition.
+            const lastMinuteCheck = await this.findConflictingAppointment(
+                waitlistEntry.employee._id.toString(),
+                waitlistEntry.facility._id.toString(),
+                waitlistEntry.preferredDate,
+                waitlistEntry.preferredStartHour,
+                waitlistEntry.preferredEndHour
+            );
 
-        if (lastMinuteCheck) {
-            throw new ConflictException('Termin je upravo zauzet. Neko drugi je bio brži.');
-        }
+            if (lastMinuteCheck) {
+                throw new ConflictException('Termin je upravo zauzet. Neko drugi je bio brži.');
+            }
 
             // Create and save appointment (within transaction)
-        const newAppointment = new this.appointmentModel(appointmentData);
+            const newAppointment = new this.appointmentModel(appointmentData);
             const savedAppointment = await newAppointment.save({ session });
 
             this.logger.log('Appointment created in transaction', {
@@ -830,11 +830,11 @@ export class WaitlistService {
             });
 
             // Mark waitlist entry as claimed (within transaction)
-        await this.waitlistModel.findByIdAndUpdate(
-            waitlistEntry._id,
-            { 
-                isClaimed: true, 
-                claimedAt: new Date() 
+            await this.waitlistModel.findByIdAndUpdate(
+                waitlistEntry._id,
+                { 
+                    isClaimed: true, 
+                    claimedAt: new Date() 
                 },
                 { session }
             );
@@ -846,10 +846,10 @@ export class WaitlistService {
 
             // Remove all other waitlist entries for this time slot (within transaction)
             const deleteResult = await this.waitlistModel.deleteMany({
-            employee: waitlistEntry.employee._id,
-            facility: waitlistEntry.facility._id,
-            preferredDate: waitlistEntry.preferredDate,
-            _id: { $ne: waitlistEntry._id }
+                employee: waitlistEntry.employee._id,
+                facility: waitlistEntry.facility._id,
+                preferredDate: waitlistEntry.preferredDate,
+                _id: { $ne: waitlistEntry._id }
             }, { session });
 
             this.logger.log('Deleted other waitlist entries', {
@@ -865,20 +865,20 @@ export class WaitlistService {
             });
 
             // Populate appointment (posle transakcije, nije kritično)
-        const populatedAppointment = await this.appointmentModel
-            .findById(savedAppointment._id)
-            .populate('client')
-            .populate('employee')
-            .populate('service')
-            .populate('facility')
-            .populate('tenant')
-            .exec();
+            const populatedAppointment = await this.appointmentModel
+                .findById(savedAppointment._id)
+                .populate('client')
+                .populate('employee')
+                .populate('service')
+                .populate('facility')
+                .populate('tenant')
+                .exec();
 
-        return { 
-            success: true, 
-            appointment: populatedAppointment,
-            message: 'Appointment successfully claimed from waitlist' 
-        };
+            return { 
+                success: true, 
+                appointment: populatedAppointment,
+                message: 'Appointment successfully claimed from waitlist' 
+            };
 
         } catch (error) {
             // Rollback transaction - ništa se ne menja!

@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SalesService } from '../service/sales.service';
+import { CashSessionService } from '../service/cash-session.service';
+import { FiscalizationService } from '../service/fiscalization.service';
 import { getModelToken } from '@nestjs/mongoose';
 
 describe('SalesService', () => {
@@ -10,6 +12,24 @@ describe('SalesService', () => {
             providers: [
                 SalesService,
                 { provide: getModelToken('Sale'), useValue: {} },
+                { provide: getModelToken('CashSession'), useValue: {} },
+                { provide: getModelToken('Article'), useValue: {} },
+                { provide: getModelToken('Appointment'), useValue: {} },
+                {
+                    provide: FiscalizationService,
+                    useValue: {
+                        fiscalize: jest.fn(),
+                        scheduleFiscalization: jest.fn(),
+                    },
+                },
+                {
+                    provide: CashSessionService,
+                    useValue: {
+                        closeSession: jest.fn(),
+                        findById: jest.fn(),
+                        calculateSessionTotals: jest.fn(),
+                    },
+                },
             ],
         }).compile();
         service = module.get<SalesService>(SalesService);
@@ -20,7 +40,7 @@ describe('SalesService', () => {
     });
 
     it('should calculate totals correctly', async () => {
-    // Simulacija kalkulacije
+        // Simulacija kalkulacije
         const items = [
             { qty: 2, unitPrice: 100, discount: 10, taxRate: 20, total: 180 },
             { qty: 1, unitPrice: 50, discount: 0, taxRate: 20, total: 60 },
@@ -34,17 +54,17 @@ describe('SalesService', () => {
     });
 
     it('should check session existence', async () => {
-    // TODO: Mock session check
+        // TODO: Mock session check
         expect(true).toBe(true);
     });
 
     it('should mutate stock on sale/refund', async () => {
-    // TODO: Mock stock mutation
+        // TODO: Mock stock mutation
         expect(true).toBe(true);
     });
 
     it('should enforce refund rules', async () => {
-    // TODO: Mock refund logic
+        // TODO: Mock refund logic
         expect(true).toBe(true);
     });
 });

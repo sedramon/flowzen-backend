@@ -60,9 +60,12 @@ export class UsersService {
             const { password, ...userWithoutPassword } = populatedUser.toObject();
   
             // Modify the populated role to only include the tenant's ID
-            if (userWithoutPassword.role && userWithoutPassword.role.tenant) {
-                userWithoutPassword.role.tenant =
-          (userWithoutPassword.role.tenant as any)._id || userWithoutPassword.role.tenant.toString();
+            const roleValue = userWithoutPassword.role as Role & { tenant?: any };
+            if (roleValue && typeof roleValue === 'object' && 'tenant' in roleValue) {
+                const tenantRef = roleValue.tenant;
+                if (tenantRef && typeof tenantRef === 'object' && '_id' in tenantRef) {
+                    roleValue.tenant = tenantRef._id;
+                }
             }
   
             return userWithoutPassword;

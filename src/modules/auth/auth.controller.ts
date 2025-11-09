@@ -27,7 +27,8 @@ export class AuthController {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const { access_token } = await this.authService.login(user);
+        const loginResult = await this.authService.login(user);
+        const { access_token, user: loginUser } = loginResult;
 
         // Generate CSRF token
         const { token: csrfToken } = this.csrfService.generateToken();
@@ -56,14 +57,7 @@ export class AuthController {
 
         return {
             message: 'Login successful',
-            user: {
-                userId: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role._id,
-                scopes: user.role?.availableScopes.map((scope) => scope.name) || [],
-                tenant: user.tenant._id
-            },
+            user: loginUser,
         };
     }
 

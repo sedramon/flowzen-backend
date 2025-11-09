@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from "mongoose";
 
 @Schema({timestamps: true})
 export class Tenant extends Document {
@@ -38,6 +38,18 @@ export class Tenant extends Document {
 
     @Prop({required: true, default: new Date()})
         licenseExpiryDate: Date
+
+    @Prop({ enum: ['active', 'suspended', 'pending'], default: 'active' })
+        status: 'active' | 'suspended' | 'pending'
+
+    @Prop()
+        suspendedAt?: Date
+
+    @Prop()
+        suspensionReason?: string
+
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
+        suspendedBy?: Types.ObjectId | null
 
     readonly createdAt?: Date;
     readonly updatedAt?: Date;

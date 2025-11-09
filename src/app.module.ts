@@ -24,6 +24,9 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { PosModule } from './modules/pos/pos.module';
 import { CommonModule } from './common/common.module';
 import { RequestIdMiddleware, CsrfMiddleware } from './common/middleware';
+import { AuditModule } from './modules/audit/audit.module';
+import { AdminSetupModule } from './modules/admin-setup/admin-setup.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
     imports: [
@@ -82,7 +85,10 @@ import { RequestIdMiddleware, CsrfMiddleware } from './common/middleware';
                     err: (err) => ({ message: err.message, stack: err.stack }),
                 },
             },
-        })
+        }),
+        AuditModule,
+        AdminSetupModule,
+        AdminModule
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],
