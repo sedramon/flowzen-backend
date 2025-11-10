@@ -34,7 +34,21 @@ export class AuthService {
         const roleId = user.role?._id || user.role;
         const roleScopes = user.role?.availableScopes?.map((scope) => scope.name) || [];
         const userScopes = Array.isArray(user.scopes) && user.scopes.length > 0 ? user.scopes : roleScopes;
-        const tenantId = user.tenant?._id || user.tenant || null;
+        const tenantRecord = user.tenant && typeof user.tenant === 'object' ? user.tenant : null;
+        const tenantId = tenantRecord?._id || user.tenant || null;
+
+        const tenantInfo = tenantRecord
+            ? {
+                tenantId: tenantRecord._id?.toString() ?? null,
+                name: tenantRecord.name,
+                status: tenantRecord.status,
+                hasActiveLicense: tenantRecord.hasActiveLicense,
+                licenseStartDate: tenantRecord.licenseStartDate ?? null,
+                licenseExpiryDate: tenantRecord.licenseExpiryDate ?? null,
+                suspendedAt: tenantRecord.suspendedAt ?? null,
+                suspensionReason: tenantRecord.suspensionReason ?? null,
+            }
+            : null;
 
         const payload = {
             username: user.name,
@@ -49,7 +63,7 @@ export class AuthService {
             access_token: this.jwtService.sign(payload),
             user: {
                 userId: user._id,
-                tenant: tenantId,
+                tenant: tenantInfo ?? tenantId,
                 email: user.email,
                 username: user.email,
                 name: user.name,

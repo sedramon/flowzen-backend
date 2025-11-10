@@ -2,6 +2,7 @@ import { Controller, Post, Body, Get, Param, Put, Delete, Query, UseGuards, BadR
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { CreateWaitlistDto } from '../dto/create-waitlist.dto';
+import { ClaimWaitlistDto } from '../dto/claim-waitlist.dto';
 import { Appointment } from '../schemas/appointment.schema';
 import { AppointmentsService } from '../service/appointments.service';
 import { WaitlistService } from '../service/waitlist.service';
@@ -116,6 +117,20 @@ export class AppointmentsController {
   }
 
   @Scopes('scope_appointments:read')
+  @Get('waitlist/shift-window')
+  async getWaitlistShiftWindow(
+    @Query('tenant') tenant: string,
+    @Query('employee') employee: string,
+    @Query('facility') facility: string,
+    @Query('date') date: string,
+  ) {
+      if (!tenant || !employee || !facility || !date) {
+          throw new BadRequestException('tenant, employee, facility and date are required');
+      }
+      return this.waitlistService.describeShiftWindow({ tenant, employee, facility, date });
+  }
+
+  @Scopes('scope_appointments:read')
   @Delete('waitlist/:id')
   async removeFromWaitlist(
     @Param('id') id: string,
@@ -152,9 +167,9 @@ export class AppointmentsController {
   @Scopes('scope_appointments:read')
   @Post('waitlist/claim')
   async claimAppointmentFromWaitlist(
-    @Body() body: { claimToken: string; clientId: string }
+      @Body() claimRequest: ClaimWaitlistDto
   ) {
-      return this.waitlistService.claimAppointmentFromWaitlist(body.claimToken, body.clientId);
+      return this.waitlistService.claimAppointmentFromWaitlist(claimRequest.claimToken, claimRequest.clientId);
   }
 
   /**
@@ -165,8 +180,8 @@ export class AppointmentsController {
   @Post('waitlist/claim-public')
   @SetMetadata('isPublic', true)
   async claimAppointmentWithToken(
-    @Body() body: { claimToken: string }
+      @Body() claimRequest: ClaimWaitlistDto
   ) {
-      return this.waitlistService.claimAppointmentWithToken(body.claimToken);
+      return this.waitlistService.claimAppointmentWithToken(claimRequest.claimToken);
   }
 }

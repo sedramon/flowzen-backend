@@ -170,7 +170,11 @@ export class UsersService {
     }
 
     async findOne(id: string | Types.ObjectId): Promise<User | null> {
-        return this.userModel.findById(id).populate('role').exec();
+        return this.userModel
+            .findById(id)
+            .populate('role')
+            .populate('tenant')
+            .exec();
     }
 
 

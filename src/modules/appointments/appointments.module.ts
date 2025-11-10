@@ -5,6 +5,7 @@ import { Appointment, AppointmentSchema } from './schemas/appointment.schema';
 import { WaitlistEntry, WaitlistEntrySchema } from './schemas/waitlist.schema';
 import { AppointmentsService } from './service/appointments.service';
 import { WaitlistService } from './service/waitlist.service';
+import { AppointmentValidationService } from './service/appointment-validation.service';
 import { ClientsModule } from '../clients/clients.module';
 import { ServicesModule } from '../services/services.module';
 import { EmployeeModule } from '../employees/employees.module';
@@ -28,7 +29,7 @@ import { WorkingShift, WorkingShiftSchema } from '../working-shifts/schemas/work
         FacilityModule
     ],
     controllers: [AppointmentsController],
-    providers: [AppointmentsService, WaitlistService],
-    exports: [AppointmentsService, WaitlistService],
+    providers: [AppointmentsService, WaitlistService, AppointmentValidationService],
+    exports: [AppointmentsService, WaitlistService, AppointmentValidationService],
 })
 export class AppointmentsModule {}

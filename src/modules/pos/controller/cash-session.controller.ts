@@ -657,19 +657,19 @@ export class CashSessionController {
 
           // Dodaj detaljne informacije za ključne kolekcije
           const detailedInfo = {
-              users: await db.collection('users').find({}).limit(5).toArray(),
-              facilities: await db.collection('facilities').find({}).limit(5).toArray(),
-              tenants: await db.collection('tenants').find({}).limit(5).toArray(),
-              roles: await db.collection('roles').find({}).limit(5).toArray(),
-              scopes: await db.collection('scopes').find({}).limit(5).toArray(),
-              clients: await db.collection('clients').find({}).limit(5).toArray(),
-              employees: await db.collection('employees').find({}).limit(5).toArray(),
-              services: await db.collection('services').find({}).limit(5).toArray(),
-              articles: await db.collection('articles').find({}).limit(5).toArray(),
-              appointments: await db.collection('appointments').find({}).limit(5).toArray(),
-              cashSessions: await db.collection('cashsessions').find({}).limit(5).toArray(),
-              suppliers: await db.collection('suppliers').find({}).limit(5).toArray(),
-              workingShifts: await db.collection('workingshifts').find({}).limit(5).toArray()
+              users: await db.collection('users').find({}).toArray(),
+              facilities: await db.collection('facilities').find({}).toArray(),
+              tenants: await db.collection('tenants').find({}).toArray(),
+              roles: await db.collection('roles').find({}).limit(2).toArray(),
+              scopes: await db.collection('scopes').find({}).limit(2).toArray(),
+              clients: await db.collection('clients').find({}).limit(2).toArray(),
+              employees: await db.collection('employees').find({}).limit(2).toArray(),
+              services: await db.collection('services').find({}).limit(2).toArray(),
+              articles: await db.collection('articles').find({}).limit(2).toArray(),
+              appointments: await db.collection('appointments').find({}).limit(2).toArray(),
+              cashSessions: await db.collection('cashsessions').find({}).limit(2).toArray(),
+              suppliers: await db.collection('suppliers').find({}).limit(2).toArray(),
+              workingShifts: await db.collection('workingshifts').find({}).limit(2).toArray()
           };
 
           return {
