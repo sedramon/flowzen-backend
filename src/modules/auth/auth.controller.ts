@@ -1,9 +1,10 @@
-import { Controller, Post, Body, UnauthorizedException, Res, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, Res, Req, HttpCode, HttpStatus, UseGuards, Get } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/LoginDto.dto';
 import { CsrfService } from '../../common/services/csrf.service';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from 'src/common/guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +12,8 @@ export class AuthController {
         private authService: AuthService,
         private csrfService: CsrfService,
         private configService: ConfigService,
-    ) {}
+    ) { }
+
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
@@ -61,7 +63,29 @@ export class AuthController {
         };
     }
 
+    @Get('validate')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    async validateSession(@Req() req: any) {
+        // The JWT is already validated by JwtAuthGuard
+        // CSRF token is automatically sent in X-CSRF-Token header by CSRF middleware (GET request)
+        const user = req.user;
+
+        return {
+            valid: true,
+            user: {
+                userId: user.sub,
+                name: user.username,
+                email: user.email,
+                role: user.role,
+                tenant: user.tenant,
+                scopes: user.scopes || []
+            }
+        };
+    }
+
     @Post('logout')
+    @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
     async logout(@Res({ passthrough: true }) res: Response) {
         // Clear cookies
@@ -71,34 +95,8 @@ export class AuthController {
         return { message: 'Logout successful' };
     }
 
-    @Post('refresh-csrf')
-    @HttpCode(HttpStatus.OK)
-    async refreshCsrf(
-        @Req() req: Request,
-        @Res({ passthrough: true }) res: Response,
-    ) {
-        // Generate new CSRF token
-        const { token: csrfToken } = this.csrfService.generateToken();
-
-        // Cookie options with improved security settings
-        const cookieOptions: any = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax', // Changed from 'strict' for better UX with external links
-            maxAge: 3600000,
-        };
-
-        const domain = this.configService.get<string>('COOKIE_DOMAIN');
-        if (domain) {
-            cookieOptions.domain = domain;
-        }
-
-        // Set new CSRF token in cookie
-        res.cookie('csrf-token', csrfToken, cookieOptions);
-
-        // Send in header for frontend
-        res.setHeader('X-CSRF-Token', csrfToken);
-
-        return { message: 'CSRF token refreshed' };
-    }
+    // Note: CSRF token refresh is handled automatically by CSRF middleware
+    // - GET requests generate tokens if none exists
+    // - POST/PUT/DELETE auto-rotate tokens after validation
+    // - No manual refresh endpoint needed
 }

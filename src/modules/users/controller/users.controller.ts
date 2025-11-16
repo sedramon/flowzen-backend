@@ -71,7 +71,7 @@ export class UsersController {
 
   @Post('create-test-pos-user')
   async createTestPosUser(@Query('secret') secret: string, @Res() res) {
-      try {
+      try {   
           if (secret !== 'flowzen-setup-2025') {
               return res.status(403).json({ error: 'Forbidden' });
           }

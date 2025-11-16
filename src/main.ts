@@ -56,7 +56,6 @@ async function bootstrap() {
         SwaggerModule.setup('docs', app, swaggerDoc);
     }
 
-
     await app.listen(port);
 }
 bootstrap();
