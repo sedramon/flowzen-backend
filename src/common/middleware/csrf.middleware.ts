@@ -11,14 +11,9 @@ export class CsrfMiddleware implements NestMiddleware {
     ) {}
 
     use(req: Request, res: Response, next: NextFunction) {
-        // Exclude auth endpoints and public waitlist claim from CSRF validation
+        // Exclude auth endpoints from CSRF validation (login/register are entry points)
         const path = req.originalUrl || req.url || req.path;
-        const excludedPaths = [
-            '/auth/login',
-            '/auth/register',
-            '/appointments/waitlist/claim-public',
-            '/admin/setup',
-        ];
+        const excludedPaths = ['/auth/login', '/auth/register'];
         
         if (excludedPaths.some(excluded => path.startsWith(excluded))) {
             return next();
