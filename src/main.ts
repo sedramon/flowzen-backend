@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import * as cookieParser from 'cookie-parser';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(
@@ -40,6 +41,9 @@ async function bootstrap() {
     // ili join(__dirname, '..', 'uploads')
         prefix: '/uploads', // <-- ruta mora da se poklapa s onim što frontend traži
     });
+
+    // Apply global exception filter (NestJS way)
+    app.useGlobalFilters(new HttpExceptionFilter());
 
     if (process.env.NODE_ENV !== 'production') {
         const swaggerConfig = new DocumentBuilder()
