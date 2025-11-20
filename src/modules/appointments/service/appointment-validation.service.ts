@@ -152,7 +152,7 @@ export class AppointmentValidationService {
         }
 
         if (!service.isActive) {
-            throw new ConflictException('Usluga nije aktivna i ne može se zakazati.');
+            throw new ConflictException('Usluga koju ste odabrali trenutno nije aktivna. Molimo odaberite drugu uslugu.');
         }
 
         const normalizedDate = this.normalizeDate(params.date);
