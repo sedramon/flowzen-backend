@@ -1,18 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNotEmpty, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class UpdateRoleDto {
-    @ApiProperty({description: 'Role name'})
+    @ApiProperty({description: 'Role name', required: false})
     @IsString()
-    @IsNotEmpty()
-        name: string;
+    @IsOptional()
+        name?: string;
 
-    @ApiProperty({description: 'Tenant ID'})
-    @IsNotEmpty()
+    @ApiProperty({description: 'Tenant ID', required: false})
     @IsString()
-        tenant: string
+    @IsOptional()
+        tenant?: string | null;
 
-    @ApiProperty({description: 'Available scopes'})
+    @ApiProperty({description: 'Available scopes', required: false})
     @IsArray()
-        availableScopes: string[];
+    @IsOptional()
+        availableScopes?: string[];
 }

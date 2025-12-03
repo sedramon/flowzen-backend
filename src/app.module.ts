@@ -27,6 +27,7 @@ import { RequestIdMiddleware, CsrfMiddleware } from './common/middleware';
 import { AuditModule } from './modules/audit/audit.module';
 import { AdminSetupModule } from './modules/admin-setup/admin-setup.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { AgentsModule } from './modules/agents/agents.module';
 
 @Module({
     imports: [
@@ -88,7 +89,8 @@ import { AdminModule } from './modules/admin/admin.module';
         }),
         AuditModule,
         AdminSetupModule,
-        AdminModule
+        AdminModule,
+        AgentsModule
     ],
     controllers: [AppController, HealthController],
     providers: [AppService],

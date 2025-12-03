@@ -118,9 +118,20 @@ export class RoleService {
             }
         }
       
+        const updateData: any = {};
+        if (name !== undefined) {
+            updateData.name = name;
+        }
+        if (availableScopes !== undefined) {
+            updateData.availableScopes = availableScopes;
+        }
+        if (tenant !== undefined && tenant !== null) {
+            updateData.tenant = tenant;
+        }
+
         const roleUpdate = await this.roleModel.findByIdAndUpdate(
             roleId,
-            { $set: { name, availableScopes } },
+            { $set: updateData },
             { new: true }
         );
       
