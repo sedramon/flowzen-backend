@@ -53,7 +53,7 @@ export class AuthService {
         const payload = {
             username: user.name,
             email: user.email,
-            sub: user._id,
+            sub: user._id.toString(),
             role: roleId,
             scopes: userScopes,
             tenant: tenantId,
@@ -63,7 +63,7 @@ export class AuthService {
         return {
             access_token: this.jwtService.sign(payload),
             user: {
-                userId: user._id,
+                userId: user._id.toString(),
                 tenant: tenantInfo ?? tenantId,
                 email: user.email,
                 username: user.email,

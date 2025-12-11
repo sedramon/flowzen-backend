@@ -74,12 +74,13 @@ export class AuthController {
         return {
             valid: true,
             user: {
-                userId: user.sub,
+                userId: user.userId,
                 name: user.username,
                 email: user.email,
                 role: user.role,
                 tenant: user.tenant,
-                scopes: user.scopes || []
+                scopes: user.scopes || [],
+                isGlobalAdmin: user.isGlobalAdmin
             }
         };
     }
